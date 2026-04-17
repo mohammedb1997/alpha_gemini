@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>شاشة العرض - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+<div id="game-screen" class="screen active">
+  <div class="left-panel">
+    <div class="team-score-card team-a">
+      <div class="t-name" id="ta-name">الفريق أ</div>
+      <div class="t-score" id="ta-score">0</div>
+    </div>
+    <div id="buzzer-display" style="color:var(--gold); font-size:1.5rem; font-weight:bold; text-align:center;"></div>
+    <div class="team-score-card team-b">
+      <div class="t-name" id="tb-name">الفريق ب</div>
+      <div class="t-score" id="tb-score">0</div>
+    </div>
+  </div>
+
+  <div class="board-area">
+    <div class="q-box" id="display-q" style="width:80%; font-size:1.8rem; margin-bottom:20px;">جاري الاتصال بغرفة الحكم...</div>
+    <div id="hex-board"></div>
+  </div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+let peer = new Peer(peerConfig);
+
+peer.on('open', () => {
+  if(!code) { document.getElementById('display-q').innerText = "الرجاء فتح هذه الشاشة من رابط الحكم!"; return; }
+  
+  const conn = peer.connect('hexgame-' + code);
+  conn.on('open', () => { document.getElementById('display-q').innerText = "متصل! في انتظار اختيار سؤال..."; });
+  
+  conn.on('data', (data) => {
+    if(data.type === 'state_update') { updateUI(data.state); }
+    if(data.type === 'show_question') { 
+      document.getElementById('display-q').innerText = "❓ " + data.q; 
+      document.getElementById('buzzer-display').innerText = "";
+    }
+    if(data.type === 'buzzer_won') { 
+      document.getElementById('buzzer-display').innerText = `⚡ ${data.winner} يجاوب!`; 
+    }
+    if(data.type === 'reset_buzzer') {
+      document.getElementById('display-q').innerText = "في انتظار اختيار سؤال...";
+      document.getElementById('buzzer-display').innerText = "";
+    }
+  });
+});
+
+function updateUI(state) {
+  document.getElementById('ta-name').innerText = state.teamA;
+  document.getElementById('tb-name').innerText = state.teamB;
+  document.getElementById('ta-score').innerText = state.scores.a;
+  document.getElementById('tb-score').innerText = state.scores.b;
+  
+  const bd = document.getElementById('hex-board');
+  bd.innerHTML = '';
+  state.board.forEach((cell, i) => {
+    const h = document.createElement('div');
+    h.className = 'hex';
+    if(cell.owner === 'a') h.classList.add('owned-a');
+    if(cell.owner === 'b') h.classList.add('owned-b');
+    if(state.activeCell === i) h.classList.add('active-q');
+    h.innerText = cell.letter;
+    bd.appendChild(h);
+  });
+}
+</script>
+</body>
+</html>

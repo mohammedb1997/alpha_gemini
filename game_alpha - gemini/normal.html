@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تحدي الحروف - النمط المبهج</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="qbank.js"></script>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="scores-panel">
+        <div style="color:var(--a)">❤️ الفريق الأحمر: <span id="score-red">0</span></div>
+        <div style="color:var(--b)">💙 الفريق الأزرق: <span id="score-blue">0</span></div>
+    </div>
+
+    <div id="board" class="board-wrapper"></div>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<div id="q-modal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h2 id="q-letter" style="color:var(--gold)">حرف</h2>
+        <p id="q-text" style="font-size:1.4rem; margin:20px 0;"></p>
+        <div id="ans-box" style="display:none; background:#e0f7fa; padding:10px; border-radius:15px; margin-bottom:15px;">
+            الإجابة: <b id="ans-text"></b>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button onclick="showAns()">كشف الإجابة</button>
+            <button onclick="changeQ()" style="background:#eee;">سؤال آخر</button>
+            <button onclick="mark('red')" style="background:var(--a); color:white;">فوز الأحمر</button>
+            <button onclick="mark('blue')" style="background:var(--b); color:white;">فوز الأزرق</button>
+        </div>
+        <button onclick="closeModals()" style="width:100%; margin-top:10px; background:#ccc;">إغلاق</button>
+    </div>
+</div>
+
+<script>
+const SIZE = 5; 
+let boardState = new Array(SIZE * SIZE).fill(null);
+let activeCell = null;
+const LETTERS = "أبتثجحخدذرزسشصضطظعغفقكلمنهوي";
+
+function init() {
+    const board = document.getElementById('board');
+    board.style.setProperty('--size', SIZE);
+    board.innerHTML = '';
+    boardState.forEach((owner, i) => {
+        const r = Math.floor(i / SIZE);
+        const hex = document.createElement('div');
+        hex.className = 'hex' + (owner ? ' ' + owner : '');
+        hex.style.setProperty('--r', r);
+        hex.innerText = LETTERS[i % LETTERS.length];
+        hex.onclick = () => openQ(i);
+        board.appendChild(hex);
+    });
+}
+
+function openQ(i) {
+    activeCell = i;
+    const char = LETTERS[i % LETTERS.length];
+    document.getElementById('q-letter').innerText = "سؤال حرف: " + char;
+    const qList = QBANK[char] || [{q:"لا يوجد سؤال", a:"-"}];
+    const qObj = qList[Math.floor(Math.random() * qList.length)];
+    document.getElementById('q-text').innerText = qObj.q;
+    document.getElementById('ans-text').innerText = qObj.a;
+    document.getElementById('ans-box').style.display = 'none';
+    document.getElementById('q-modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function showAns() { document.getElementById('ans-box').style.display = 'block'; }
+
+function mark(team) {
+    boardState[activeCell] = team;
+    closeModals();
+    init();
+    if(checkWin(team)) alert("🎉 مبروك! فاز الفريق " + (team === 'red' ? 'الأحمر' : 'الأزرق'));
+}
+
+function closeModals() {
+    document.getElementById('q-modal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+// منطق الجيران الصحيح لخلايا النحل
+function getNeighbors(idx) {
+    const r = Math.floor(idx / SIZE), c = idx % SIZE, n = [];
+    const offsets = [[0,-1],[0,1],[-1,0],[-1,1],[1,-1],[1,0]];
+    offsets.forEach(([dr, dc]) => {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) n.push(nr * SIZE + nc);
+    });
+    return n;
+}
+
+function checkWin(team) {
+    const visited = new Array(SIZE*SIZE).fill(false), q = [];
+    if(team === 'blue') { // من الأعلى للأسفل
+        for(let i=0; i<SIZE; i++) if(boardState[i]==='blue') { q.push(i); visited[i]=true; }
+        while(q.length) {
+            let curr = q.shift();
+            if(Math.floor(curr/SIZE) === SIZE-1) return true;
+            getNeighbors(curr).forEach(nb => { if(!visited[nb] && boardState[nb]==='blue') { visited[nb]=true; q.push(nb); } });
+        }
+    } else { // من اليمين لليسار
+        for(let i=0; i<SIZE; i++) if(boardState[i*SIZE]==='red') { q.push(i*SIZE); visited[i*SIZE]=true; }
+        while(q.length) {
+            let curr = q.shift();
+            if(curr % SIZE === SIZE-1) return true;
+            getNeighbors(curr).forEach(nb => { if(!visited[nb] && boardState[nb]==='red') { visited[nb]=true; q.push(nb); } });
+        }
+    }
+    return false;
+}
+
+window.onload = init;
+</script>
+</body>
+</html>

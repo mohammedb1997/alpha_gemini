@@ -1,0 +1,216 @@
+
+---
+
+### 2️⃣ ملف `howto.html` (صفحة التعليمات التفصيلية)
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كيفية الاستخدام - تحدي الحروف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a0a2e 0%, #2d1b4e 100%);
+            font-family: 'Cairo', sans-serif;
+            color: #f0e6ff;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 30px 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: #FFE66D;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #FFE66D;
+            padding-bottom: 20px;
+        }
+        h2 {
+            color: #4ECDC4;
+            margin-top: 30px;
+            font-size: 1.8rem;
+        }
+        .question {
+            background: rgba(255,107,107,0.15);
+            border-right: 5px solid #FF6B6B;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .answer {
+            background: rgba(78,205,196,0.1);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 10px 0 20px 20px;
+            border: 1px solid rgba(78,205,196,0.3);
+        }
+        .steps {
+            list-style-type: none;
+            padding: 0;
+        }
+        .steps li {
+            margin: 15px 0;
+            padding-right: 30px;
+            position: relative;
+        }
+        .steps li::before {
+            content: "✅";
+            position: absolute;
+            right: 0;
+            color: #2ecc71;
+        }
+        .btn-back {
+            display: inline-block;
+            background: #1e3a5f;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            background: #2d4b6e;
+        }
+        .note {
+            background: rgba(255,230,109,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #FFE66D;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📖 دليل استخدام "تحدي الحروف"</h1>
+    
+    <h2>🎮 النمط المحلي (جهاز واحد)</h2>
+    <div class="question">❓ كيف أبدأ لعبة محلية بين لاعبين؟</div>
+    <div class="answer">
+        <ul class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المحلي"</strong>.</li>
+            <li>ستظهر لوحة مكونة من 25 خلية سداسية، كل خلية تحوي حرفاً عربياً.</li>
+            <li>في الأعلى تظهر نتيجة الفريقين (الأزرق والأحمر).</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ ماذا يحدث عندما أضغط على حرف؟</div>
+    <div class="answer">
+        تنبثق نافذة تحتوي على:
+        <ul>
+            <li><strong>السؤال:</strong> سؤال عشوائي مرتبط بالحرف المختار.</li>
+            <li><strong>عداد تنازلي 20 ثانية:</strong> لإضفاء الحماس.</li>
+            <li><strong>أزرار التحكم:</strong>
+                <ul>
+                    <li>🔍 <strong>إظهار الإجابة</strong> – يكشف الحل الصحيح.</li>
+                    <li>🔄 <strong>تغيير السؤال</strong> – يجلب سؤالاً آخر لنفس الحرف.</li>
+                    <li>🔵 <strong>فوز الأزرق</strong> – يمنح الخلية للفريق الأزرق.</li>
+                    <li>🔴 <strong>فوز الأحمر</strong> – يمنح الخلية للفريق الأحمر.</li>
+                    <li>❌ <strong>إغلاق</strong> – يغلق النافذة بدون تغيير.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف يتم الفوز في النمط المحلي؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>الفريق الأزرق</strong> يحتاج لربط خلاياه من <strong>الأعلى إلى الأسفل</strong>.</li>
+            <li><strong>الفريق الأحمر</strong> يحتاج لربط خلاياه من <strong>اليمين إلى اليسار</strong>.</li>
+            <li>بمجرد تحقيق اتصال كامل، تظهر رسالة الفوز.</li>
+        </ul>
+    </div>
+
+    <h2>🎯 النمط المشترك (متعدد الشاشات)</h2>
+    <div class="question">❓ ما هي مكونات هذا النمط؟</div>
+    <div class="answer">
+        يتكون من ثلاث شاشات منفصلة:
+        <ol>
+            <li><strong>شاشة الحكم (judge.html):</strong> يتحكم فيها مقدم اللعبة. يختار الأسئلة ويمنح النقاط.</li>
+            <li><strong>شاشة العرض (display.html):</strong> تعرض على البروجكتر أو التلفاز. يراها الجمهور.</li>
+            <li><strong>شاشات اللاعبين (player.html):</strong> تفتح على هواتف المتسابقين. تستخدم كبازر للإجابة.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف أبدأ جلسة لعب مشتركة؟</div>
+    <div class="answer">
+        <ol class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المشترك"</strong> لفتح شاشة الحكم.</li>
+            <li>أدخل اسمي الفريقين (أحمر/أخضر افتراضياً).</li>
+            <li>اضغط <strong>"إنشاء الغرفة وبدء اللعبة"</strong>.</li>
+            <li>سيظهر لك:
+                <ul>
+                    <li>🔗 رابط "افتح شاشة البروجكتر" – انسخه وافتحه في نافذة جديدة (ويفضل على شاشة كبيرة).</li>
+                    <li>📱 زر "عرض QR اللاعبين" – اضغطه ليظهر كود QR.</li>
+                </ul>
+            </li>
+            <li>اطلب من اللاعبين مسح الكود بهواتفهم، ثم اختيار الفريق (أ أو ب) وإدخال أسمائهم.</li>
+            <li>بمجرد اتصال الجميع، ابدأ اللعب.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف تجري الجولة في النمط المشترك؟</div>
+    <div class="answer">
+        <ol>
+            <li><strong>الحكم</strong> يضغط على خلية حرة في اللوحة.</li>
+            <li>يظهر السؤال في شاشة الحكم فقط (وليس في شاشة البروجكتر بعد).</li>
+            <li>يقرأ الحكم السؤال بصوت عالٍ، ثم يضغط على زر <strong>"إعادة فتح البازر"</strong> (إذا كان مغلقاً).</li>
+            <li><strong>اللاعبون</strong> يضغطون زر البازر في هواتفهم. أول من يضغط يظهر اسمه في شاشة الحكم والبروجكتر.</li>
+            <li>يجيب اللاعب شفهياً. الحكم يقارن إجابته بالإجابة المخفية (يمكنه إظهارها بالضغط على زر في شاشته).</li>
+            <li>إذا كانت الإجابة صحيحة، يضغط الحكم على <strong>"صح (الفريق أ)"</strong> أو <strong>"صح (الفريق ب)"</strong> فتُمنح الخلية لذلك الفريق وتضاف نقطة.</li>
+            <li>إذا كانت خاطئة، يمكن للحكم الضغط على <strong>"إعادة فتح البازر"</strong> لإعطاء فرصة للاعب آخر (دون تغيير السؤال)، أو الضغط على <strong>"تخطي / سؤال آخر"</strong> لإلغاء السؤال.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ ما الفرق بين "إعادة فتح البازر" و "تخطي"؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>🔄 إعادة فتح البازر:</strong> يبقي نفس السؤال، ويعيد تنشيط أزرار اللاعبين ليتنافسوا على الإجابة مرة أخرى (مفيد إذا أخطأ اللاعب الأول).</li>
+            <li><strong>⏭ تخطي / سؤال آخر:</strong> يلغي السؤال الحالي، ويعيد اللوحة لحالة الانتظار لاختيار خلية جديدة.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ لماذا لا يظهر السؤال مباشرة على شاشة البروجكتر؟</div>
+    <div class="answer">
+        هذا إجراء أمني لمنع الجمهور من رؤية السؤال قبل أن يقرأه الحكم. يظهر السؤال على البروجكتر فقط بعد أن يفتح الحكم البازر رسمياً.
+    </div>
+
+    <div class="note">
+        <strong>💡 نصيحة:</strong> عند استخدام النمط المشترك عبر الإنترنت، تأكد من أن جميع الأجهزة متصلة بالإنترنت. في حال وجود مشاكل في الاتصال، حاول استخدام شبكة Wi-Fi واحدة لجميع الأجهزة.
+    </div>
+
+    <h2>📚 إدارة الأسئلة</h2>
+    <div class="question">❓ كيف أضيف أسئلة جديدة؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>أثناء اللعب:</strong> إذا لم يجد النظام أسئلة لحرف معين، ستظهر نافذة تسمح لك بإدخال سؤال وإجابة. سيتم حفظها تلقائياً في المتصفح.</li>
+            <li><strong>بشكل دائم:</strong> افتح ملف <code>qbank.js</code> وأضف أسئلة بصيغة JSON. أو استخدم ميزة الإضافة أثناء اللعب ثم انسخ البيانات من LocalStorage.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف أحذف الأسئلة المضافة وأعود للأصلية؟</div>
+    <div class="answer">
+        امسح بيانات التصفح (LocalStorage) للموقع، أو استخدم وضع التصفح المخفي. سيتم تحميل البنك الافتراضي الموجود في <code>qbank.js</code>.
+    </div>
+
+    <a href="index.html" class="btn-back">🔙 العودة للصفحة الرئيسية</a>
+</div>
+</body>
+</html>

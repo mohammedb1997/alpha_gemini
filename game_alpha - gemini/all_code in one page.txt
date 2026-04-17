@@ -1,0 +1,1380 @@
+----------------css----------
+:root { --a: #FF6B6B; --b: #4ECDC4; --bg: #1a0a2e; --surface: #2d1b4e; --surface2: #3d2660; --gold: #FFE66D; --neutral: #f0e6ff; --neutral-dim: rgba(240,230,255,0.4); --empty: rgba(255,255,255,0.08); --empty-border: rgba(255,255,255,0.15); }
+*{margin:0;padding:0;box-sizing:border-box}
+body { background: var(--bg); font-family: 'Cairo', 'Tajawal', sans-serif; color: var(--neutral); min-height: 100vh; overflow: hidden; background-image: radial-gradient(ellipse 120% 60% at 20% 0%, rgba(255,107,107,0.12) 0%, transparent 60%), radial-gradient(ellipse 80% 60% at 80% 100%, rgba(78,205,196,0.12) 0%, transparent 60%); }
+.screen { display:none; width:100vw; height:100vh; }
+.screen.active { display:flex; }
+
+/* البورد والشاشات */
+#game-screen { flex-direction: row; overflow: hidden; }
+.left-panel { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 20px 14px; background: rgba(0,0,0,0.25); border-left: 1px solid rgba(255,255,255,0.06); }
+.right-panel { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; padding: 16px 14px; gap: 12px; background: rgba(0,0,0,0.3); border-right: 1px solid rgba(255,255,255,0.06); overflow-y: auto; }
+.board-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; position: relative; }
+.team-score-card { width: 100%; border-radius: 20px; padding: 16px 12px; text-align: center; margin-bottom: 15px;}
+.team-score-card.team-a { background: rgba(255,107,107,0.15); border: 2px solid rgba(255,107,107,0.4); }
+.team-score-card.team-b { background: rgba(78,205,196,0.15); border: 2px solid rgba(78,205,196,0.4); }
+.t-name { font-size: 1rem; font-weight: 700; opacity: 0.8; margin-bottom: 4px; }
+.t-score { font-size: 3rem; font-weight: 900; line-height: 1; }
+.team-a .t-score { color: var(--a); } .team-b .t-score { color: var(--b); }
+#hex-board { display: grid; grid-template-columns: repeat(5, 1fr); --hs: clamp(58px, 8.5vw, 82px); width: fit-content; gap: 3px; margin-top:20px;}
+.hex { width: var(--hs); height: calc(var(--hs) * 1.1547); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); display: flex; align-items: center; justify-content: center; font-family: 'Cairo', sans-serif; font-size: calc(var(--hs) * 0.32); font-weight: 900; cursor: pointer; position: relative; z-index: 1; margin-bottom: calc(var(--hs) * -0.2887 + 2px); transition: all 0.2s ease; background: var(--empty); border: 2px solid var(--empty-border); color: var(--neutral); line-height: 1.2; padding-bottom: 0.15em; }
+.hex:nth-child(10n+6), .hex:nth-child(10n+7), .hex:nth-child(10n+8), .hex:nth-child(10n+9), .hex:nth-child(10n+10) { transform: translateX(calc(50% + 2px)); }
+.hex.owned-a { background: linear-gradient(145deg, var(--a), #c0392b); color: white; }
+.hex.owned-b { background: linear-gradient(145deg, var(--b), #27ae8f); color: white; }
+.hex.active-q { box-shadow: 0 0 20px var(--gold); transform: scale(1.1); z-index:10;}
+.panel-section { background: var(--surface); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 14px 16px; margin-bottom: 10px;}
+.q-box { background: var(--surface2); border-radius: 14px; padding: 16px; font-size: 1.2rem; font-weight: 700; line-height: 1.6; color: var(--neutral); min-height: 80px; text-align:center;}
+.answer-reveal { background: rgba(78,205,196,0.15); border: 1.5px dashed rgba(78,205,196,0.5); border-radius: 12px; padding: 10px 14px; color: var(--b); font-weight: 700; font-size: 1.2rem; text-align: center; margin-top: 10px;}
+.judge-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top:10px;}
+.jbtn { padding: 12px 8px; border: none; border-radius: 12px; font-family: 'Cairo', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; color: white;}
+.btn-start { width: 100%; padding: 16px; border: none; border-radius: 18px; background: linear-gradient(135deg, var(--gold), #ff9a56); color: #1a0a2e; font-family: 'Cairo', sans-serif; font-size: 1.3rem; font-weight: 900; cursor: pointer; }
+.setup-card { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px; padding: 32px; width: 100%; max-width: 520px; text-align:center; margin: auto; margin-top:10vh;}
+input { background: var(--surface2); border: 2px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px; color: var(--neutral); font-size: 1rem; text-align: center; outline: none; margin: 10px; width:80%;}
+#qr-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:9999;}
+#qr-modal.show {display:flex;}
+.qr-card {background:var(--surface); padding:30px; border-radius:20px; text-align:center;}
+
+/* أنماط النوافذ المنبثقة (مودال) */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 1000; }
+.modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--surface); color: var(--neutral); width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 30px 25px; border-radius: 30px; z-index: 1001; text-align: center; box-shadow: 0 30px 50px rgba(0,0,0,0.5); border: 1px solid var(--empty-border); }
+.timer { font-size: 4rem; font-weight: 800; color: var(--gold); margin: 10px 0; }
+#q-text { font-size: 1.4rem; line-height: 1.6; margin: 20px 0; font-weight: 600; background: var(--surface2); padding: 20px; border-radius: 24px; }
+.ans-box { display: none; background: rgba(78,205,196,0.15); padding: 20px; margin: 20px 0; border-radius: 20px; border: 2px dashed var(--b); color: var(--b); font-weight: bold; font-size: 1.5rem; }
+.btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+button { padding: 14px 12px; border: none; border-radius: 18px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.1s; box-shadow: 0 4px 0 rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); }
+button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+.btn-main { background: #2ecc71; color: white; grid-column: span 2; }
+.btn-blue { background: var(--a); color: white; }
+.btn-red { background: var(--b); color: white; }
+.btn-close { background: #6c7a89; color: white; grid-column: span 2; }
+.btn-change { background: #f39c12; color: white; grid-column: span 2; margin-top: 8px; }
+textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 16px; background: var(--surface2); color: var(--neutral); border: 1px solid var(--empty-border); }
+
+--------------js------------------
+const QBANK = {
+  "أ":[{q:"أول الخلفاء الراشدين؟",a:"أبو بكر الصديق"},{q:"ملك الغابة؟",a:"أسد"},{q:"أكبر قارات العالم مساحة؟",a:"آسيا"},{q:"غاز ضروري للتنفس؟",a:"أكسجين"},{q:"أطول نهر في العالم؟",a:"النيل"},{q:"كائن بحري له ثمانية أذرع؟",a:"أخطبوط"},{q:"معالم تاريخية شهيرة في مصر؟",a:"أهرامات"},{q:"أسرع حيوان بري في العالم؟",a:"الفهد"},{q:"عاصمة إثيوبيا؟",a:"أديس أبابا"},{q:"عضو مسؤول عن حاسة السمع؟",a:"أذن"}],
+  "ب":[{q:"طائر لا يطير ويعيش في القطب الجنوبي؟",a:"بطريق"},{q:"دولة عاصمتها المنامة؟",a:"البحرين"},{q:"فاكهة حمضية برتقالية مشهورة؟",a:"برتقال"},{q:"طائر مائي بجراب تحت منقاره؟",a:"بجع"},{q:"عاصمة لبنان؟",a:"بيروت"},{q:"طائر ذكي يُعلَّم الكلام؟",a:"ببغاء"},{q:"مبنى شاهق الارتفاع؟",a:"برج"},{q:"عاصمة العراق؟",a:"بغداد"},{q:"حيوان من الأنعام يعطينا الحليب؟",a:"بقرة"},{q:"طائر مائي مشهور؟",a:"بطة"}],
+  "ت":[{q:"ثمرة شجرة النخيل؟",a:"تمر"},{q:"دولة عربية عاصمتها تونس؟",a:"تونس"},{q:"حيوان زاحف ضخم يعيش في الماء والبر؟",a:"تمساح"},{q:"كتاب مقدس أنزل على موسى؟",a:"توراة"},{q:"ما يلبس فوق الرأس للملوك؟",a:"تاج"},{q:"دولة تقع في قارتي آسيا وأوروبا؟",a:"تركيا"},{q:"آلة لقياس درجة الحرارة؟",a:"ترمومتر"},{q:"جهاز التواصل عن بعد بالصوت؟",a:"تلفون"},{q:"وسيلة نقل عامة على سكك؟",a:"ترام"},{q:"جهاز يعرض القنوات التلفزيونية؟",a:"تلفاز"}],
+  "ث":[{q:"حيوان يلقب بالمكار؟",a:"ثعلب"},{q:"زاحف يزحف على بطنه بلا أرجل؟",a:"ثعبان"},{q:"جهاز لحفظ الطعام بارداً؟",a:"ثلاجة"},{q:"الفتحة أو الفجوة الصغيرة؟",a:"ثقب"},{q:"ما يرتديه الإنسان ليستر جسده؟",a:"ثوب"},{q:"الحالة الصلبة للماء عند التجمد؟",a:"ثلج"},{q:"ثالث أيام الأسبوع؟",a:"الثلاثاء"},{q:"وحدة زمنية أصغر من الدقيقة؟",a:"ثانية"},{q:"ذكر البقر؟",a:"ثور"},{q:"فصيلة الحيوانات التي تلد وترضع صغارها؟",a:"ثدييات"}],
+  "ج":[{q:"حيوان يسمى سفينة الصحراء؟",a:"جمل"},{q:"دولة عربية عاصمتها الجزائر؟",a:"الجزائر"},{q:"نبات برتقالي يقوي النظر؟",a:"جزر"},{q:"عظم يحيط بالدماغ لحمايته؟",a:"جمجمة"},{q:"عاصمة إندونيسيا؟",a:"جاكرتا"},{q:"مدينة مصرية تشتهر بالأهرامات؟",a:"الجيزة"},{q:"وحدة قياس الشغل والطاقة؟",a:"جول"},{q:"آلة موسيقية وترية غربية شهيرة؟",a:"جيتار"},{q:"العملة الرسمية في مصر؟",a:"جنيه"},{q:"مؤسسة للتعليم العالي؟",a:"جامعة"}],
+  "ح":[{q:"طائر لطيف يرمز للسلام؟",a:"حمامة"},{q:"أضخم الثدييات البحرية؟",a:"حوت"},{q:"حيوان بري مخطط بالأسود والأبيض؟",a:"حمار وحشي"},{q:"مدينة سورية عريقة وشهيرة؟",a:"حلب"},{q:"قطعة صلبة من الصخور؟",a:"حجر"},{q:"سائل غذائي أبيض تنتجه الثدييات؟",a:"حليب"},{q:"معدن صلب يستخدم في البناء؟",a:"حديد"},{q:"حيوان أصيل يستخدم في الركوب والسباقات؟",a:"حصان"},{q:"ألياف قوية مجدولة للربط؟",a:"حبل"},{q:"ما يلبس في القدمين لحمايتها؟",a:"حذاء"}],
+  "خ":[{q:"أول زوجات الرسول محمد ﷺ؟",a:"خديجة"},{q:"حيوان ثديي يطير ليلاً وينام مقلوباً؟",a:"خفاش"},{q:"رسم توضيحي للمدن والدول؟",a:"خريطة"},{q:"بيت متنقل مصنوع من القماش؟",a:"خيمة"},{q:"عاصمة دولة السودان؟",a:"الخرطوم"},{q:"سلاح أبيض قصير؟",a:"خنجر"},{q:"مادة صلبة من جذوع الأشجار؟",a:"خشب"},{q:"جهاز كهربائي لخلط الطعام؟",a:"خلاط"},{q:"الطعام الأساسي المصنوع من الدقيق؟",a:"خبز"},{q:"حيوان أليف يغطيه الصوف؟",a:"خروف"}],
+  "د":[{q:"كائن بحري ذكي جداً وصديق للإنسان؟",a:"دولفين"},{q:"العملة الرسمية لدولة الإمارات؟",a:"درهم"},{q:"حيوان زاحف منقرض كان ضخماً جداً؟",a:"ديناصور"},{q:"عاصمة دولة قطر؟",a:"الدوحة"},{q:"سائل أحمر يجري في عروق الإنسان؟",a:"دم"},{q:"طائر داجن نأخذ منه البيض واللحم؟",a:"دجاجة"},{q:"ما يأخذه المريض للشفاء؟",a:"دواء"},{q:"الجزء الرئيسي من الجهاز العصبي؟",a:"دماغ"},{q:"حيوان مفترس ضخم يعيش في الغابات؟",a:"دب"},{q:"مركبة تسير على عجلتين بالبدالات؟",a:"دراجة"}],
+  "ر":[{q:"عاصمة المملكة العربية السعودية؟",a:"الرياض"},{q:"فاكهة ذكرت في القرآن مليئة بالحبوب الحمراء؟",a:"رمان"},{q:"فصل تتفتح فيه الأزهار؟",a:"ربيع"},{q:"آلة ميكانيكية مبرمجة تشبه الإنسان؟",a:"روبوت"},{q:"الصوت المدوي الذي يرافق البرق؟",a:"رعد"},{q:"الغطاء الناعم الذي يكسو جسم الطيور؟",a:"ريش"},{q:"شهر الصيام المبارك؟",a:"رمضان"},{q:"قائد المجموعة أو الدولة؟",a:"رئيس"},{q:"العملة الرسمية للسعودية وقطر؟",a:"ريال"},{q:"الجزء الأعلى من الجسم؟",a:"رأس"}],
+  "س":[{q:"حيوان بحري يتنفس بالخياشيم؟",a:"سمكة"},{q:"أطول بناء دفاعي في العالم؟",a:"سور الصين العظيم"},{q:"الفضاء الواسع الأزرق فوقنا؟",a:"سماء"},{q:"آلة دقيقة نعرف بها الوقت؟",a:"ساعة"},{q:"دولة عربية أفريقية عاصمتها الخرطوم؟",a:"السودان"},{q:"أداة حادة لتقطيع الطعام؟",a:"سكين"},{q:"كائن زاحف بطيء يحمل قوقعة صلبة؟",a:"سلحفاة"},{q:"مادة بيضاء بلورية حلوة الطعم؟",a:"سكر"},{q:"مركبة مصممة للتنقل على اليابسة؟",a:"سيارة"},{q:"مركبة ضخمة تسافر في البحار؟",a:"سفينة"}],
+  "ش":[{q:"النجم الذي يمد الأرض بالضوء والحرارة؟",a:"شمس"},{q:"أبرد فصول السنة؟",a:"شتاء"},{q:"نبات خشبي معمر له جذع وفروع وأوراق؟",a:"شجرة"},{q:"مادة صلبة تذوب بالحرارة وتستخدم للإضاءة؟",a:"شمع"},{q:"السطح الزجاجي الذي تعرض عليه الصور؟",a:"شاشة"},{q:"المشروب الساخن الأكثر شعبية؟",a:"شاي"},{q:"أداة معدنية بأسنان لتناول الطعام؟",a:"شوكة"},{q:"حلوى بنية تصنع من الكاكاو؟",a:"شوكولاتة"},{q:"الكلام المنظوم والمقفى؟",a:"شعر"},{q:"منطقة خالية للمرور فيها؟",a:"شارع"}],
+  "ص":[{q:"طائر جارح مشهور بقوة بصره وسرعته؟",a:"صقر"},{q:"نبات صحراوي يتحمل العطش بأشواك؟",a:"صبار"},{q:"مادة أساسية مع الماء لتنظيف الجسم؟",a:"صابون"},{q:"عاصمة دولة اليمن؟",a:"صنعاء"},{q:"الفصل الأكثر حرارة في السنة؟",a:"صيف"},{q:"الامتناع عن الطعام والشراب؟",a:"صوم"},{q:"الشخص المقرب الذي تشاركه أسرارك؟",a:"صديق"},{q:"الغطاء الكثيف الذي يكسو جسم الخروف؟",a:"صوف"},{q:"قطعة كبيرة من الحجارة القاسية؟",a:"صخر"},{q:"الكلام المطابق للحقيقة؟",a:"صدق"}],
+  "ط":[{q:"وسيلة نقل جوية عابرة للقارات؟",a:"طائرة"},{q:"الشخص المؤهل لعلاج المرضى؟",a:"طبيب"},{q:"طائر جميل يتميز بريش ذيله الملون؟",a:"طاووس"},{q:"خضار أحمر دائري لا غنى عنه في الطبخ؟",a:"طماطم"},{q:"قطعة أثاث مسطحة مرفوعة نجلس حولها؟",a:"طاولة"},{q:"الإنسان الصغير في مرحلة قبل البلوغ؟",a:"طفل"},{q:"المسار المعبد الذي نسير عليه بالسيارات؟",a:"طريق"},{q:"عملية التحليق في الهواء؟",a:"طيران"},{q:"الفئة العامة للكائنات ذات الأجنحة والريش؟",a:"طير"},{q:"أداة معدنية حمراء لإخماد الحرائق؟",a:"طفاية"}],
+  "ع":[{q:"عضو الرؤية والإبصار في الكائنات؟",a:"عين"},{q:"طائر صغير شائع له تغريد مألوف؟",a:"عصفور"},{q:"مادة لزجة حلوة ينتجها النحل؟",a:"عسل"},{q:"المعرفة والدراسة المنهجية؟",a:"علم"},{q:"القدرة الذهنية للتفكير والتمييز؟",a:"عقل"},{q:"المدينة الرئيسية ومقر الحكم في أي دولة؟",a:"عاصمة"},{q:"فاكهة صيفية تنمو في عناقيد؟",a:"عنب"},{q:"حشرة لها ثماني أرجل وتنسج شباكاً؟",a:"عنكبوت"},{q:"مشروب سائل مستخلص من الفواكه؟",a:"عصير"},{q:"النسيج الصلب الذي يكون الهيكل الداخلي؟",a:"عظم"}],
+  "ف":[{q:"أكبر حيوان ثديي بري له خرطوم طويل؟",a:"فيل"},{q:"حشرة رقيقة جميلة لها أجنحة ملونة؟",a:"فراشة"},{q:"المنطقة الشاسعة خارج الغلاف الجوي؟",a:"فضاء"},{q:"العضو في الوجه للأكل والشرب والكلام؟",a:"فم"},{q:"الوقت الذي يبدأ بظهور النور قبل الشروق؟",a:"فجر"},{q:"مجموعة من اللاعبين يتعاونون في الرياضة؟",a:"فريق"},{q:"الانتصار وتحقيق المركز الأول؟",a:"فوز"},{q:"مكان تجاري يقيم فيه السياح والمسافرون؟",a:"فندق"},{q:"فاكهة حمراء صغيرة ذات بذور خارجية؟",a:"فراولة"},{q:"الحيوان السنوري السريع المنقط؟",a:"فهد"}],
+  "ق":[{q:"جرم سماوي يضيء ليل الأرض؟",a:"قمر"},{q:"حيوان أليف منزلي لطيف صوته المواء؟",a:"قطة"},{q:"أداة أساسية للكتابة والرسم على الورق؟",a:"قلم"},{q:"العضو العضلي الذي يضخ الدم في الجسم؟",a:"قلب"},{q:"مساحة يابسة ضخمة تضم مجموعة من الدول؟",a:"قارة"},{q:"حيوان ذكي جداً يتسلق الأشجار بمهارة؟",a:"قرد"},{q:"وسيلة نقل عامة تسير على قضبان حديدية؟",a:"قطار"},{q:"مشروب ساخن شهير جداً لونه بني منبه؟",a:"قهوة"},{q:"سفينة صغيرة للتنقل أو الصيد في البحر؟",a:"قارب"},{q:"هيكل لحبس الطيور أو الحيوانات؟",a:"قفص"}],
+  "ك":[{q:"حيوان أليف يضرب به المثل في الوفاء؟",a:"كلب"},{q:"مجموعة من الأوراق المطبوعة والمجلدة للقراءة؟",a:"كتاب"},{q:"جسم دائري مطاطي نلعب به رياضات مختلفة؟",a:"كرة"},{q:"قبلة المسلمين في مكة المكرمة؟",a:"كعبة"},{q:"أكبر غدة في جسم الإنسان تنظف الدم؟",a:"كبد"},{q:"قطعة أثاث للجلوس ذات أربعة أرجل ومسند؟",a:"كرسي"},{q:"جرم سماوي معتم يدور حول الشمس؟",a:"كوكب"},{q:"أعواد خشبية برأس قابل للاشتعال؟",a:"كبريت"},{q:"جهاز إلكتروني معقد للكتابة والحساب؟",a:"كمبيوتر"},{q:"وعاء زجاجي أو خزفي للشرب الساخن؟",a:"كوب"}],
+  "م":[{q:"فاكهة استوائية صفراء هلالية الشكل؟",a:"موز"},{q:"سر الحياة وهو سائل شفاف لا لون له ولا رائحة؟",a:"ماء"},{q:"أداة معدنية صغيرة بأسنان لفتح الأقفال؟",a:"مفتاح"},{q:"أداة حادة من نصلين متقاطعين لقص الورق؟",a:"مقص"},{q:"المؤسسة التعليمية للعلم والمعرفة؟",a:"مدرسة"},{q:"بيت الله والمكان المخصص للصلاة للمسلمين؟",a:"مسجد"},{q:"قطرات الماء التي تتساقط من الغيوم؟",a:"مطر"},{q:"مادة بيضاء بلورية لتتبيل الطعام؟",a:"ملح"},{q:"الشخص الذي يتولى مقاليد الحكم في المملكة؟",a:"ملك"},{q:"أقدس وأطهر مدينة عند المسلمين؟",a:"مكة المكرمة"}],
+  "ن":[{q:"حشرة طائرة مفيدة تصنع العسل؟",a:"نحلة"},{q:"حشرة صغيرة تعيش في مستعمرات تحت الأرض؟",a:"نملة"},{q:"حيوان بري مفترس مخطط بالأسود؟",a:"نمر"},{q:"أطول نهر في العالم في إفريقيا؟",a:"النيل"},{q:"الطاقة الحرارية والضوئية المشتعلة؟",a:"نار"},{q:"الجرم السماوي المضيء في سماء الليل؟",a:"نجم"},{q:"أي كائن حي ينمو في الأرض وله جذور؟",a:"نبات"},{q:"طائر جارح ضخم وقوي يلقب بملك الطيور؟",a:"نسر"},{q:"الأموال والعملات للبيع والشراء؟",a:"نقود"},{q:"شجرة مباركة وطويلة تنتج التمر؟",a:"نخلة"}],
+  "هـ":[{q:"بناء حجري أثري ضخم بناه الفراعنة؟",a:"هرم"},{q:"الشكل المقوس للقمر في بداية الشهر؟",a:"هلال"},{q:"خليط الغازات الذي يحيط بالأرض ونتنفسه؟",a:"هواء"},{q:"جهاز إلكتروني للتواصل الصوتي والمرئي عن بعد؟",a:"هاتف"},{q:"دولة آسيوية مشهورة بتنوع ثقافاتها؟",a:"الهند"},{q:"ما يقدمه الشخص لغيره تعبيراً عن الحب؟",a:"هدية"},{q:"اسم آخر ومألوف للقطة الأليفة؟",a:"هرة"},{q:"طائر جميل يتميز بتاج من الريش على رأسه؟",a:"هدهد"},{q:"الدائرة المضيئة حول القمر أو الشمس؟",a:"هالة"},{q:"غاز نبيل خفيف لنفخ البالونات؟",a:"هيليوم"}],
+  "و":[{q:"زهرة جميلة ترمز للحب والجمال وذات رائحة عطرة؟",a:"وردة"},{q:"مادة رقيقة مرنة تصنع من الأشجار للكتابة؟",a:"ورق"},{q:"طائر ليلي يعتمد على الصدى في حركته؟",a:"وطواط"},{q:"الجزء الأمامي من الرأس الذي يحوي العينين؟",a:"وجه"},{q:"المقدار والزمن بالساعات والدقائق والأيام؟",a:"وقت"},{q:"المخدة الطرية التي نضع عليها رؤوسنا للنوم؟",a:"وسادة"},{q:"إناء أو مجوف لحفظ أو حمل السوائل؟",a:"وعاء"},{q:"الأرض والبلد الذي ينتمي إليه الإنسان؟",a:"وطن"},{q:"الابن الذكر للإنسان؟",a:"ولد"},{q:"الورقة الرسمية والمستند القانوني؟",a:"وثيقة"}],
+  "ي":[{q:"زهرة بيضاء أو صفراء صغيرة ذكية الرائحة؟",a:"ياسمين"},{q:"الجزء من جسم الإنسان الذي ينتهي بالأصابع؟",a:"يد"},{q:"حجر كريم نفيس لونه أحمر لامع وشفاف؟",a:"ياقوت"},{q:"دولة عربية عريقة تقع في جنوب شبه الجزيرة العربية؟",a:"اليمن"},{q:"فترة زمنية تتكون من 24 ساعة؟",a:"يوم"},{q:"العملة النقدية الرسمية لدولة اليابان؟",a:"ين"},{q:"طائر أليف وهادئ من فصيلة الحمام؟",a:"يمامة"},{q:"الاتجاه المعاكس لجهة اليمين؟",a:"يسار"},{q:"الطفل الذي فقد والده قبل البلوغ؟",a:"يتيم"},{q:"التأكد التام والعلم الجازم الخالي من أي شك؟",a:"يقين"}]
+};
+
+---------------------------md-------------------------
+# 🏆 تحدي الحروف - لعبة المسابقات الذكية
+
+لعبة تفاعلية بنظام الخلايا السداسية، تجمع بين المعرفة وسرعة البديهة. تدعم نمطين للعب: **محلي** (جهاز واحد) و **مشترك** (متعدد الشاشات).
+
+## 📌 محتويات المشروع
+
+- `index.html` - الصفحة الرئيسية لاختيار نمط اللعب
+- `normal.html` - نمط اللعب المحلي (لاعبان على نفس الجهاز)
+- `judge.html` - شاشة الحكم في النمط المشترك
+- `display.html` - شاشة العرض (البروجكتر) في النمط المشترك
+- `player.html` - شاشة البازر للاعبين (على الهواتف)
+- `style.css` - التنسيقات المشتركة
+- `qbank.js` - بنك الأسئلة (40 سؤال لكل حرف)
+- `howto.html` - دليل الاستخدام التفصيلي
+- `README.md` - هذا الملف
+
+---
+
+## 🎮 كيفية التشغيل
+
+### 1️⃣ النمط المحلي (جهاز واحد)
+1. افتح ملف `index.html` واختر **"اللعب المحلي"**.
+2. ستظهر لوحة الخلايا السداسية مع لوحة النتائج.
+3. اضغط على أي حرف لفتح نافذة السؤال.
+4. بعد قراءة السؤال:
+   - استخدم **العداد التنازلي 20 ثانية**.
+   - اضغط **"إظهار الإجابة"** لمعرفة الحل.
+   - اضغط **"تغيير السؤال"** لسؤال آخر بنفس الحرف.
+   - حدد الفائز بالضغط على **"فوز الأزرق"** أو **"فوز الأحمر"**.
+5. يفوز الفريق الذي يربط بين جانبي اللوحة أولاً (أعلى-أسفل للأزرق، يسار-يمين للأحمر).
+
+### 2️⃣ النمط المشترك (متعدد الشاشات)
+1. افتح `index.html` واختر **"اللعب المشترك"** لفتح شاشة الحكم (`judge.html`).
+2. في شاشة الحكم:
+   - أدخل أسماء الفريقين.
+   - اضغط **"إنشاء الغرفة وبدء اللعبة"**.
+   - سيظهر لك **رابط شاشة البروجكتر** و **QR كود للاعبين**.
+3. افتح الرابط الأول في نافذة جديدة (شاشة العرض/البروجكتر).
+4. اطلب من اللاعبين مسح QR كود بهواتفهم، واختيار الفريق (أ أو ب).
+5. الآن:
+   - **الحكم** يختار خلية من اللوحة ليظهر السؤال.
+   - **اللاعبون** يضغطون البازر في هواتفهم للإجابة.
+   - **شاشة البروجكتر** تعرض السؤال وحالة البازر.
+   - الحكم يقيّم الإجابة ويمنح النقطة للفريق الصحيح.
+
+---
+
+## ❓ الأسئلة الشائعة
+
+### س: اللعبة لا تعمل على GitHub Pages؟
+**ج:** تأكد من رفع **جميع الملفات** في نفس المجلد، وأن اسم الملف الرئيسي هو `index.html`.
+
+### س: لماذا لا يتصل اللاعبون في النمط المشترك؟
+**ج:** قد تكون شبكة أحد الأطراف مقيدة. الحل:
+- تأكد من استخدام **نفس شبكة Wi-Fi** للتجربة الأولية.
+- تم تضمين **TURN Server** مجاني ليعمل عبر الإنترنت، لكن قد يكون بطيئاً. يفضل استخدام شبكة محلية.
+
+### س: كيف أضيف أسئلة جديدة؟
+**ج:** افتح ملف `qbank.js` وأضف أسئلة بصيغة:
+```javascript
+"الحرف": [
+  { q: "السؤال؟", a: "الإجابة" },
+  // ...
+]
+
+-------------------------html---------------------------------------
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تحدي الحروف - النمط العادي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { overflow: auto; display: block; padding: 20px; }
+        .game-container { max-width: 900px; margin: 0 auto; }
+        .board-wrapper { margin: 20px 0; }
+        .scores-panel {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            background: var(--surface);
+            padding: 15px 30px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            border: 1px solid var(--empty-border);
+        }
+        .score-item { text-align: center; }
+        .score-label { font-size: 1.5rem; opacity: 0.9; }
+        .score-value { font-size: 3rem; font-weight: 900; color: var(--gold); }
+        .btn-reset {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #0f2333;
+            transition: 0.1s;
+            margin: 20px 0;
+        }
+        .btn-reset:active { transform: translateY(4px); box-shadow: 0 4px 0 #0f2333; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1 style="text-align:center; color:var(--gold); margin:10px 0;">🏆 تحدي الحروف (محلي)</h1>
+    
+    <div class="scores-panel">
+        <div class="score-item">
+            <div class="score-label" style="color:var(--a);">🔵 الأزرق</div>
+            <div class="score-value" id="blue-score">0</div>
+        </div>
+        <div class="score-item">
+            <div class="score-label" style="color:var(--b);">🔴 الأحمر</div>
+            <div class="score-value" id="red-score">0</div>
+        </div>
+    </div>
+
+    <div class="board-wrapper">
+        <div id="hex-board"></div>
+    </div>
+
+    <div style="display:flex; gap:20px; justify-content:center;">
+        <button class="btn-reset" onclick="resetGame()">🔄 جولة جديدة</button>
+        <button class="btn-reset" onclick="location.href='index.html'" style="background:#7f8c8d;">🏠 الرئيسية</button>
+    </div>
+</div>
+
+<!-- النوافذ المنبثقة -->
+<div id="overlay" class="overlay"></div>
+<div id="q-modal" class="modal">
+    <h2 id="q-title" style="color:var(--gold);">✨ سؤال حرف</h2>
+    <p id="q-text"></p>
+    <div class="timer" id="timer">20</div>
+    
+    <div id="q-display-area">
+        <div id="ans-box" class="ans-box">✅ الإجابة: <span id="ans-text"></span></div>
+        <div class="btn-group">
+            <button class="btn-main" onclick="showAnswer()">🔍 إظهار الإجابة</button>
+            <button class="btn-blue" onclick="mark('blue')">🔵 فوز الأزرق</button>
+            <button class="btn-red" onclick="mark('red')">🔴 فوز الأحمر</button>
+            <button class="btn-change" onclick="changeQuestion()">🔄 تغيير السؤال</button>
+            <button class="btn-close" onclick="closeModals()">❌ إغلاق</button>
+        </div>
+    </div>
+
+    <div id="q-add-area" style="display:none;">
+        <p style="color:#e74c3c; font-weight:bold;">⚠️ لا توجد أسئلة! أضف سؤالاً:</p>
+        <textarea id="new-q" rows="3" placeholder="اكتب السؤال هنا..."></textarea>
+        <input type="text" id="new-a" placeholder="الإجابة الصحيحة">
+        <button class="btn-main" onclick="saveNewQuestion()">💾 حفظ واللعب</button>
+        <button class="btn-close" onclick="closeModals()">إلغاء</button>
+    </div>
+</div>
+
+<div id="win-modal" class="modal">
+    <div style="font-size:5rem;">🏅</div>
+    <h2 id="win-msg" style="color:var(--gold);">فوز رائع!</h2>
+    <button class="btn-reset" onclick="resetGame()">🎮 جولة جديدة</button>
+    <button class="btn-close" onclick="closeWinModal()" style="background:#bdc3c7;">إغلاق</button>
+</div>
+
+<script src="qbank.js"></script>
+<script>
+    // كود JavaScript كما هو موجود في الملف الأصلي دون تغيير
+    // (تأكد من وجوده في ملفك)
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>شاشة الحكم - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="qbank.js"></script>
+</head>
+<body>
+
+<div id="setup-screen" class="screen active">
+  <div class="setup-card">
+    <h1 style="color:var(--gold); margin-bottom:20px;">شاشة التحكم والحكم 🎯</h1>
+    <input id="team-a-name" type="text" value="الفريق الأحمر" placeholder="اسم الفريق أ">
+    <input id="team-b-name" type="text" value="الفريق الأخضر" placeholder="اسم الفريق ب">
+    <br><br>
+    <button class="btn-start" onclick="startGame()">🚀 إنشاء الغرفة وبدء اللعبة</button>
+  </div>
+</div>
+
+<div id="game-screen" class="screen">
+  <div class="board-area">
+    <h2 style="color:var(--gold);">لوحة التحكم</h2>
+    <div id="hex-board"></div>
+  </div>
+
+  <div class="right-panel">
+
+<!-- أضف هذا داخل right-panel في judge.html -->
+<div class="panel-section">
+    <button class="jbtn" style="background:#7f8c8d; width:100%;" onclick="location.href='index.html'">🏠 العودة للرئيسية</button>
+</div>
+
+    <div class="panel-section">
+      <h3>الروابط والاتصال</h3>
+      <button class="btn-start" onclick="showQR()" style="font-size:1rem; padding:10px;">📱 عرض QR اللاعبين</button>
+      <div id="display-link" style="margin-top:10px; text-align:center; font-size:0.9rem;"></div>
+    </div>
+    
+    <div class="panel-section">
+      <h3>❓ السؤال الحالي</h3>
+      <div class="q-box" id="q-box">اختر خلية...</div>
+      <div class="answer-reveal" id="ans-reveal" style="display:none;"></div>
+    </div>
+
+    <div class="panel-section">
+      <h3>⚡ حالة البازر</h3>
+      <div id="buzzer-status" style="text-align:center; font-weight:bold; font-size:1.2rem; color:var(--gold); padding:10px;">في الانتظار...</div>
+      <button class="jbtn" style="background:#9b59b6; width:100%; margin-top:8px;" onclick="reopenBuzzer()">🔄 إعادة فتح البازر (لنفس السؤال)</button>
+    </div>
+
+    <div class="panel-section">
+      <h3>🎮 تقييم الحكم</h3>
+      <div class="judge-btns">
+        <button class="jbtn" style="background:var(--a);" onclick="judgeCorrect('a')">✅ صح (الفريق أ)</button>
+        <button class="jbtn" style="background:var(--b);" onclick="judgeCorrect('b')">✅ صح (الفريق ب)</button>
+        <button class="jbtn" style="background:#e67e22; grid-column:span 2;" onclick="judgeSkip()">⏭ تخطي / سؤال آخر</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="qr-modal">
+  <div class="qr-card">
+    <h2 style="color:var(--gold); margin-bottom:15px;">انضم للعبة كلاعب</h2>
+    <div id="qr-large" style="background:white; padding:15px; border-radius:10px; display:inline-block;"></div>
+    <div style="margin-top:15px;"><a id="player-link-text" href="#" target="_blank" style="color:var(--b);">رابط اللاعبين</a></div>
+    <button class="btn-start" style="margin-top:20px; padding:10px;" onclick="document.getElementById('qr-modal').classList.remove('show')">إغلاق</button>
+  </div>
+</div>
+
+<script>
+let state = { teamA: '', teamB: '', scores: { a: 0, b: 0 }, board: [], activeCell: null, sessionCode: '' };
+let peer, connections = [];
+let currentQuestion = null; // لتخزين السؤال الحالي لإعادة فتح البازر
+
+// إعدادات PeerJS مع TURN Server
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+function startGame() {
+  state.teamA = document.getElementById('team-a-name').value;
+  state.teamB = document.getElementById('team-b-name').value;
+  state.sessionCode = Math.random().toString(36).substr(2,5).toUpperCase();
+  
+  initBoard();
+  
+  peer = new Peer('hexgame-' + state.sessionCode, peerConfig);
+  peer.on('open', (id) => {
+    document.getElementById('setup-screen').classList.remove('active');
+    document.getElementById('game-screen').classList.add('active');
+    
+    const displayUrl = `${window.location.origin}${window.location.pathname.replace('judge.html','display.html')}?code=${state.sessionCode}`;
+    document.getElementById('display-link').innerHTML = `<a href="${displayUrl}" target="_blank" style="color:var(--gold);">🖥️ افتح شاشة البروجكتر</a>`;
+    generateQR();
+  });
+
+  peer.on('connection', (conn) => {
+    connections.push(conn);
+    conn.on('open', () => broadcastState());
+    conn.on('data', (data) => {
+      if(data.type === 'buzz') {
+        document.getElementById('buzzer-status').innerText = `⚡ ${data.name} (${data.team === 'a' ? state.teamA : state.teamB})`;
+        broadcast({ type: 'buzzer_won', winner: data.name, team: data.team });
+      }
+    });
+  });
+}
+
+function initBoard() {
+  const letters = Object.keys(QBANK).sort(() => 0.5 - Math.random()).slice(0, 25);
+  state.board = letters.map(l => ({ letter: l, owner: null }));
+  renderBoard();
+}
+
+function renderBoard() {
+  const bd = document.getElementById('hex-board');
+  bd.innerHTML = '';
+  state.board.forEach((cell, i) => {
+    const h = document.createElement('div');
+    h.className = 'hex';
+    if(cell.owner === 'a') h.classList.add('owned-a');
+    if(cell.owner === 'b') h.classList.add('owned-b');
+    if(state.activeCell === i) h.classList.add('active-q');
+    h.innerText = cell.letter;
+    h.onclick = () => onHexClick(i);
+    bd.appendChild(h);
+  });
+}
+
+function onHexClick(i) {
+  if (state.board[i].owner) return;
+  state.activeCell = i;
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+  
+  const letter = state.board[i].letter;
+  const qData = QBANK[letter][Math.floor(Math.random() * QBANK[letter].length)];
+  currentQuestion = qData; // حفظ السؤال الحالي
+  
+  document.getElementById('q-box').innerText = qData.q;
+  document.getElementById('ans-reveal').style.display = 'block';
+  document.getElementById('ans-reveal').innerText = "✅ الإجابة: " + qData.a;
+  
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'show_question', q: qData.q });
+}
+
+function reopenBuzzer() {
+  // إعادة فتح البازر لنفس السؤال (لا يغير السؤال)
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function judgeCorrect(team) {
+  if (state.activeCell === null) return;
+  state.board[state.activeCell].owner = team;
+  state.scores[team]++;
+  state.activeCell = null;
+  currentQuestion = null;
+  resetJudgeUI();
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function judgeSkip() {
+  state.activeCell = null;
+  currentQuestion = null;
+  resetJudgeUI();
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function resetJudgeUI() {
+  document.getElementById('q-box').innerText = "اختر خلية...";
+  document.getElementById('ans-reveal').style.display = 'none';
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+}
+
+function broadcast(msg) { connections.forEach(c => { if(c.open) c.send(msg); }); }
+function broadcastState() { broadcast({ type: 'state_update', state: state }); }
+
+function generateQR() {
+  const playerUrl = `${window.location.origin}${window.location.pathname.replace('judge.html','player.html')}?code=${state.sessionCode}`;
+  document.getElementById('qr-large').innerHTML = '';
+  new QRCode(document.getElementById('qr-large'), { text: playerUrl, width: 200, height: 200 });
+  document.getElementById('player-link-text').href = playerUrl;
+}
+function showQR() { document.getElementById('qr-modal').classList.add('show'); }
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>البازر - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<style>
+  .buzzer-btn { width:220px; height:220px; border-radius:50%; border:none; cursor:pointer; font-family:'Cairo',sans-serif; font-weight:900; font-size:2rem; color:white; transition:all 0.1s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display:block; margin:auto; margin-top:30px;}
+  .buzzer-btn:active { transform:scale(0.95); }
+  .btn-a { background:radial-gradient(circle at 30% 30%, #ff9090, var(--a)); }
+  .btn-b { background:radial-gradient(circle at 30% 30%, #7eeee9, var(--b)); }
+  .disabled { filter: grayscale(1); pointer-events: none; opacity:0.5;}
+  .team-choice button { padding:15px; font-size:1.2rem; margin:5px; border-radius:10px; border:none; color:white; cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="join-screen" class="screen active">
+  <div class="setup-card" style="margin-top:5vh;">
+    <h2>👤 انضم للعبة</h2>
+    <input id="p-name" type="text" placeholder="اكتب اسمك">
+    <div class="team-choice">
+      <button style="background:var(--a);" onclick="joinGame('a')">🔴 الفريق الأحمر</button>
+      <button style="background:var(--b);" onclick="joinGame('b')">🟢 الفريق الأخضر</button>
+    </div>
+  </div>
+</div>
+
+<div id="buzzer-screen" class="screen" style="text-align:center; padding-top:20vh;">
+  <h2 id="status-msg" style="color:var(--neutral-dim);">في انتظار بدء السؤال...</h2>
+  <button id="main-buzzer" class="buzzer-btn disabled" onclick="buzz()">⚡ اضغط</button>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+let peer = new Peer(peerConfig);
+let judgeConn, me = { name: '', team: '' };
+
+function joinGame(team) {
+  me.name = document.getElementById('p-name').value || 'لاعب';
+  me.team = team;
+  
+  if(!code) return alert("الرابط غير صحيح!");
+  
+  judgeConn = peer.connect('hexgame-' + code);
+  judgeConn.on('open', () => {
+    document.getElementById('join-screen').classList.remove('active');
+    document.getElementById('buzzer-screen').classList.add('active');
+    document.getElementById('main-buzzer').classList.add(team === 'a' ? 'btn-a' : 'btn-b');
+  });
+
+  judgeConn.on('data', (data) => {
+    if(data.type === 'show_question') {
+      document.getElementById('status-msg').innerText = "السؤال متاح! اضغط البازر";
+      document.getElementById('status-msg').style.color = "var(--gold)";
+      document.getElementById('main-buzzer').classList.remove('disabled');
+    }
+    if(data.type === 'buzzer_won') {
+      document.getElementById('main-buzzer').classList.add('disabled');
+      if(data.winner === me.name) {
+        document.getElementById('status-msg').innerText = "✅ أحسنت! أجب على الحكم";
+      } else {
+        document.getElementById('status-msg').innerText = `سبقك ${data.winner}!`;
+        document.getElementById('status-msg').style.color = "var(--a)";
+      }
+    }
+    if(data.type === 'reset_buzzer') {
+      document.getElementById('main-buzzer').classList.add('disabled');
+      document.getElementById('status-msg').innerText = "في انتظار بدء السؤال...";
+      document.getElementById('status-msg').style.color = "var(--neutral-dim)";
+    }
+  });
+}
+
+function buzz() {
+  if(document.getElementById('main-buzzer').classList.contains('disabled')) return;
+  document.getElementById('main-buzzer').classList.add('disabled');
+  if(navigator.vibrate) navigator.vibrate(50);
+  judgeConn.send({ type: 'buzz', name: me.name, team: me.team });
+}
+</script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كيفية الاستخدام - تحدي الحروف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a0a2e 0%, #2d1b4e 100%);
+            font-family: 'Cairo', sans-serif;
+            color: #f0e6ff;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 30px 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: #FFE66D;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #FFE66D;
+            padding-bottom: 20px;
+        }
+        h2 {
+            color: #4ECDC4;
+            margin-top: 30px;
+            font-size: 1.8rem;
+        }
+        .question {
+            background: rgba(255,107,107,0.15);
+            border-right: 5px solid #FF6B6B;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .answer {
+            background: rgba(78,205,196,0.1);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 10px 0 20px 20px;
+            border: 1px solid rgba(78,205,196,0.3);
+        }
+        .steps {
+            list-style-type: none;
+            padding: 0;
+        }
+        .steps li {
+            margin: 15px 0;
+            padding-right: 30px;
+            position: relative;
+        }
+        .steps li::before {
+            content: "✅";
+            position: absolute;
+            right: 0;
+            color: #2ecc71;
+        }
+        .btn-back {
+            display: inline-block;
+            background: #1e3a5f;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            background: #2d4b6e;
+        }
+        .note {
+            background: rgba(255,230,109,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #FFE66D;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📖 دليل استخدام "تحدي الحروف"</h1>
+    
+    <h2>🎮 النمط المحلي (جهاز واحد)</h2>
+    <div class="question">❓ كيف أبدأ لعبة محلية بين لاعبين؟</div>
+    <div class="answer">
+        <ul class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المحلي"</strong>.</li>
+            <li>ستظهر لوحة مكونة من 25 خلية سداسية، كل خلية تحوي حرفاً عربياً.</li>
+            <li>في الأعلى تظهر نتيجة الفريقين (الأزرق والأحمر).</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ ماذا يحدث عندما أضغط على حرف؟</div>
+    <div class="answer">
+        تنبثق نافذة تحتوي على:
+        <ul>
+            <li><strong>السؤال:</strong> سؤال عشوائي مرتبط بالحرف المختار.</li>
+            <li><strong>عداد تنازلي 20 ثانية:</strong> لإضفاء الحماس.</li>
+            <li><strong>أزرار التحكم:</strong>
+                <ul>
+                    <li>🔍 <strong>إظهار الإجابة</strong> – يكشف الحل الصحيح.</li>
+                    <li>🔄 <strong>تغيير السؤال</strong> – يجلب سؤالاً آخر لنفس الحرف.</li>
+                    <li>🔵 <strong>فوز الأزرق</strong> – يمنح الخلية للفريق الأزرق.</li>
+                    <li>🔴 <strong>فوز الأحمر</strong> – يمنح الخلية للفريق الأحمر.</li>
+                    <li>❌ <strong>إغلاق</strong> – يغلق النافذة بدون تغيير.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف يتم الفوز في النمط المحلي؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>الفريق الأزرق</strong> يحتاج لربط خلاياه من <strong>الأعلى إلى الأسفل</strong>.</li>
+            <li><strong>الفريق الأحمر</strong> يحتاج لربط خلاياه من <strong>اليمين إلى اليسار</strong>.</li>
+            <li>بمجرد تحقيق اتصال كامل، تظهر رسالة الفوز.</li>
+        </ul>
+    </div>
+
+    <h2>🎯 النمط المشترك (متعدد الشاشات)</h2>
+    <div class="question">❓ ما هي مكونات هذا النمط؟</div>
+    <div class="answer">
+        يتكون من ثلاث شاشات منفصلة:
+        <ol>
+            <li><strong>شاشة الحكم (judge.html):</strong> يتحكم فيها مقدم اللعبة. يختار الأسئلة ويمنح النقاط.</li>
+            <li><strong>شاشة العرض (display.html):</strong> تعرض على البروجكتر أو التلفاز. يراها الجمهور.</li>
+            <li><strong>شاشات اللاعبين (player.html):</strong> تفتح على هواتف المتسابقين. تستخدم كبازر للإجابة.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف أبدأ جلسة لعب مشتركة؟</div>
+    <div class="answer">
+        <ol class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المشترك"</strong> لفتح شاشة الحكم.</li>
+            <li>أدخل اسمي الفريقين (أحمر/أخضر افتراضياً).</li>
+            <li>اضغط <strong>"إنشاء الغرفة وبدء اللعبة"</strong>.</li>
+            <li>سيظهر لك:
+                <ul>
+                    <li>🔗 رابط "افتح شاشة البروجكتر" – انسخه وافتحه في نافذة جديدة (ويفضل على شاشة كبيرة).</li>
+                    <li>📱 زر "عرض QR اللاعبين" – اضغطه ليظهر كود QR.</li>
+                </ul>
+            </li>
+            <li>اطلب من اللاعبين مسح الكود بهواتفهم، ثم اختيار الفريق (أ أو ب) وإدخال أسمائهم.</li>
+            <li>بمجرد اتصال الجميع، ابدأ اللعب.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف تجري الجولة في النمط المشترك؟</div>
+    <div class="answer">
+        <ol>
+            <li><strong>الحكم</strong> يضغط على خلية حرة في اللوحة.</li>
+            <li>يظهر السؤال في شاشة الحكم فقط (وليس في شاشة البروجكتر بعد).</li>
+            <li>يقرأ الحكم السؤال بصوت عالٍ، ثم يضغط على زر <strong>"إعادة فتح البازر"</strong> (إذا كان مغلقاً).</li>
+            <li><strong>اللاعبون</strong> يضغطون زر البازر في هواتفهم. أول من يضغط يظهر اسمه في شاشة الحكم والبروجكتر.</li>
+            <li>يجيب اللاعب شفهياً. الحكم يقارن إجابته بالإجابة المخفية (يمكنه إظهارها بالضغط على زر في شاشته).</li>
+            <li>إذا كانت الإجابة صحيحة، يضغط الحكم على <strong>"صح (الفريق أ)"</strong> أو <strong>"صح (الفريق ب)"</strong> فتُمنح الخلية لذلك الفريق وتضاف نقطة.</li>
+            <li>إذا كانت خاطئة، يمكن للحكم الضغط على <strong>"إعادة فتح البازر"</strong> لإعطاء فرصة للاعب آخر (دون تغيير السؤال)، أو الضغط على <strong>"تخطي / سؤال آخر"</strong> لإلغاء السؤال.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ ما الفرق بين "إعادة فتح البازر" و "تخطي"؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>🔄 إعادة فتح البازر:</strong> يبقي نفس السؤال، ويعيد تنشيط أزرار اللاعبين ليتنافسوا على الإجابة مرة أخرى (مفيد إذا أخطأ اللاعب الأول).</li>
+            <li><strong>⏭ تخطي / سؤال آخر:</strong> يلغي السؤال الحالي، ويعيد اللوحة لحالة الانتظار لاختيار خلية جديدة.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ لماذا لا يظهر السؤال مباشرة على شاشة البروجكتر؟</div>
+    <div class="answer">
+        هذا إجراء أمني لمنع الجمهور من رؤية السؤال قبل أن يقرأه الحكم. يظهر السؤال على البروجكتر فقط بعد أن يفتح الحكم البازر رسمياً.
+    </div>
+
+    <div class="note">
+        <strong>💡 نصيحة:</strong> عند استخدام النمط المشترك عبر الإنترنت، تأكد من أن جميع الأجهزة متصلة بالإنترنت. في حال وجود مشاكل في الاتصال، حاول استخدام شبكة Wi-Fi واحدة لجميع الأجهزة.
+    </div>
+
+    <h2>📚 إدارة الأسئلة</h2>
+    <div class="question">❓ كيف أضيف أسئلة جديدة؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>أثناء اللعب:</strong> إذا لم يجد النظام أسئلة لحرف معين، ستظهر نافذة تسمح لك بإدخال سؤال وإجابة. سيتم حفظها تلقائياً في المتصفح.</li>
+            <li><strong>بشكل دائم:</strong> افتح ملف <code>qbank.js</code> وأضف أسئلة بصيغة JSON. أو استخدم ميزة الإضافة أثناء اللعب ثم انسخ البيانات من LocalStorage.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف أحذف الأسئلة المضافة وأعود للأصلية؟</div>
+    <div class="answer">
+        امسح بيانات التصفح (LocalStorage) للموقع، أو استخدم وضع التصفح المخفي. سيتم تحميل البنك الافتراضي الموجود في <code>qbank.js</code>.
+    </div>
+
+    <a href="index.html" class="btn-back">🔙 العودة للصفحة الرئيسية</a>
+</div>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تحدي الحروف - النمط العادي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* تعديلات خاصة بالنمط العادي */
+        .game-container {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+        .board-wrapper {
+            margin: 10px 0;
+        }
+        .scores-panel {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .score-item {
+            text-align: center;
+        }
+        .score-label {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        .score-value {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--gold);
+        }
+        .modal-content {
+            padding: 25px 20px;
+        }
+        .btn-reset {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #0f2333;
+            transition: 0.1s;
+            margin-top: 20px;
+        }
+        .btn-reset:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #0f2333;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1 style="text-align:center; color:var(--gold); margin:10px 0;">🏆 تحدي الحروف (محلي)</h1>
+    
+    <div class="scores-panel">
+        <div class="score-item">
+            <div class="score-label" style="color:var(--a);">🔵 الأزرق</div>
+            <div class="score-value" id="blue-score">0</div>
+        </div>
+        <div class="score-item">
+            <div class="score-label" style="color:var(--b);">🔴 الأحمر</div>
+            <div class="score-value" id="red-score">0</div>
+        </div>
+    </div>
+
+    <div class="board-wrapper">
+        <div id="hex-board"></div>
+    </div>
+
+    <button class="btn-reset" onclick="resetGame()">🔄 جولة جديدة</button>
+</div>
+
+<!-- نافذة السؤال (بوب اب) -->
+<div id="overlay" class="overlay"></div>
+<div id="q-modal" class="modal">
+    <div class="modal-content">
+        <h2 id="q-title" style="color:#0f2a3f;">✨ سؤال حرف</h2>
+        <p id="q-text"></p>
+        <div class="timer" id="timer">20</div>
+        
+        <div id="q-display-area">
+            <div id="ans-box" class="ans-box">
+                ✅ الإجابة: <span id="ans-text"></span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-main" onclick="showAnswer()">🔍 إظهار الإجابة</button>
+                <button class="btn-blue" onclick="mark('blue')">🔵 فوز الأزرق</button>
+                <button class="btn-red" onclick="mark('red')">🔴 فوز الأحمر</button>
+                <button class="btn-change" onclick="changeQuestion()">🔄 تغيير السؤال</button>
+                <button class="btn-close" onclick="closeModals()">❌ إغلاق</button>
+            </div>
+        </div>
+
+        <div id="q-add-area" style="display:none;">
+            <p style="color:#e74c3c; font-weight:bold;">⚠️ لا توجد أسئلة! أضف سؤالاً:</p>
+            <textarea id="new-q" rows="3" placeholder="اكتب السؤال هنا..."></textarea>
+            <input type="text" id="new-a" placeholder="الإجابة الصحيحة">
+            <button class="btn-main" onclick="saveNewQuestion()">💾 حفظ واللعب</button>
+            <button class="btn-close" onclick="closeModals()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الفوز -->
+<div id="win-modal" class="modal">
+    <div style="font-size:5rem;">🏅</div>
+    <h2 id="win-msg" style="color:#0f2a3f;">فوز رائع!</h2>
+    <button class="btn-reset" onclick="resetGame()">🎮 جولة جديدة</button>
+    <button class="btn-close" onclick="closeWinModal()" style="background:#bdc3c7;">إغلاق</button>
+</div>
+
+<script src="qbank.js"></script>
+<script>
+    (function(){
+        "use strict";
+        
+        const SIZE = 5;
+        let boardState = Array(SIZE * SIZE).fill(null);
+        let questionBank = JSON.parse(localStorage.getItem('fullQuestionBank')) || QBANK;
+        const lettersList = Object.keys(QBANK).sort(() => 0.5 - Math.random()).slice(0, 25);
+        let currentIdx = null, currentChar = '', timerInt = null;
+        let scores = { blue: 0, red: 0 };
+
+        function updateScoreUI() {
+            document.getElementById('blue-score').innerText = scores.blue;
+            document.getElementById('red-score').innerText = scores.red;
+        }
+
+        function init() {
+            const board = document.getElementById('hex-board');
+            board.innerHTML = '';
+            boardState = Array(SIZE * SIZE).fill(null);
+            
+            const shuffled = [...lettersList].sort(() => 0.5 - Math.random());
+            
+            shuffled.forEach((char, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'hex';
+                cell.textContent = char;
+                cell.dataset.index = i;
+                cell.onclick = () => openModal(i, char);
+                board.appendChild(cell);
+            });
+        }
+
+        function openModal(idx, char) {
+            if (boardState[idx]) return;
+            currentIdx = idx; currentChar = char;
+            updateQuestionDisplay(char);
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('q-modal').style.display = 'block';
+            startTimer();
+        }
+
+        function updateQuestionDisplay(char) {
+            document.getElementById('q-title').textContent = `✨ سؤال حرف ( ${char} )`;
+            const list = questionBank[char] || [];
+            if (list.length) {
+                const randomQ = list[Math.floor(Math.random() * list.length)];
+                document.getElementById('q-text').textContent = randomQ.q;
+                document.getElementById('ans-text').textContent = randomQ.a;
+                document.getElementById('q-display-area').style.display = 'block';
+                document.getElementById('q-add-area').style.display = 'none';
+            } else {
+                document.getElementById('q-display-area').style.display = 'none';
+                document.getElementById('q-add-area').style.display = 'block';
+            }
+            document.getElementById('ans-box').style.display = 'none';
+        }
+
+        window.changeQuestion = function() {
+            if (!currentChar) return;
+            const list = questionBank[currentChar];
+            if (!list?.length) return alert('لا توجد أسئلة أخرى.');
+            const randomQ = list[Math.floor(Math.random() * list.length)];
+            document.getElementById('q-text').textContent = randomQ.q;
+            document.getElementById('ans-text').textContent = randomQ.a;
+            document.getElementById('ans-box').style.display = 'none';
+            clearInterval(timerInt);
+            startTimer();
+        };
+
+        function startTimer() {
+            let t = 20;
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = t;
+            clearInterval(timerInt);
+            timerInt = setInterval(() => {
+                t--;
+                timerEl.textContent = t;
+                if (t <= 0) {
+                    clearInterval(timerInt);
+                    showAnswer();
+                }
+            }, 1000);
+        }
+
+        window.showAnswer = function() {
+            clearInterval(timerInt);
+            document.getElementById('ans-box').style.display = 'block';
+        };
+
+        window.saveNewQuestion = function() {
+            const q = document.getElementById('new-q').value.trim();
+            const a = document.getElementById('new-a').value.trim();
+            if (!q || !a) return alert('الرجاء كتابة السؤال والإجابة!');
+            if (!questionBank[currentChar]) questionBank[currentChar] = [];
+            questionBank[currentChar].push({ q, a });
+            localStorage.setItem('fullQuestionBank', JSON.stringify(questionBank));
+            document.getElementById('new-q').value = '';
+            document.getElementById('new-a').value = '';
+            openModal(currentIdx, currentChar);
+        };
+
+        window.mark = function(team) {
+            clearInterval(timerInt);
+            boardState[currentIdx] = team;
+            const cells = document.querySelectorAll('.hex');
+            cells[currentIdx].classList.add(team === 'blue' ? 'owned-a' : 'owned-b');
+            cells[currentIdx].onclick = null;
+            
+            if (team === 'blue') scores.blue++;
+            else scores.red++;
+            updateScoreUI();
+            
+            closeModals();
+            checkVictory(team);
+        };
+
+        function getHexNeighbors(idx) {
+            const r = Math.floor(idx / SIZE), c = idx % SIZE;
+            const isEven = (r % 2 === 0);
+            const dirs = isEven ? [[-1,0],[1,0],[0,-1],[0,1],[-1,1],[1,1]] : [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1]];
+            return dirs.map(([dr,dc]) => [r+dr, c+dc]).filter(([nr,nc]) => nr>=0 && nr<SIZE && nc>=0 && nc<SIZE).map(([nr,nc])=> nr*SIZE+nc);
+        }
+
+        function checkVictory(team) {
+            const visited = Array(SIZE*SIZE).fill(false), queue = [];
+            if (team === 'blue') {
+                for (let c=0; c<SIZE; c++) if (boardState[c]==='blue') { queue.push(c); visited[c]=true; }
+                while (queue.length) {
+                    const cur = queue.shift();
+                    if (Math.floor(cur/SIZE) === SIZE-1) { announce("🔵 الفريق الأزرق فاز!"); return; }
+                    getHexNeighbors(cur).forEach(n => { if (!visited[n] && boardState[n]==='blue') { visited[n]=true; queue.push(n); } });
+                }
+            } else {
+                for (let r=0; r<SIZE; r++) if (boardState[r*SIZE]==='red') { queue.push(r*SIZE); visited[r*SIZE]=true; }
+                while (queue.length) {
+                    const cur = queue.shift();
+                    if (cur%SIZE === SIZE-1) { announce("🔴 الفريق الأحمر فاز!"); return; }
+                    getHexNeighbors(cur).forEach(n => { if (!visited[n] && boardState[n]==='red') { visited[n]=true; queue.push(n); } });
+                }
+            }
+        }
+
+        function announce(msg) {
+            document.getElementById('win-msg').textContent = msg;
+            document.getElementById('win-modal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        window.closeModals = function() {
+            clearInterval(timerInt);
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('q-modal').style.display = 'none';
+        };
+
+        window.closeWinModal = function() {
+            document.getElementById('win-modal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        };
+
+        window.resetGame = function() {
+            closeModals();
+            closeWinModal();
+            scores = { blue: 0, red: 0 };
+            updateScoreUI();
+            init();
+        };
+
+        window.onload = init;
+    })();
+</script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>شاشة العرض - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+</head>
+<body>
+
+<div id="game-screen" class="screen active">
+  <div class="left-panel">
+    <div class="team-score-card team-a">
+      <div class="t-name" id="ta-name">الفريق أ</div>
+      <div class="t-score" id="ta-score">0</div>
+    </div>
+    <div id="buzzer-display" style="color:var(--gold); font-size:1.5rem; font-weight:bold; text-align:center;"></div>
+    <div class="team-score-card team-b">
+      <div class="t-name" id="tb-name">الفريق ب</div>
+      <div class="t-score" id="tb-score">0</div>
+    </div>
+  </div>
+
+  <div class="board-area">
+    <div class="q-box" id="display-q" style="width:80%; font-size:1.8rem; margin-bottom:20px;">جاري الاتصال بغرفة الحكم...</div>
+    <div id="hex-board"></div>
+  </div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+let peer = new Peer(peerConfig);
+
+peer.on('open', () => {
+  if(!code) { document.getElementById('display-q').innerText = "الرجاء فتح هذه الشاشة من رابط الحكم!"; return; }
+  
+  const conn = peer.connect('hexgame-' + code);
+  conn.on('open', () => { document.getElementById('display-q').innerText = "متصل! في انتظار اختيار سؤال..."; });
+  
+  conn.on('data', (data) => {
+    if(data.type === 'state_update') { updateUI(data.state); }
+    if(data.type === 'show_question') { 
+      document.getElementById('display-q').innerText = "❓ " + data.q; 
+      document.getElementById('buzzer-display').innerText = "";
+    }
+    if(data.type === 'buzzer_won') { 
+      document.getElementById('buzzer-display').innerText = `⚡ ${data.winner} يجاوب!`; 
+    }
+    if(data.type === 'reset_buzzer') {
+      document.getElementById('display-q').innerText = "في انتظار اختيار سؤال...";
+      document.getElementById('buzzer-display').innerText = "";
+    }
+  });
+});
+
+function updateUI(state) {
+  document.getElementById('ta-name').innerText = state.teamA;
+  document.getElementById('tb-name').innerText = state.teamB;
+  document.getElementById('ta-score').innerText = state.scores.a;
+  document.getElementById('tb-score').innerText = state.scores.b;
+  
+  const bd = document.getElementById('hex-board');
+  bd.innerHTML = '';
+  state.board.forEach((cell, i) => {
+    const h = document.createElement('div');
+    h.className = 'hex';
+    if(cell.owner === 'a') h.classList.add('owned-a');
+    if(cell.owner === 'b') h.classList.add('owned-b');
+    if(state.activeCell === i) h.classList.add('active-q');
+    h.innerText = cell.letter;
+    bd.appendChild(h);
+  });
+}
+</script>
+</body>
+</html>
+
+
+----------------------text-------------------------------------------
+
+---
+
+### 2️⃣ ملف `howto.html` (صفحة التعليمات التفصيلية)
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كيفية الاستخدام - تحدي الحروف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #1a0a2e 0%, #2d1b4e 100%);
+            font-family: 'Cairo', sans-serif;
+            color: #f0e6ff;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 30px 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: #FFE66D;
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #FFE66D;
+            padding-bottom: 20px;
+        }
+        h2 {
+            color: #4ECDC4;
+            margin-top: 30px;
+            font-size: 1.8rem;
+        }
+        .question {
+            background: rgba(255,107,107,0.15);
+            border-right: 5px solid #FF6B6B;
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .answer {
+            background: rgba(78,205,196,0.1);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 10px 0 20px 20px;
+            border: 1px solid rgba(78,205,196,0.3);
+        }
+        .steps {
+            list-style-type: none;
+            padding: 0;
+        }
+        .steps li {
+            margin: 15px 0;
+            padding-right: 30px;
+            position: relative;
+        }
+        .steps li::before {
+            content: "✅";
+            position: absolute;
+            right: 0;
+            color: #2ecc71;
+        }
+        .btn-back {
+            display: inline-block;
+            background: #1e3a5f;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            background: #2d4b6e;
+        }
+        .note {
+            background: rgba(255,230,109,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #FFE66D;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📖 دليل استخدام "تحدي الحروف"</h1>
+    
+    <h2>🎮 النمط المحلي (جهاز واحد)</h2>
+    <div class="question">❓ كيف أبدأ لعبة محلية بين لاعبين؟</div>
+    <div class="answer">
+        <ul class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المحلي"</strong>.</li>
+            <li>ستظهر لوحة مكونة من 25 خلية سداسية، كل خلية تحوي حرفاً عربياً.</li>
+            <li>في الأعلى تظهر نتيجة الفريقين (الأزرق والأحمر).</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ ماذا يحدث عندما أضغط على حرف؟</div>
+    <div class="answer">
+        تنبثق نافذة تحتوي على:
+        <ul>
+            <li><strong>السؤال:</strong> سؤال عشوائي مرتبط بالحرف المختار.</li>
+            <li><strong>عداد تنازلي 20 ثانية:</strong> لإضفاء الحماس.</li>
+            <li><strong>أزرار التحكم:</strong>
+                <ul>
+                    <li>🔍 <strong>إظهار الإجابة</strong> – يكشف الحل الصحيح.</li>
+                    <li>🔄 <strong>تغيير السؤال</strong> – يجلب سؤالاً آخر لنفس الحرف.</li>
+                    <li>🔵 <strong>فوز الأزرق</strong> – يمنح الخلية للفريق الأزرق.</li>
+                    <li>🔴 <strong>فوز الأحمر</strong> – يمنح الخلية للفريق الأحمر.</li>
+                    <li>❌ <strong>إغلاق</strong> – يغلق النافذة بدون تغيير.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف يتم الفوز في النمط المحلي؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>الفريق الأزرق</strong> يحتاج لربط خلاياه من <strong>الأعلى إلى الأسفل</strong>.</li>
+            <li><strong>الفريق الأحمر</strong> يحتاج لربط خلاياه من <strong>اليمين إلى اليسار</strong>.</li>
+            <li>بمجرد تحقيق اتصال كامل، تظهر رسالة الفوز.</li>
+        </ul>
+    </div>
+
+    <h2>🎯 النمط المشترك (متعدد الشاشات)</h2>
+    <div class="question">❓ ما هي مكونات هذا النمط؟</div>
+    <div class="answer">
+        يتكون من ثلاث شاشات منفصلة:
+        <ol>
+            <li><strong>شاشة الحكم (judge.html):</strong> يتحكم فيها مقدم اللعبة. يختار الأسئلة ويمنح النقاط.</li>
+            <li><strong>شاشة العرض (display.html):</strong> تعرض على البروجكتر أو التلفاز. يراها الجمهور.</li>
+            <li><strong>شاشات اللاعبين (player.html):</strong> تفتح على هواتف المتسابقين. تستخدم كبازر للإجابة.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف أبدأ جلسة لعب مشتركة؟</div>
+    <div class="answer">
+        <ol class="steps">
+            <li>من الصفحة الرئيسية، اختر <strong>"اللعب المشترك"</strong> لفتح شاشة الحكم.</li>
+            <li>أدخل اسمي الفريقين (أحمر/أخضر افتراضياً).</li>
+            <li>اضغط <strong>"إنشاء الغرفة وبدء اللعبة"</strong>.</li>
+            <li>سيظهر لك:
+                <ul>
+                    <li>🔗 رابط "افتح شاشة البروجكتر" – انسخه وافتحه في نافذة جديدة (ويفضل على شاشة كبيرة).</li>
+                    <li>📱 زر "عرض QR اللاعبين" – اضغطه ليظهر كود QR.</li>
+                </ul>
+            </li>
+            <li>اطلب من اللاعبين مسح الكود بهواتفهم، ثم اختيار الفريق (أ أو ب) وإدخال أسمائهم.</li>
+            <li>بمجرد اتصال الجميع، ابدأ اللعب.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ كيف تجري الجولة في النمط المشترك؟</div>
+    <div class="answer">
+        <ol>
+            <li><strong>الحكم</strong> يضغط على خلية حرة في اللوحة.</li>
+            <li>يظهر السؤال في شاشة الحكم فقط (وليس في شاشة البروجكتر بعد).</li>
+            <li>يقرأ الحكم السؤال بصوت عالٍ، ثم يضغط على زر <strong>"إعادة فتح البازر"</strong> (إذا كان مغلقاً).</li>
+            <li><strong>اللاعبون</strong> يضغطون زر البازر في هواتفهم. أول من يضغط يظهر اسمه في شاشة الحكم والبروجكتر.</li>
+            <li>يجيب اللاعب شفهياً. الحكم يقارن إجابته بالإجابة المخفية (يمكنه إظهارها بالضغط على زر في شاشته).</li>
+            <li>إذا كانت الإجابة صحيحة، يضغط الحكم على <strong>"صح (الفريق أ)"</strong> أو <strong>"صح (الفريق ب)"</strong> فتُمنح الخلية لذلك الفريق وتضاف نقطة.</li>
+            <li>إذا كانت خاطئة، يمكن للحكم الضغط على <strong>"إعادة فتح البازر"</strong> لإعطاء فرصة للاعب آخر (دون تغيير السؤال)، أو الضغط على <strong>"تخطي / سؤال آخر"</strong> لإلغاء السؤال.</li>
+        </ol>
+    </div>
+
+    <div class="question">❓ ما الفرق بين "إعادة فتح البازر" و "تخطي"؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>🔄 إعادة فتح البازر:</strong> يبقي نفس السؤال، ويعيد تنشيط أزرار اللاعبين ليتنافسوا على الإجابة مرة أخرى (مفيد إذا أخطأ اللاعب الأول).</li>
+            <li><strong>⏭ تخطي / سؤال آخر:</strong> يلغي السؤال الحالي، ويعيد اللوحة لحالة الانتظار لاختيار خلية جديدة.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ لماذا لا يظهر السؤال مباشرة على شاشة البروجكتر؟</div>
+    <div class="answer">
+        هذا إجراء أمني لمنع الجمهور من رؤية السؤال قبل أن يقرأه الحكم. يظهر السؤال على البروجكتر فقط بعد أن يفتح الحكم البازر رسمياً.
+    </div>
+
+    <div class="note">
+        <strong>💡 نصيحة:</strong> عند استخدام النمط المشترك عبر الإنترنت، تأكد من أن جميع الأجهزة متصلة بالإنترنت. في حال وجود مشاكل في الاتصال، حاول استخدام شبكة Wi-Fi واحدة لجميع الأجهزة.
+    </div>
+
+    <h2>📚 إدارة الأسئلة</h2>
+    <div class="question">❓ كيف أضيف أسئلة جديدة؟</div>
+    <div class="answer">
+        <ul>
+            <li><strong>أثناء اللعب:</strong> إذا لم يجد النظام أسئلة لحرف معين، ستظهر نافذة تسمح لك بإدخال سؤال وإجابة. سيتم حفظها تلقائياً في المتصفح.</li>
+            <li><strong>بشكل دائم:</strong> افتح ملف <code>qbank.js</code> وأضف أسئلة بصيغة JSON. أو استخدم ميزة الإضافة أثناء اللعب ثم انسخ البيانات من LocalStorage.</li>
+        </ul>
+    </div>
+
+    <div class="question">❓ كيف أحذف الأسئلة المضافة وأعود للأصلية؟</div>
+    <div class="answer">
+        امسح بيانات التصفح (LocalStorage) للموقع، أو استخدم وضع التصفح المخفي. سيتم تحميل البنك الافتراضي الموجود في <code>qbank.js</code>.
+    </div>
+
+    <a href="index.html" class="btn-back">🔙 العودة للصفحة الرئيسية</a>
+</div>
+</body>
+</html>

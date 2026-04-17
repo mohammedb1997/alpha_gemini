@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>البازر - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<style>
+  .buzzer-btn { width:220px; height:220px; border-radius:50%; border:none; cursor:pointer; font-family:'Cairo',sans-serif; font-weight:900; font-size:2rem; color:white; transition:all 0.1s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display:block; margin:auto; margin-top:30px;}
+  .buzzer-btn:active { transform:scale(0.95); }
+  .btn-a { background:radial-gradient(circle at 30% 30%, #ff9090, var(--a)); }
+  .btn-b { background:radial-gradient(circle at 30% 30%, #7eeee9, var(--b)); }
+  .disabled { filter: grayscale(1); pointer-events: none; opacity:0.5;}
+  .team-choice button { padding:15px; font-size:1.2rem; margin:5px; border-radius:10px; border:none; color:white; cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="join-screen" class="screen active">
+  <div class="setup-card" style="margin-top:5vh;">
+    <h2>👤 انضم للعبة</h2>
+    <input id="p-name" type="text" placeholder="اكتب اسمك">
+    <div class="team-choice">
+      <button style="background:var(--a);" onclick="joinGame('a')">🔴 الفريق الأحمر</button>
+      <button style="background:var(--b);" onclick="joinGame('b')">🟢 الفريق الأخضر</button>
+    </div>
+  </div>
+</div>
+
+<div id="buzzer-screen" class="screen" style="text-align:center; padding-top:20vh;">
+  <h2 id="status-msg" style="color:var(--neutral-dim);">في انتظار بدء السؤال...</h2>
+  <button id="main-buzzer" class="buzzer-btn disabled" onclick="buzz()">⚡ اضغط</button>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
+
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+let peer = new Peer(peerConfig);
+let judgeConn, me = { name: '', team: '' };
+
+function joinGame(team) {
+  me.name = document.getElementById('p-name').value || 'لاعب';
+  me.team = team;
+  
+  if(!code) return alert("الرابط غير صحيح!");
+  
+  judgeConn = peer.connect('hexgame-' + code);
+  judgeConn.on('open', () => {
+    document.getElementById('join-screen').classList.remove('active');
+    document.getElementById('buzzer-screen').classList.add('active');
+    document.getElementById('main-buzzer').classList.add(team === 'a' ? 'btn-a' : 'btn-b');
+  });
+
+  judgeConn.on('data', (data) => {
+    if(data.type === 'show_question') {
+      document.getElementById('status-msg').innerText = "السؤال متاح! اضغط البازر";
+      document.getElementById('status-msg').style.color = "var(--gold)";
+      document.getElementById('main-buzzer').classList.remove('disabled');
+    }
+    if(data.type === 'buzzer_won') {
+      document.getElementById('main-buzzer').classList.add('disabled');
+      if(data.winner === me.name) {
+        document.getElementById('status-msg').innerText = "✅ أحسنت! أجب على الحكم";
+      } else {
+        document.getElementById('status-msg').innerText = `سبقك ${data.winner}!`;
+        document.getElementById('status-msg').style.color = "var(--a)";
+      }
+    }
+    if(data.type === 'reset_buzzer') {
+      document.getElementById('main-buzzer').classList.add('disabled');
+      document.getElementById('status-msg').innerText = "في انتظار بدء السؤال...";
+      document.getElementById('status-msg').style.color = "var(--neutral-dim)";
+    }
+  });
+}
+
+function buzz() {
+  if(document.getElementById('main-buzzer').classList.contains('disabled')) return;
+  document.getElementById('main-buzzer').classList.add('disabled');
+  if(navigator.vibrate) navigator.vibrate(50);
+  judgeConn.send({ type: 'buzz', name: me.name, team: me.team });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>شاشة الحكم - تحدي الحروف</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="qbank.js"></script>
+</head>
+<body>
+
+<div id="setup-screen" class="screen active">
+  <div class="setup-card">
+    <h1 style="color:var(--gold); margin-bottom:20px;">شاشة التحكم والحكم 🎯</h1>
+    <input id="team-a-name" type="text" value="الفريق الأحمر" placeholder="اسم الفريق أ">
+    <input id="team-b-name" type="text" value="الفريق الأخضر" placeholder="اسم الفريق ب">
+    <br><br>
+    <button class="btn-start" onclick="startGame()">🚀 إنشاء الغرفة وبدء اللعبة</button>
+  </div>
+</div>
+
+<div id="game-screen" class="screen">
+  <div class="board-area">
+    <h2 style="color:var(--gold);">لوحة التحكم</h2>
+    <div id="hex-board"></div>
+  </div>
+
+  <div class="right-panel">
+
+<!-- أضف هذا داخل right-panel في judge.html -->
+<div class="panel-section">
+    <button class="jbtn" style="background:#7f8c8d; width:100%;" onclick="location.href='index.html'">🏠 العودة للرئيسية</button>
+</div>
+
+    <div class="panel-section">
+      <h3>الروابط والاتصال</h3>
+      <button class="btn-start" onclick="showQR()" style="font-size:1rem; padding:10px;">📱 عرض QR اللاعبين</button>
+      <div id="display-link" style="margin-top:10px; text-align:center; font-size:0.9rem;"></div>
+    </div>
+    
+    <div class="panel-section">
+      <h3>❓ السؤال الحالي</h3>
+      <div class="q-box" id="q-box">اختر خلية...</div>
+      <div class="answer-reveal" id="ans-reveal" style="display:none;"></div>
+    </div>
+
+    <div class="panel-section">
+      <h3>⚡ حالة البازر</h3>
+      <div id="buzzer-status" style="text-align:center; font-weight:bold; font-size:1.2rem; color:var(--gold); padding:10px;">في الانتظار...</div>
+      <button class="jbtn" style="background:#9b59b6; width:100%; margin-top:8px;" onclick="reopenBuzzer()">🔄 إعادة فتح البازر (لنفس السؤال)</button>
+    </div>
+
+    <div class="panel-section">
+      <h3>🎮 تقييم الحكم</h3>
+      <div class="judge-btns">
+        <button class="jbtn" style="background:var(--a);" onclick="judgeCorrect('a')">✅ صح (الفريق أ)</button>
+        <button class="jbtn" style="background:var(--b);" onclick="judgeCorrect('b')">✅ صح (الفريق ب)</button>
+        <button class="jbtn" style="background:#e67e22; grid-column:span 2;" onclick="judgeSkip()">⏭ تخطي / سؤال آخر</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="qr-modal">
+  <div class="qr-card">
+    <h2 style="color:var(--gold); margin-bottom:15px;">انضم للعبة كلاعب</h2>
+    <div id="qr-large" style="background:white; padding:15px; border-radius:10px; display:inline-block;"></div>
+    <div style="margin-top:15px;"><a id="player-link-text" href="#" target="_blank" style="color:var(--b);">رابط اللاعبين</a></div>
+    <button class="btn-start" style="margin-top:20px; padding:10px;" onclick="document.getElementById('qr-modal').classList.remove('show')">إغلاق</button>
+  </div>
+</div>
+
+<script>
+let state = { teamA: '', teamB: '', scores: { a: 0, b: 0 }, board: [], activeCell: null, sessionCode: '' };
+let peer, connections = [];
+let currentQuestion = null; // لتخزين السؤال الحالي لإعادة فتح البازر
+
+// إعدادات PeerJS مع TURN Server
+const peerConfig = {
+  config: {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ]
+  }
+};
+
+function startGame() {
+  state.teamA = document.getElementById('team-a-name').value;
+  state.teamB = document.getElementById('team-b-name').value;
+  state.sessionCode = Math.random().toString(36).substr(2,5).toUpperCase();
+  
+  initBoard();
+  
+  peer = new Peer('hexgame-' + state.sessionCode, peerConfig);
+  peer.on('open', (id) => {
+    document.getElementById('setup-screen').classList.remove('active');
+    document.getElementById('game-screen').classList.add('active');
+    
+    const displayUrl = `${window.location.origin}${window.location.pathname.replace('judge.html','display.html')}?code=${state.sessionCode}`;
+    document.getElementById('display-link').innerHTML = `<a href="${displayUrl}" target="_blank" style="color:var(--gold);">🖥️ افتح شاشة البروجكتر</a>`;
+    generateQR();
+  });
+
+  peer.on('connection', (conn) => {
+    connections.push(conn);
+    conn.on('open', () => broadcastState());
+    conn.on('data', (data) => {
+      if(data.type === 'buzz') {
+        document.getElementById('buzzer-status').innerText = `⚡ ${data.name} (${data.team === 'a' ? state.teamA : state.teamB})`;
+        broadcast({ type: 'buzzer_won', winner: data.name, team: data.team });
+      }
+    });
+  });
+}
+
+function initBoard() {
+  const letters = Object.keys(QBANK).sort(() => 0.5 - Math.random()).slice(0, 25);
+  state.board = letters.map(l => ({ letter: l, owner: null }));
+  renderBoard();
+}
+
+function renderBoard() {
+    const board = document.getElementById('board');
+    board.style.setProperty('--size', SIZE);
+    board.innerHTML = '';
+    boardState.forEach((owner, i) => {
+        const r = Math.floor(i / SIZE);
+        const h = document.createElement('div');
+        h.className = 'hex' + (owner ? ' ' + owner : '');
+        h.style.setProperty('--r', r); // هذا السطر هو سر عدم تشوه الخلايا
+        h.textContent = LETTERS[i % LETTERS.length];
+        h.onclick = () => openQuestion(i);
+        board.appendChild(h);
+    });
+}
+
+function getHexNeighbors(idx) {
+        const SIZE = state.gridSize;
+        const r = Math.floor(idx / SIZE);
+        const c = idx % SIZE;
+        const neighbors = [];
+        // منطق الجيران في شبكة سداسية منحرفة (Rhombus Grid)
+        const offsets = [
+            [0, -1], [0, 1], [-1, 0], [-1, 1], [1, -1], [1, 0]
+        ];
+        offsets.forEach(([dr, dc]) => {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) neighbors.push(nr * SIZE + nc);
+        });
+        return neighbors;
+    }
+
+    function checkWin(team) {
+        const SIZE = state.gridSize;
+        const visited = new Array(SIZE * SIZE).fill(false);
+        const queue = [];
+
+        if (team === 'b') { // الفريق الأزرق يحاول التوصيل من الأعلى للأسفل
+            for (let c = 0; c < SIZE; c++) {
+                if (state.board[c].owner === 'b') { queue.push(c); visited[c] = true; }
+            }
+            while (queue.length) {
+                const cur = queue.shift();
+                if (Math.floor(cur / SIZE) === SIZE - 1) return true;
+                getHexNeighbors(cur).forEach(n => {
+                    if (!visited[n] && state.board[n].owner === 'b') { visited[n] = true; queue.push(n); }
+                });
+            }
+        } else { // الفريق الأحمر يحاول التوصيل من اليمين لليسار
+            for (let r = 0; r < SIZE; r++) {
+                if (state.board[r * SIZE].owner === 'a') { queue.push(r * SIZE); visited[r * SIZE] = true; }
+            }
+            while (queue.length) {
+                const cur = queue.shift();
+                if (cur % SIZE === SIZE - 1) return true;
+                getHexNeighbors(cur).forEach(n => {
+                    if (!visited[n] && state.board[n].owner === 'a') { visited[n] = true; queue.push(n); }
+                });
+            }
+        }
+        return false;
+    }
+
+    function judgeCorrect(team) {
+        if (state.activeCell === null) return;
+        state.board[state.activeCell].owner = team;
+        state.scores[team]++;
+        
+        if (checkWin(team)) {
+            const winnerName = team === 'a' ? state.teamA : state.teamB;
+            alert("🎉 مبروك! فاز " + winnerName);
+            broadcast({ type: 'game_over', winner: winnerName });
+        }
+
+        state.activeCell = null;
+        renderBoard();
+        broadcastState();
+        resetJudgeUI();
+    }
+
+function onHexClick(i) {
+  if (state.board[i].owner) return;
+  state.activeCell = i;
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+  
+  const letter = state.board[i].letter;
+  const qData = QBANK[letter][Math.floor(Math.random() * QBANK[letter].length)];
+  currentQuestion = qData; // حفظ السؤال الحالي
+  
+  document.getElementById('q-box').innerText = qData.q;
+  document.getElementById('ans-reveal').style.display = 'block';
+  document.getElementById('ans-reveal').innerText = "✅ الإجابة: " + qData.a;
+  
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'show_question', q: qData.q });
+}
+
+function reopenBuzzer() {
+  // إعادة فتح البازر لنفس السؤال (لا يغير السؤال)
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function judgeCorrect(team) {
+  if (state.activeCell === null) return;
+  state.board[state.activeCell].owner = team;
+  state.scores[team]++;
+  state.activeCell = null;
+  currentQuestion = null;
+  resetJudgeUI();
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function judgeSkip() {
+  state.activeCell = null;
+  currentQuestion = null;
+  resetJudgeUI();
+  renderBoard();
+  broadcastState();
+  broadcast({ type: 'reset_buzzer' });
+}
+
+function resetJudgeUI() {
+  document.getElementById('q-box').innerText = "اختر خلية...";
+  document.getElementById('ans-reveal').style.display = 'none';
+  document.getElementById('buzzer-status').innerText = 'في الانتظار...';
+}
+
+function broadcast(msg) { connections.forEach(c => { if(c.open) c.send(msg); }); }
+function broadcastState() { broadcast({ type: 'state_update', state: state }); }
+
+function generateQR() {
+  const playerUrl = `${window.location.origin}${window.location.pathname.replace('judge.html','player.html')}?code=${state.sessionCode}`;
+  document.getElementById('qr-large').innerHTML = '';
+  new QRCode(document.getElementById('qr-large'), { text: playerUrl, width: 200, height: 200 });
+  document.getElementById('player-link-text').href = playerUrl;
+}
+function showQR() { document.getElementById('qr-modal').classList.add('show'); }
+</script>
+</body>
+</html>
