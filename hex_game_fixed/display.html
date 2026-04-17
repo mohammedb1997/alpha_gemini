@@ -24,9 +24,11 @@ body{background-image:radial-gradient(ellipse 80% 50% at 15% 5%,rgba(255,107,107
 .field label{display:block;font-size:.82rem;font-weight:700;color:var(--dim);margin-bottom:5px}
 .field input{width:100%;background:var(--s2);border:2px solid var(--bdr);border-radius:12px;padding:11px 14px;color:var(--txt);font-family:'Cairo',sans-serif;font-size:1.1rem;font-weight:700;outline:none;text-align:center;transition:border-color .2s;margin-bottom:14px}
 .field input:focus{border-color:var(--gold)}
-.btn-gold{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--gold),#ffb347);color:#1a0a0a;font-family:'Cairo',sans-serif;font-size:1.2rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 6px 20px rgba(255,230,109,.3)}
-.btn-gold:hover{transform:translateY(-2px)}
+.btn-gold{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--gold),#ffb347);color:#1a0a0a;font-family:'Cairo',sans-serif;font-size:1.2rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 6px 20px rgba(255,230,109,.3);margin-bottom:12px}
+.btn-gold:active{transform:scale(0.97)}
+.btn-outline{background:transparent;border:2px solid var(--bdr);color:var(--dim);box-shadow:none}
 .status-msg{font-size:.9rem;color:var(--dim);text-align:center;min-height:1.5em}
+.retry-row{display:flex;gap:10px;margin-top:5px}
 
 /* GAME SCREEN */
 #game-screen{display:none;width:100vw;height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:12px;overflow:hidden}
@@ -110,8 +112,11 @@ body{background-image:radial-gradient(ellipse 80% 50% at 15% 5%,rgba(255,107,107
       <label>رمز الجلسة (5 أحرف)</label>
       <input id="code-in" placeholder="مثال: AB3XY" maxlength="5" oninput="this.value=this.value.toUpperCase()">
     </div>
-    <button class="btn-gold" onclick="connectToSession()">📡 اتصال</button>
+    <button class="btn-gold" id="connect-btn" onclick="startConnection()">📡 اتصال</button>
     <div class="status-msg" id="status-msg">أدخل رمز الجلسة من شاشة الحكم</div>
+    <div class="retry-row">
+      <button class="btn-gold btn-outline" id="retry-btn" style="display:none" onclick="retryConnection()">🔄 إعادة المحاولة</button>
+    </div>
   </div>
 </div>
 
@@ -167,7 +172,6 @@ const COLS=5, ROWS=5, N=25;
 let currentHexSize=62;
 
 function computeHexSize(){
-  // Auto-fit board to available space
   const availW = window.innerWidth - 80;
   const availH = window.innerHeight - 200;
   const w1 = availW / ((COLS-1)*0.75+1);
@@ -211,7 +215,7 @@ function renderSideIndicators(){
 }
 
 /* ══════════════════════════════════════
-   STATE
+   STATE & CONNECTION
 ══════════════════════════════════════ */
 let S={
   teamA:'الفريق أ', teamB:'الفريق ب',
@@ -222,6 +226,8 @@ let S={
   roundWins:{a:0,b:0}
 };
 let peer=null, conn=null;
+let reconnectAttempt = null;
+let currentCode = '';
 
 const ICE={config:{iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
@@ -230,27 +236,100 @@ const ICE={config:{iceServers:[
   {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'}
 ]}};
 
-function connectToSession(){
-  const code=document.getElementById('code-in').value.trim().toUpperCase();
-  if(code.length<3){ setStatus('❌ أدخل رمز الجلسة الصحيح'); return; }
-  setStatus('⏳ جارٍ الاتصال...');
-  peer=new Peer('hexdisplay-'+Date.now(),ICE);
-  peer.on('open',()=>{
-    conn=peer.connect('hexgame-'+code);
-    conn.on('open',()=>{
-      setStatus('✅ متصل!');
-      document.getElementById('connect-screen').style.display='none';
-      document.getElementById('game-screen').style.display='flex';
-      computeHexSize(); renderBoard(); renderSideIndicators();
-    });
-    conn.on('data',onData);
-    conn.on('close',()=>setStatus('🔌 انقطع الاتصال'));
-    conn.on('error',e=>setStatus('❌ خطأ: '+e));
-  });
-  peer.on('error',e=>setStatus('❌ '+e));
+function setStatus(msg, isError = false) {
+  const el = document.getElementById('status-msg');
+  el.innerText = msg;
+  if (isError) el.style.color = '#FF6B6B';
+  else el.style.color = 'var(--dim)';
 }
 
-function setStatus(t){ document.getElementById('status-msg').innerText=t; }
+function showRetryButton(show) {
+  document.getElementById('retry-btn').style.display = show ? 'block' : 'none';
+}
+
+async function startConnection() {
+  const code = document.getElementById('code-in').value.trim().toUpperCase();
+  if (code.length < 3) { setStatus('❌ أدخل رمز الجلسة الصحيح (3-5 أحرف)', true); return; }
+  currentCode = code;
+  setStatus('⏳ جارٍ الاتصال بالخادم الوسيط...');
+  showRetryButton(false);
+  document.getElementById('connect-btn').disabled = true;
+
+  if (peer) {
+    try { peer.destroy(); } catch(e) {}
+    peer = null;
+  }
+  if (conn) {
+    try { conn.close(); } catch(e) {}
+    conn = null;
+  }
+  if (reconnectAttempt) clearTimeout(reconnectAttempt);
+
+  peer = new Peer('hexdisplay-' + Date.now() + '-' + Math.random().toString(36).substr(2,6), ICE);
+  
+  peer.on('open', () => {
+    setStatus('✅ معرف العرض جاهز، جارٍ الاتصال بالحكم...');
+    attemptConnect();
+  });
+  
+  peer.on('error', (err) => {
+    console.error(err);
+    setStatus(`❌ خطأ في الاتصال: ${err.type || err}`, true);
+    document.getElementById('connect-btn').disabled = false;
+    showRetryButton(true);
+  });
+}
+
+function attemptConnect() {
+  if (!peer) return;
+  conn = peer.connect('hexgame-' + currentCode);
+  
+  // مهلة 10 ثوانٍ للاتصال
+  const timeout = setTimeout(() => {
+    if (conn && conn.open === false) {
+      setStatus('⚠️ انتهت المهلة: لم يستجب الحكم. تأكد من بدء الجلسة.', true);
+      if (peer) peer.destroy();
+      document.getElementById('connect-btn').disabled = false;
+      showRetryButton(true);
+    }
+  }, 10000);
+
+  conn.on('open', () => {
+    clearTimeout(timeout);
+    setStatus('✅ متصل بالحكم بنجاح!');
+    document.getElementById('connect-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'flex';
+    computeHexSize(); renderBoard(); renderSideIndicators();
+    // إرسال طلب للحصول على الحالة الكاملة فوراً
+    conn.send({ type: 'display_ready' });
+  });
+  
+  conn.on('data', onData);
+  
+  conn.on('close', () => {
+    setStatus('🔌 انقطع الاتصال بالحكم. حاول إعادة الاتصال.', true);
+    if (document.getElementById('game-screen').style.display === 'flex') {
+      // العودة لشاشة الاتصال تلقائياً
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('connect-screen').style.display = 'flex';
+      document.getElementById('connect-btn').disabled = false;
+      showRetryButton(true);
+    }
+  });
+  
+  conn.on('error', (err) => {
+    console.error('Connection error:', err);
+    setStatus(`❌ فشل الاتصال: ${err}`, true);
+    clearTimeout(timeout);
+    if (peer) peer.destroy();
+    document.getElementById('connect-btn').disabled = false;
+    showRetryButton(true);
+  });
+}
+
+function retryConnection() {
+  startConnection();
+}
 
 function onData(d){
   if(d.type==='state'){
@@ -355,8 +434,13 @@ function confetti(team){
 }
 
 window.addEventListener('resize',()=>{
-  computeHexSize(); renderBoard(); renderSideIndicators();
+  if (document.getElementById('game-screen').style.display === 'flex') {
+    computeHexSize(); renderBoard(); renderSideIndicators();
+  }
 });
+
+// إضافة دعم لطلب الحالة من الحكم إذا أرسل الحكم طلب (اختياري)
+// يمكن أن يطلب الحكم إعادة إرسال الحالة
 </script>
 </body>
 </html>
