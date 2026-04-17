@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>تحدي الحروف · شاشة العرض</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<style>
+:root{
+  --a:#FF6B6B;--b:#4ECDC4;--a2:#c0392b;--b2:#27ae8f;
+  --gold:#FFE66D;--bg:#0f0f1a;--s1:#1a1a2e;--s2:#16213e;
+  --txt:#e8eaf6;--dim:rgba(232,234,246,.45);--bdr:rgba(255,255,255,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(--txt);background:var(--bg)}
+body{background-image:radial-gradient(ellipse 80% 50% at 15% 5%,rgba(255,107,107,.12) 0,transparent 60%),radial-gradient(ellipse 60% 40% at 85% 95%,rgba(78,205,196,.12) 0,transparent 60%)}
+
+/* CONNECT SCREEN */
+#connect-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:20px;padding:20px}
+.logo h1{font-size:clamp(2rem,6vw,3.5rem);font-weight:900;background:linear-gradient(135deg,var(--gold),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:24px;padding:28px 32px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.card h2{font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:18px;text-align:center}
+.field label{display:block;font-size:.82rem;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field input{width:100%;background:var(--s2);border:2px solid var(--bdr);border-radius:12px;padding:11px 14px;color:var(--txt);font-family:'Cairo',sans-serif;font-size:1.1rem;font-weight:700;outline:none;text-align:center;transition:border-color .2s;margin-bottom:14px}
+.field input:focus{border-color:var(--gold)}
+.btn-gold{width:100%;padding:15px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--gold),#ffb347);color:#1a0a0a;font-family:'Cairo',sans-serif;font-size:1.2rem;font-weight:900;cursor:pointer;transition:all .15s;box-shadow:0 6px 20px rgba(255,230,109,.3)}
+.btn-gold:hover{transform:translateY(-2px)}
+.status-msg{font-size:.9rem;color:var(--dim);text-align:center;min-height:1.5em}
+
+/* GAME SCREEN */
+#game-screen{display:none;width:100vw;height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:12px;overflow:hidden}
+
+/* SCORE BAR */
+.score-bar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:900px;gap:12px}
+.sc-team{flex:1;border-radius:16px;padding:10px 14px;text-align:center}
+.sc-team.ca{background:rgba(255,107,107,.12);border:2px solid rgba(255,107,107,.5)}
+.sc-team.cb{background:rgba(78,205,196,.12);border:2px solid rgba(78,205,196,.5)}
+.sc-name{font-size:clamp(.75rem,2.5vw,1rem);font-weight:700;opacity:.85}
+.sc-pts{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;line-height:1}
+.ca .sc-pts{color:var(--a)}.cb .sc-pts{color:var(--b)}
+.sc-wins{font-size:.7rem;opacity:.55;margin-top:2px}
+.mid-info{text-align:center;flex-shrink:0}
+.round-badge{background:var(--s2);border-radius:40px;padding:5px 16px;font-size:.85rem;font-weight:700;color:var(--gold);margin-bottom:4px}
+.legend-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* BOARD WRAPPER */
+.board-wrapper{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.board-center-col{display:flex;flex-direction:column;align-items:center}
+
+/* Side indicators */
+.side-ind-v{display:flex;flex-direction:column;gap:3px;padding:2px}
+.side-ind-h{display:flex;flex-direction:row;gap:3px;padding:2px}
+.ind-seg-a{background:linear-gradient(180deg,var(--a),var(--a2));border-radius:3px;width:10px;flex:1;min-height:14px;box-shadow:0 0 6px rgba(255,107,107,.6)}
+.ind-seg-b{background:linear-gradient(90deg,var(--b),var(--b2));border-radius:3px;height:10px;flex:1;min-width:14px;box-shadow:0 0 6px rgba(78,205,196,.6)}
+
+/* HEX BOARD */
+#hex-board{position:relative;flex-shrink:0}
+.hex{
+  position:absolute;
+  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cairo',sans-serif;font-weight:900;
+  background:rgba(255,255,255,.08);
+  color:var(--txt);
+  user-select:none;
+  transition:filter .2s;
+}
+.hex.ca{background:linear-gradient(145deg,var(--a),var(--a2));color:#fff;box-shadow:0 0 16px rgba(255,107,107,.5)}
+.hex.cb{background:linear-gradient(145deg,var(--b),var(--b2));color:#fff;box-shadow:0 0 16px rgba(78,205,196,.5)}
+.hex.active-q{animation:pulse-hex .75s ease infinite alternate;z-index:8}
+@keyframes pulse-hex{from{box-shadow:0 0 8px var(--gold)}to{box-shadow:0 0 30px var(--gold),0 0 50px rgba(255,230,109,.25)}}
+.hex.win-path{animation:win-flash .5s ease infinite alternate}
+@keyframes win-flash{from{filter:brightness(1.2)}to{filter:brightness(1.8)}}
+
+/* BUZZER DISPLAY */
+.bz-bar{width:100%;max-width:900px;background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:10px 18px;text-align:center;min-height:52px;display:flex;align-items:center;justify-content:center}
+.bz-idle{color:var(--dim);font-size:.9rem}
+.bz-win{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap}
+.bz-win .bz-name{font-size:1.3rem;font-weight:900}
+.bz-win.bz-a .bz-name{color:var(--a)}.bz-win.bz-b .bz-name{color:var(--b)}
+.bz-win .bz-count{font-size:2.5rem;font-weight:900;font-family:monospace;min-width:2.5ch;text-align:center}
+.bz-win.bz-a .bz-count{color:var(--a)}.bz-win.bz-b .bz-count{color:var(--b)}
+.bz-win .bz-sub{font-size:.78rem;opacity:.7}
+
+/* WIN OVERLAY */
+#win-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(16px);z-index:9500;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#win-overlay.show{display:flex}
+.win-em{font-size:clamp(4rem,10vw,7rem);animation:bounceIn .6s ease}
+@keyframes bounceIn{0%{transform:scale(.2)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.win-name{font-size:clamp(2rem,6vw,3.5rem);font-weight:900;text-align:center}
+.win-sub{font-size:clamp(.9rem,2.5vw,1.2rem);opacity:.7;text-align:center}
+.cf{position:fixed;border-radius:2px;top:-20px;animation:cf-fall 3s ease-in forwards;z-index:9999;pointer-events:none}
+@keyframes cf-fall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- CONNECT -->
+<div id="connect-screen">
+  <div class="logo"><h1>📺 شاشة العرض</h1></div>
+  <div class="card">
+    <h2>🔗 الاتصال بالجلسة</h2>
+    <div class="field">
+      <label>رمز الجلسة (5 أحرف)</label>
+      <input id="code-in" placeholder="مثال: AB3XY" maxlength="5" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <button class="btn-gold" onclick="connectToSession()">📡 اتصال</button>
+    <div class="status-msg" id="status-msg">أدخل رمز الجلسة من شاشة الحكم</div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen">
+  <div class="score-bar">
+    <div class="sc-team ca">
+      <div class="sc-name" id="la-name">الفريق أ</div>
+      <div class="sc-pts" id="la-pts">0</div>
+      <div class="sc-wins" id="la-wins">جولات: 0</div>
+    </div>
+    <div class="mid-info">
+      <div class="round-badge" id="round-lbl">الجولة 1</div>
+      <div class="legend-row">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--a)"></div><span style="color:var(--a)">أ ◀▶ أفقي</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--b)"></div><span style="color:var(--b)">ب ▲▼ عمودي</span></div>
+      </div>
+    </div>
+    <div class="sc-team cb">
+      <div class="sc-name" id="lb-name">الفريق ب</div>
+      <div class="sc-pts" id="lb-pts">0</div>
+      <div class="sc-wins" id="lb-wins">جولات: 0</div>
+    </div>
+  </div>
+
+  <div class="board-wrapper">
+    <div class="side-ind-v" id="ind-left" style="margin-left:6px"></div>
+    <div class="board-center-col">
+      <div class="side-ind-h" id="ind-top" style="margin-bottom:5px"></div>
+      <div id="hex-board"></div>
+      <div class="side-ind-h" id="ind-bottom" style="margin-top:5px"></div>
+    </div>
+    <div class="side-ind-v" id="ind-right" style="margin-right:6px"></div>
+  </div>
+
+  <div class="bz-bar" id="bz-bar">
+    <div class="bz-idle">في انتظار بدء الجولة...</div>
+  </div>
+</div>
+
+<!-- WIN OVERLAY -->
+<div id="win-overlay">
+  <div class="win-em" id="win-em">🏆</div>
+  <div class="win-name" id="win-name">الفائز!</div>
+  <div class="win-sub"  id="win-sub"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   HEX GEOMETRY
+══════════════════════════════════════ */
+const COLS=5, ROWS=5, N=25;
+let currentHexSize=62;
+
+function computeHexSize(){
+  // Auto-fit board to available space
+  const availW = window.innerWidth - 80;
+  const availH = window.innerHeight - 200;
+  const w1 = availW / ((COLS-1)*0.75+1);
+  const h1 = availH / ((ROWS-1)*1.1547+1.1547*0.5);
+  const sz = Math.floor(Math.min(w1, h1, 100));
+  currentHexSize = Math.max(sz, 36);
+}
+
+function hexPos(i){
+  const w=currentHexSize, h=currentHexSize*1.1547;
+  const col=i%COLS, row=Math.floor(i/COLS);
+  return {x:col*(w*0.75), y:row*h+(col%2===1?h*0.5:0), w, h};
+}
+
+function boardSize(){
+  const w=currentHexSize, h=currentHexSize*1.1547;
+  return {totalW:(COLS-1)*w*0.75+w, totalH:(ROWS-1)*h+h*0.5};
+}
+
+/* ══════════════════════════════════════
+   SIDE INDICATORS
+══════════════════════════════════════ */
+function renderSideIndicators(){
+  const sz=boardSize();
+  ['ind-left','ind-right'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.innerHTML=''; el.style.height=sz.totalH+'px';
+    for(let r=0;r<ROWS;r++){
+      const s=document.createElement('div');
+      s.className='ind-seg-a'; el.appendChild(s);
+    }
+  });
+  ['ind-top','ind-bottom'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.innerHTML=''; el.style.width=sz.totalW+'px';
+    for(let c=0;c<COLS;c++){
+      const s=document.createElement('div');
+      s.className='ind-seg-b'; el.appendChild(s);
+    }
+  });
+}
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let S={
+  teamA:'الفريق أ', teamB:'الفريق ب',
+  board:Array.from({length:N},()=>({letter:'',owner:null})),
+  activeCell:null, gamePhase:'idle',
+  buzzerWinner:null, timerSecs:0,
+  pts:{a:0,b:0}, round:1,
+  roundWins:{a:0,b:0}
+};
+let peer=null, conn=null;
+
+const ICE={config:{iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'}
+]}};
+
+function connectToSession(){
+  const code=document.getElementById('code-in').value.trim().toUpperCase();
+  if(code.length<3){ setStatus('❌ أدخل رمز الجلسة الصحيح'); return; }
+  setStatus('⏳ جارٍ الاتصال...');
+  peer=new Peer('hexdisplay-'+Date.now(),ICE);
+  peer.on('open',()=>{
+    conn=peer.connect('hexgame-'+code);
+    conn.on('open',()=>{
+      setStatus('✅ متصل!');
+      document.getElementById('connect-screen').style.display='none';
+      document.getElementById('game-screen').style.display='flex';
+      computeHexSize(); renderBoard(); renderSideIndicators();
+    });
+    conn.on('data',onData);
+    conn.on('close',()=>setStatus('🔌 انقطع الاتصال'));
+    conn.on('error',e=>setStatus('❌ خطأ: '+e));
+  });
+  peer.on('error',e=>setStatus('❌ '+e));
+}
+
+function setStatus(t){ document.getElementById('status-msg').innerText=t; }
+
+function onData(d){
+  if(d.type==='state'){
+    applyState(d.s); return;
+  }
+  if(d.type==='round_win'||d.type==='game_win'){
+    if(d.roundWins) S.roundWins=d.roundWins;
+    showWinner(d.team); return;
+  }
+  if(d.type==='new_round'){
+    S.round=d.round;
+    document.getElementById('round-lbl').innerText='الجولة '+S.round;
+    document.getElementById('win-overlay').classList.remove('show');
+    return;
+  }
+  if(d.type==='tick'){
+    S.timerSecs=d.secs; renderBuzzer(); return;
+  }
+}
+
+function applyState(s){
+  S.teamA=s.teamA||S.teamA;
+  S.teamB=s.teamB||S.teamB;
+  S.board=s.board||S.board;
+  S.activeCell=s.activeCell;
+  S.gamePhase=s.gamePhase;
+  S.buzzerWinner=s.buzzerWinner;
+  S.timerSecs=s.timerSecs||0;
+  S.pts=s.pts||S.pts;
+  S.round=s.round||S.round;
+  document.getElementById('la-name').innerText=S.teamA;
+  document.getElementById('lb-name').innerText=S.teamB;
+  document.getElementById('la-pts').innerText=S.pts.a;
+  document.getElementById('lb-pts').innerText=S.pts.b;
+  document.getElementById('round-lbl').innerText='الجولة '+S.round;
+  renderBoard(); renderSideIndicators(); renderBuzzer();
+}
+
+/* BOARD */
+function renderBoard(){
+  const bd=document.getElementById('hex-board');
+  const sz=boardSize();
+  bd.style.width=sz.totalW+'px';
+  bd.style.height=sz.totalH+'px';
+  bd.innerHTML='';
+  S.board.forEach((cell,i)=>{
+    const {x,y,w,h}=hexPos(i);
+    const div=document.createElement('div');
+    div.className='hex';
+    if(cell.owner==='a') div.classList.add('ca');
+    else if(cell.owner==='b') div.classList.add('cb');
+    if(S.activeCell===i) div.classList.add('active-q');
+    div.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${h}px;font-size:${w*.32}px;`;
+    div.innerText=cell.letter;
+    bd.appendChild(div);
+  });
+}
+
+function renderBuzzer(){
+  const bz=document.getElementById('bz-bar');
+  if(S.gamePhase==='idle'){
+    bz.innerHTML='<div class="bz-idle">⏳ في انتظار اختيار خلية...</div>'; return;
+  }
+  if(S.gamePhase==='open'&&!S.buzzerWinner){
+    bz.innerHTML='<div class="bz-idle" style="color:var(--gold);font-size:1.1rem">⚡ البازر مفتوح للجميع!</div>'; return;
+  }
+  if(S.buzzerWinner){
+    const cls='bz-win bz-'+S.buzzerWinner.team;
+    const tname=S.buzzerWinner.team==='a'?S.teamA:S.teamB;
+    bz.innerHTML=`<div class="${cls}">
+      <div class="bz-count">${S.timerSecs}</div>
+      <div>
+        <div class="bz-name">⚡ ${S.buzzerWinner.name}</div>
+        <div class="bz-sub">${tname}</div>
+      </div>
+    </div>`;
+    return;
+  }
+  bz.innerHTML='<div class="bz-idle">في الانتظار...</div>';
+}
+
+function showWinner(team){
+  const name=team==='a'?S.teamA:S.teamB;
+  const color=team==='a'?'var(--a)':'var(--b)';
+  document.getElementById('win-em').innerText=team==='a'?'🔴':'🟢';
+  document.getElementById('win-name').innerHTML=`<span style="color:${color}">${name}</span>`;
+  document.getElementById('win-sub').innerText='🏆 فاز بالجولة '+S.round;
+  document.getElementById('win-overlay').classList.add('show');
+  confetti(team);
+  setTimeout(()=>document.getElementById('win-overlay').classList.remove('show'),6000);
+}
+
+function confetti(team){
+  const cs=team==='a'?['#FF6B6B','#FF8E8E','#FFD700']:['#4ECDC4','#7EDDD7','#95E1D3','#FFD700'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    el.className='cf';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${cs[i%cs.length]};width:${8+Math.random()*10}px;height:${8+Math.random()*10}px;animation-duration:${2+Math.random()*2}s;animation-delay:${Math.random()*.5}s`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4000);
+  }
+}
+
+window.addEventListener('resize',()=>{
+  computeHexSize(); renderBoard(); renderSideIndicators();
+});
+</script>
+</body>
+</html>

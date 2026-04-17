@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>تحدي الحروف · الرئيسية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --a:#FF6B6B;--b:#4ECDC4;--gold:#FFE66D;--bg:#0f0f1a;--s1:#1a1a2e;--s2:#16213e;
+  --txt:#e8eaf6;--dim:rgba(232,234,246,.45);--bdr:rgba(255,255,255,.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;font-family:'Cairo',sans-serif;color:var(--txt);background:var(--bg)}
+body{background-image:radial-gradient(ellipse 80% 50% at 15% 5%,rgba(255,107,107,.12) 0,transparent 60%),radial-gradient(ellipse 60% 40% at 85% 95%,rgba(78,205,196,.12) 0,transparent 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:24px}
+.logo h1{font-size:clamp(2.2rem,7vw,4rem);font-weight:900;background:linear-gradient(135deg,var(--gold),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center}
+.logo p{text-align:center;color:var(--dim);font-size:1rem;margin-top:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;width:100%;max-width:800px}
+.nav-card{background:var(--s1);border:1px solid var(--bdr);border-radius:24px;padding:28px 24px;text-align:center;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--txt);display:block}
+.nav-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.nav-card:active{transform:translateY(0)}
+.nav-icon{font-size:3.5rem;margin-bottom:12px}
+.nav-card h2{font-size:1.3rem;font-weight:900;margin-bottom:6px}
+.nav-card p{font-size:.85rem;color:var(--dim);line-height:1.5}
+.nav-card.judge{border-color:rgba(255,230,109,.3)}
+.nav-card.judge h2{color:var(--gold)}
+.nav-card.display{border-color:rgba(78,205,196,.3)}
+.nav-card.display h2{color:var(--b)}
+.nav-card.player{border-color:rgba(255,107,107,.3)}
+.nav-card.player h2{color:var(--a)}
+.legend-box{background:var(--s1);border:1px solid var(--bdr);border-radius:18px;padding:18px 24px;width:100%;max-width:800px;text-align:center}
+.legend-box h3{color:var(--gold);font-size:1rem;margin-bottom:10px}
+.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.leg-item{padding:8px 12px;border-radius:10px;font-size:.82rem;font-weight:700}
+.leg-item.la{background:rgba(255,107,107,.1);color:var(--a);border:1px solid rgba(255,107,107,.3)}
+.leg-item.lb{background:rgba(78,205,196,.1);color:var(--b);border:1px solid rgba(78,205,196,.3)}
+</style>
+</head>
+<body>
+<div class="logo">
+  <h1>🏆 تحدي الحروف</h1>
+  <p>لعبة الشبكة السداسية التعليمية للفرق</p>
+</div>
+
+<div class="cards">
+  <a href="judge.html" class="nav-card judge">
+    <div class="nav-icon">⚖️</div>
+    <h2>شاشة الحكم</h2>
+    <p>للمشرف — إدارة اللعبة والأسئلة والنتائج</p>
+  </a>
+  <a href="display.html" class="nav-card display">
+    <div class="nav-icon">📺</div>
+    <h2>شاشة العرض</h2>
+    <p>للعرض على الشاشة الكبيرة أمام الجمهور</p>
+  </a>
+  <a href="player.html" class="nav-card player">
+    <div class="nav-icon">📱</div>
+    <h2>شاشة اللاعب</h2>
+    <p>للاعبين على الجوال — البازر والمشاركة</p>
+  </a>
+</div>
+
+<div class="legend-box">
+  <h3>🗺️ قواعد الفوز</h3>
+  <div class="leg-grid">
+    <div class="leg-item la">🔴 الفريق أ — يربط من اليسار إلى اليمين (أفقياً)</div>
+    <div class="leg-item lb">🟢 الفريق ب — يربط من الأعلى إلى الأسفل (عمودياً)</div>
+  </div>
+</div>
+</body>
+</html>
