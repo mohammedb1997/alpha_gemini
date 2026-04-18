@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🏆 تحدي الحروف - النسخة الكاملة</title>
+    <title>🏆 تحدي الحروف - النسخة الاحترافية</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -54,39 +54,39 @@
         }
         .hex.ca { background:linear-gradient(145deg,var(--A),var(--A2)) !important; color:#fff !important; }
         .hex.cb { background:linear-gradient(145deg,var(--B),var(--B2)) !important; color:#fff !important; }
-        .hex.aq { animation:ph .7s ease infinite alternate; z-index:8; }
-        @keyframes ph { from { box-shadow:0 0 10px var(--GOLD); } to { box-shadow:0 0 30px var(--GOLD); } }
+        .hex.aq { animation:ph .7s ease infinite alternate; z-index:8; box-shadow: 0 0 20px var(--GOLD) !important; }
+        @keyframes ph { from { opacity: 1; } to { opacity: 0.7; } }
 
         /* الكروت */
-        .scard, .jcard { background:white; border-radius:24px; padding:25px; width:92%; max-width:450px; margin:auto; box-shadow:0 12px 40px rgba(0,0,0,.3); color: var(--DARK); }
+        .scard, .jcard { background:white; border-radius:24px; padding:25px; width:92%; max-width:450px; margin:auto; box-shadow:0 12px 40px rgba(0,0,0,0.3); color: var(--DARK); text-align: center; }
         .jcard { background:var(--S1); color:var(--TXT); border:1px solid var(--BDR); }
         .jrow { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px; }
-        .jf label { font-size:0.8rem; font-weight:bold; display:block; margin-bottom:5px; }
-        .jf input, .jf select { width:100%; padding:10px; border-radius:10px; border:1px solid var(--BDR); background:var(--S2); color:white; font-family:inherit; text-align:center; }
+        .jf label { font-size:0.8rem; font-weight:bold; display:block; margin-bottom:5px; text-align: right; }
+        .jf input, .jf select { width:100%; padding:10px; border-radius:10px; border:1px solid #ccc; font-family:inherit; text-align:center; }
+        .jcard .jf input { background:var(--S2); color:white; border-color:var(--BDR); }
         
         /* التخطيط */
         #local-game, #judge-game, #display { flex-direction:row; }
         .side { width:200px; flex-shrink:0; background:rgba(0,0,0,0.3); padding:15px; display:flex; flex-direction:column; gap:10px; border-left:1px solid var(--BDR); }
-        .main-area { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; }
+        .main-area { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; position: relative; }
         .controls { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:10px; }
-        .btn { padding:10px; border:none; border-radius:10px; font-family:inherit; font-weight:bold; cursor:pointer; color:white; text-align:center; }
+        .btn { padding:12px; border:none; border-radius:10px; font-family:inherit; font-weight:bold; cursor:pointer; color:white; text-align:center; }
         .btn-gold { background:linear-gradient(135deg,var(--GOLD),#f39c12); color:#1a0a0a; }
 
         /* البازر */
-        .bzbtn { width:min(250px, 70vw); height:min(250px, 70vw); border-radius:50%; border:none; cursor:pointer; font-family:inherit; font-weight:900; font-size:1.5rem; transition:0.1s; }
+        .bzbtn { width:min(220px, 60vw); height:min(220px, 60vw); border-radius:50%; border:none; cursor:pointer; font-family:inherit; font-weight:900; font-size:1.5rem; transition:0.1s; display: flex; align-items: center; justify-content: center; }
         .bzbtn:active { transform:scale(0.9); }
         .bzbtn.bza { background:radial-gradient(circle at 35% 35%,#ff8a65,var(--A)); color:white; box-shadow:0 15px 40px rgba(255,87,34,.5); }
         .bzbtn.bzb { background:radial-gradient(circle at 35% 35%,#81C784,var(--B)); color:white; box-shadow:0 15px 40px rgba(76,175,80,.5); }
         .bzbtn.off { opacity:0.3; filter:grayscale(1); cursor:not-allowed; }
 
         /* شاشة العرض */
-        .dp-q { background:var(--S1); padding:20px; border-radius:15px; font-size:1.8rem; font-weight:bold; text-align:center; margin-bottom:15px; max-width:800px; }
+        .dp-q { background:var(--S1); padding:20px; border-radius:15px; font-size:1.8rem; font-weight:bold; text-align:center; margin-bottom:15px; max-width:800px; width: 90%; }
         .dp-ans { color:var(--GOLD); font-size:1.5rem; margin-top:10px; display:none; }
 
-        /* ميديا كويري */
         @media (max-width: 800px) {
             #local-game, #judge-game, #display { flex-direction:column; }
-            .side { width:100%; border:none; border-bottom:1px solid var(--BDR); flex-direction:row; overflow-x:auto; }
+            .side { width:100%; border:none; border-bottom:1px solid var(--BDR); flex-direction:row; justify-content: space-around; }
             .main-area { min-height:60vh; }
         }
     </style>
@@ -104,10 +104,47 @@
         </div>
     </div>
 
+    <!-- إعداد اللعب المحلي -->
+    <div id="local-setup" class="scr">
+        <div class="scard">
+            <h2>⚙️ إعداد محلي</h2>
+            <div class="jrow">
+                <div class="jf"><label>🟠 الفريق أ</label><input id="lta" value="الأحمر"></div>
+                <div class="jf"><label>🟢 الفريق ب</label><input id="ltb" value="الأخضر"></div>
+            </div>
+            <button class="btn btn-gold" style="width:100%;" onclick="startLocal()">▶ ابدأ اللعب</button>
+        </div>
+        <button class="btn" style="color:white" onclick="go('home')">العودة</button>
+    </div>
+
+    <!-- شاشة اللعب المحلي -->
+    <div id="local-game" class="scr">
+        <div class="side">
+            <div style="background:var(--A2); padding:10px; border-radius:10px; text-align:center;">
+                <div id="la-n">الفريق أ</div><div id="la-p" style="font-size:2rem; font-weight:900;">0</div>
+            </div>
+            <div style="background:var(--B2); padding:10px; border-radius:10px; text-align:center;">
+                <div id="lb-n">الفريق ب</div><div id="lb-p" style="font-size:2rem; font-weight:900;">0</div>
+            </div>
+            <button class="btn" style="background:#444" onclick="go('home')">خروج</button>
+        </div>
+        <div class="main-area">
+            <div class="bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="local-board"></div></div>
+            <div id="l-info-box" style="width:100%; max-width:500px; background:var(--S1); padding:15px; border-radius:15px; display:none;">
+                <div id="l-q" style="font-weight:bold; margin-bottom:5px;"></div>
+                <div id="l-ans" style="color:var(--GOLD); margin-bottom:10px;"></div>
+                <div class="controls">
+                    <button class="btn" style="background:var(--A);" onclick="lMark('a')">✅ صح أ</button>
+                    <button class="btn" style="background:var(--B);" onclick="lMark('b')">✅ صح ب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- إعداد الحكم -->
     <div id="judge-setup" class="scr">
         <div class="jcard">
-            <h2>🎯 إعداد الجلسة</h2>
+            <h2>🎯 إعداد الجلسة (Online)</h2>
             <div class="jrow">
                 <div class="jf"><label>🟠 الفريق أ</label><input id="jta" value="الفريق الأحمر"></div>
                 <div class="jf"><label>🟢 الفريق ب</label><input id="jtb" value="الفريق الأخضر"></div>
@@ -123,10 +160,10 @@
     <!-- شاشة الحكم -->
     <div id="judge-game" class="scr">
         <div class="side">
-            <div id="ja-status" style="background:var(--A2); padding:10px; border-radius:10px; text-align:center;">
+            <div style="background:var(--A2); padding:10px; border-radius:10px; text-align:center;">
                 <div id="ja-n">الفريق أ</div><div id="ja-p" style="font-size:2rem; font-weight:900;">0</div>
             </div>
-            <div id="jb-status" style="background:var(--B2); padding:10px; border-radius:10px; text-align:center;">
+            <div style="background:var(--B2); padding:10px; border-radius:10px; text-align:center;">
                 <div id="jb-n">الفريق ب</div><div id="jb-p" style="font-size:2rem; font-weight:900;">0</div>
             </div>
             <div id="bz-area" style="background:var(--S2); padding:10px; border-radius:10px; text-align:center; min-height:80px;">
@@ -135,9 +172,9 @@
             </div>
         </div>
         <div class="main-area">
-            <div id="j-title" style="color:var(--GOLD); font-weight:bold; margin-bottom:10px;">الجولة 1</div>
+            <div id="j-title" style="color:var(--GOLD); font-weight:bold; margin-bottom:10px;">كود الغرفة: --</div>
             <div class="bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="judge-board"></div></div>
-            <div class="j-info" style="width:100%; max-width:500px; background:var(--S1); padding:15px; border-radius:15px;">
+            <div id="j-info-box" style="width:100%; max-width:500px; background:var(--S1); padding:15px; border-radius:15px; visibility:hidden;">
                 <div id="j-q" style="font-weight:bold; margin-bottom:5px;">اختر حرفاً...</div>
                 <div id="j-ans" style="color:var(--GOLD); display:none;">الإجابة: --</div>
                 <div class="controls">
@@ -162,18 +199,17 @@
             </div>
             <input id="pcode" placeholder="كود الغرفة" style="width:100%; padding:12px; margin:10px 0; border-radius:10px;">
             <button class="btn btn-gold" style="width:100%;" onclick="pJoin()">🚀 انضمام</button>
-            <div id="p-err" style="color:var(--A); font-size:0.8rem; margin-top:5px; display:none;"></div>
         </div>
     </div>
 
     <div id="player-bz" class="scr" style="align-items:center; justify-content:center; background:var(--DARK);">
-        <div id="p-info" style="margin-bottom:20px; text-align:center;">
+        <div style="margin-bottom:20px; text-align:center;">
             <div id="p-display-name" style="font-size:1.5rem; font-weight:bold;">اللاعب</div>
             <div id="p-display-team">--</div>
         </div>
         <button id="main-bz" class="bzbtn off" onclick="pBuzz()">⚡</button>
-        <div id="p-status" style="margin-top:20px; color:var(--GOLD);">انتظر إشارة الحكم...</div>
-        <div id="mini-board-cont" style="margin-top:20px; transform:scale(0.5);">
+        <div id="p-status" style="margin-top:20px; color:var(--GOLD); font-weight: bold;">انتظر إشارة الحكم...</div>
+        <div id="mini-board-cont" style="margin-top:20px; transform:scale(0.55);">
             <div id="player-board"></div>
         </div>
     </div>
@@ -181,14 +217,14 @@
     <!-- شاشة البروجكتر -->
     <div id="display" class="scr" style="background:radial-gradient(circle, var(--S1), #000);">
         <div class="side" style="width:250px;">
-            <div class="d-team" style="background:var(--A); padding:20px; border-radius:15px; text-align:center;">
+            <div style="background:var(--A); padding:20px; border-radius:15px; text-align:center;">
                 <div id="da-n" style="font-weight:bold;">الفريق أ</div><div id="da-p" style="font-size:3rem; font-weight:900;">0</div>
             </div>
-            <div id="d-bz-area" style="background:var(--S2); padding:20px; border-radius:15px; text-align:center; min-height:150px; display:flex; flex-direction:column; justify-content:center;">
+            <div style="background:var(--S2); padding:20px; border-radius:15px; text-align:center; min-height:150px; display:flex; flex-direction:column; justify-content:center;">
                 <div style="font-size:1rem; opacity:0.7;">البازر</div>
                 <div id="d-bz-info" style="font-size:2rem; font-weight:bold; color:var(--GOLD);">--</div>
             </div>
-            <div class="d-team" style="background:var(--B); padding:20px; border-radius:15px; text-align:center;">
+            <div style="background:var(--B); padding:20px; border-radius:15px; text-align:center;">
                 <div id="db-n" style="font-weight:bold;">الفريق ب</div><div id="db-p" style="font-size:3rem; font-weight:900;">0</div>
             </div>
         </div>
@@ -199,84 +235,60 @@
         </div>
     </div>
 
-    <!-- إعداد اللعب المحلي -->
-    <div id="local-setup" class="scr">
-        <div class="scard">
-            <h2>⚙️ إعداد محلي</h2>
-            <div class="jrow">
-                <div class="jf"><label>🟠 الفريق أ</label><input id="lta" value="الأحمر"></div>
-                <div class="jf"><label>🟢 الفريق ب</label><input id="ltb" value="الأخضر"></div>
-            </div>
-            <button class="btn btn-gold" style="width:100%;" onclick="startLocal()">▶ ابدأ اللعب</button>
-        </div>
-    </div>
-
-    <div id="local-game" class="scr">
-        <!-- نفس هيكل الحكم تقريباً -->
-    </div>
-
     <script>
         /* البنك الأساسي للأسئلة */
         const QBANK = {
             "أ": [{q:"أول الخلفاء الراشدين؟", a:"أبو بكر الصديق"},{q:"ملك الغابة؟", a:"أسد"}],
             "ب": [{q:"دولة عاصمتها المنامة؟", a:"البحرين"},{q:"حيوان يطير في الليل؟", a:"خفاش"}],
             "ت": [{q:"فاكهة صيفية حمراء؟", a:"توت"},{q:"تستخدم لفتح الباب؟", a:"مفتاح"}],
-            // ... يمكن إضافة باقي الحروف
         };
-        // تعبئة الحروف الناقصة آلياً لأغراض التجربة
         "جحخدذرزسشصضطظعغفقكلمنهوي".split('').forEach(char => {
             QBANK[char] = [{q: `سؤال يبدأ بحرف ${char}`, a: char}];
         });
 
-        /* متغيرات الحالة */
+        /* الحالة العامة */
         let state = {
-            mode: 'home',
-            code: '',
-            teamA: 'الفريق أ', teamB: 'الفريق ب',
-            pts: {a:0, b:0}, wins: {a:0, b:0},
-            board: [], // {letter, owner}
+            teamA: 'الأحمر', teamB: 'الأخضر',
+            pts: {a:0, b:0},
+            board: [],
             activeCell: null,
-            phase: 'idle', // idle, open, buzz, won
+            phase: 'idle',
             bzWinner: null,
             showQA: false
         };
 
-        const PeerConfig = { host: '0.peerjs.com', port: 443, secure: true };
-        let peer = null, conn = null, conns = [];
+        let conns = [], conn = null, peer = null;
         let audioCtx = null;
 
-        /* وظائف عامة */
         function go(id) {
             document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
             document.getElementById(id).classList.add('on');
         }
 
         function playSfx(type) {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            if(type==='buzz') { osc.frequency.value = 350; gain.gain.value = 0.2; osc.type = 'sawtooth'; }
-            if(type==='correct') { osc.frequency.value = 800; gain.gain.value = 0.1; }
-            if(type==='wrong') { osc.frequency.value = 150; gain.gain.value = 0.2; osc.type = 'square'; }
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            try {
+                if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                if(type==='buzz') { osc.frequency.value = 350; gain.gain.value = 0.2; osc.type = 'sawtooth'; }
+                if(type==='correct') { osc.frequency.value = 800; gain.gain.value = 0.1; }
+                if(type==='wrong') { osc.frequency.value = 150; gain.gain.value = 0.2; osc.type = 'square'; }
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
         }
+
+        function getHW() { return window.innerWidth < 600 ? 50 : 70; }
 
         function renderBoard(id, clickFn) {
             const el = document.getElementById(id);
             if(!el) return;
             const HW = getHW(), HH = HW * 0.866;
-            const W = 5 * HW * 0.75 + HW, H = 5 * HH + (HH/2);
-            el.parentElement.style.width = W + 'px';
-            el.parentElement.style.height = H + 'px';
             el.innerHTML = '';
-
             state.board.forEach((cell, i) => {
                 const col = i % 5, row = Math.floor(i / 5);
                 const isOdd = col % 2 !== 0;
-                const x = col * HW * 0.75;
-                const y = row * HH + (isOdd ? HH/2 : 0);
-
+                const x = col * HW * 0.75, y = row * HH + (isOdd ? HH/2 : 0);
                 const div = document.createElement('div');
                 div.className = 'hex' + (cell.owner ? ' c'+cell.owner : '') + (state.activeCell===i ? ' aq' : '');
                 div.style.left = x + 'px'; div.style.top = y + 'px';
@@ -287,21 +299,63 @@
             });
         }
 
-        function getHW() { return window.innerWidth < 600 ? 50 : 70; }
+        /* اللعب المحلي */
+        function startLocal() {
+            state.teamA = document.getElementById('lta').value;
+            state.teamB = document.getElementById('ltb').value;
+            state.pts = {a:0, b:0};
+            state.activeCell = null;
+            state.board = createBoard();
+            go('local-game');
+            lUpdateUI();
+        }
 
-        /* منطق الحكم */
+        function createBoard() {
+            const chars = "أبتثجحخدذرزسشصضطظعغفقكلمنهوي".split('');
+            return Array(25).fill(0).map(() => ({
+                letter: chars[Math.floor(Math.random()*chars.length)],
+                owner: null
+            }));
+        }
+
+        function lUpdateUI() {
+            document.getElementById('la-n').innerText = state.teamA;
+            document.getElementById('lb-n').innerText = state.teamB;
+            document.getElementById('la-p').innerText = state.pts.a;
+            document.getElementById('lb-p').innerText = state.pts.b;
+            if(state.activeCell !== null) {
+                const cell = state.board[state.activeCell];
+                const qObj = QBANK[cell.letter][0];
+                document.getElementById('l-info-box').style.display = 'block';
+                document.getElementById('l-q').innerText = `سؤال حرف (${cell.letter}): ${qObj.q}`;
+                document.getElementById('l-ans').innerText = `الإجابة: ${qObj.a}`;
+            } else {
+                document.getElementById('l-info-box').style.display = 'none';
+            }
+            renderBoard('local-board', lClickCell);
+        }
+
+        function lClickCell(i) {
+            if(state.board[i].owner) return;
+            state.activeCell = i;
+            lUpdateUI();
+        }
+
+        function lMark(team) {
+            if(state.activeCell === null) return;
+            state.board[state.activeCell].owner = team;
+            state.pts[team]++;
+            state.activeCell = null;
+            playSfx('correct');
+            lUpdateUI();
+        }
+
+        /* اللعب عبر الإنترنت (الحكم) */
         function startJudge() {
             state.teamA = document.getElementById('jta').value;
             state.teamB = document.getElementById('jtb').value;
             state.code = Math.random().toString(36).substring(2,7).toUpperCase();
-            
-            // إنشاء اللوحة
-            const chars = "أبتثجحخدذرزسشصضطظعغفقكلمنهوي".split('');
-            state.board = Array(25).fill(0).map(() => ({
-                letter: chars[Math.floor(Math.random()*chars.length)],
-                owner: null
-            }));
-
+            state.board = createBoard();
             peer = new Peer('HX-' + state.code);
             peer.on('open', () => {
                 alert("تم إنشاء الغرفة! الكود: " + state.code);
@@ -311,7 +365,7 @@
             peer.on('connection', c => {
                 conns.push(c);
                 c.on('data', data => jHandleData(data, c));
-                c.send({ type: 'init', state });
+                c.send({ type: 'sync', state });
             });
         }
 
@@ -321,18 +375,20 @@
             document.getElementById('ja-p').innerText = state.pts.a;
             document.getElementById('jb-p').innerText = state.pts.b;
             document.getElementById('j-title').innerText = "كود الغرفة: " + state.code;
+            document.getElementById('bz-info').innerText = state.bzWinner ? state.bzWinner.name : (state.phase==='open' ? 'مفتوح' : '--');
             
             if(state.activeCell !== null) {
                 const cell = state.board[state.activeCell];
                 const qObj = QBANK[cell.letter][0];
-                document.getElementById('j-q').innerText = `حرف (${cell.letter}): ${qObj.q}`;
+                document.getElementById('j-info-box').style.visibility = 'visible';
+                document.getElementById('j-q').innerText = `سؤال (${cell.letter}): ${qObj.q}`;
                 document.getElementById('j-ans').innerText = `الإجابة: ${qObj.a}`;
                 document.getElementById('j-ans').style.display = state.showQA ? 'block' : 'none';
+            } else {
+                document.getElementById('j-info-box').style.visibility = 'hidden';
             }
-
-            document.getElementById('bz-info').innerText = state.bzWinner ? state.bzWinner.name : (state.phase==='open' ? 'مفتوح!' : '--');
             renderBoard('judge-board', jClickCell);
-            jBroadcastState();
+            jBroadcast();
         }
 
         function jClickCell(i) {
@@ -344,143 +400,70 @@
             jUpdateUI();
         }
 
-        function jHandleData(data, conn) {
-            if(data.type === 'buzz') {
-                if(state.phase === 'open') {
-                    state.phase = 'buzz';
-                    state.bzWinner = { name: data.name, team: data.team, id: data.id };
-                    playSfx('buzz');
-                    jUpdateUI();
-                }
+        function jHandleData(data) {
+            if(data.type === 'buzz' && state.phase === 'open') {
+                state.phase = 'buzz';
+                state.bzWinner = data;
+                playSfx('buzz');
+                jUpdateUI();
             }
         }
 
-        function jBroadcastState() {
-            conns.forEach(c => c.send({ type: 'sync', state }));
-        }
-
+        function jBroadcast() { conns.forEach(c => c.send({ type: 'sync', state })); }
         function jToggleQ() { state.showQA = !state.showQA; jUpdateUI(); }
-        
-        function jCorrect(team) {
-            if(state.activeCell === null) return;
-            state.board[state.activeCell].owner = team;
-            state.pts[team]++;
-            state.activeCell = null;
-            state.phase = 'idle';
-            playSfx('correct');
-            jUpdateUI();
-        }
+        function jCorrect(t) { if(state.activeCell===null) return; state.board[state.activeCell].owner=t; state.pts[t]++; state.activeCell=null; state.phase='idle'; playSfx('correct'); jUpdateUI(); }
+        function jWrong() { state.phase='open'; state.bzWinner=null; playSfx('wrong'); jUpdateUI(); }
+        function jResetBz() { state.phase='open'; state.bzWinner=null; jUpdateUI(); }
 
-        function jWrong() {
-            state.phase = 'open';
-            state.bzWinner = null;
-            playSfx('wrong');
-            jUpdateUI();
-        }
-
-        function jResetBz() {
-            state.phase = 'open';
-            state.bzWinner = null;
-            jUpdateUI();
-        }
-
-        /* منطق اللاعب */
+        /* اللاعب */
         let playerInfo = { name: '', team: '', id: Math.random().toString(36).substring(7) };
-
-        function pSelTeam(t) {
+        function pSelTeam(t) { 
             playerInfo.team = t;
             document.getElementById('p-sel-a').style.background = t==='a' ? 'var(--A)' : '#444';
             document.getElementById('p-sel-b').style.background = t==='b' ? 'var(--B)' : '#444';
         }
-
         function pJoin() {
             playerInfo.name = document.getElementById('pname').value;
-            const code = document.getElementById('pcode').value.toUpperCase();
+            let code = document.getElementById('pcode').value.toUpperCase();
             if(!playerInfo.name || !playerInfo.team || !code) return alert("أكمل البيانات");
-
             peer = new Peer();
             peer.on('open', () => {
                 conn = peer.connect('HX-' + code);
                 conn.on('open', () => {
                     go('player-bz');
                     document.getElementById('p-display-name').innerText = playerInfo.name;
-                    document.getElementById('p-display-team').innerText = playerInfo.team === 'a' ? 'الفريق البرتقالي' : 'الفريق الأخضر';
+                    document.getElementById('p-display-team').innerText = playerInfo.team === 'a' ? 'الأحمر' : 'الأخضر';
                 });
-                conn.on('data', pHandleData);
+                conn.on('data', d => { if(d.type==='sync') { state = d.state; pUpdateUI(); } });
             });
         }
-
-        function pHandleData(data) {
-            if(data.type === 'init' || data.type === 'sync') {
-                state = data.state;
-                pUpdateUI();
-            }
-        }
-
         function pUpdateUI() {
             const btn = document.getElementById('main-bz');
-            const status = document.getElementById('p-status');
-            
-            if(state.phase === 'open') {
-                btn.classList.remove('off');
-                btn.classList.add('bza');
-                status.innerText = "اضغط الآن!!!";
-            } else if(state.phase === 'buzz') {
-                btn.classList.add('off');
-                status.innerText = "تم الضغط بواسطة: " + state.bzWinner.name;
-            } else {
-                btn.classList.add('off');
-                status.innerText = "انتظر الحكم...";
-            }
+            if(state.phase === 'open') { btn.classList.remove('off'); btn.classList.add(playerInfo.team==='a'?'bza':'bzb'); document.getElementById('p-status').innerText="اضغط!"; }
+            else { btn.classList.add('off'); document.getElementById('p-status').innerText = state.bzWinner ? "تم الضغط: "+state.bzWinner.name : "انتظر..."; }
             renderBoard('player-board');
         }
+        function pBuzz() { if(state.phase==='open' && conn) conn.send({type:'buzz', ...playerInfo}); }
 
-        function pBuzz() {
-            if(state.phase === 'open' && conn) {
-                conn.send({ type: 'buzz', ...playerInfo });
-            }
-        }
-
-        /* منطق شاشة العرض */
+        /* البروجكتر */
         function showDisplayScreen() {
-            const code = prompt("أدخل كود الغرفة:");
+            let code = prompt("أدخل كود الغرفة:");
             if(!code) return;
             peer = new Peer();
             peer.on('open', () => {
                 conn = peer.connect('HX-' + code.toUpperCase());
-                conn.on('open', () => {
-                    go('display');
-                });
-                conn.on('data', data => {
-                    if(data.type === 'sync' || data.type === 'init') {
-                        state = data.state;
-                        dUpdateUI();
-                    }
-                });
+                conn.on('open', () => go('display'));
+                conn.on('data', d => { if(d.type==='sync') { state = d.state; dUpdateUI(); } });
             });
         }
-
         function dUpdateUI() {
-            document.getElementById('da-n').innerText = state.teamA;
-            document.getElementById('db-n').innerText = state.teamB;
-            document.getElementById('da-p').innerText = state.pts.a;
-            document.getElementById('db-p').innerText = state.pts.b;
-            document.getElementById('d-bz-info').innerText = state.bzWinner ? state.bzWinner.name : (state.phase==='open' ? '؟؟؟' : '--');
-            
-            const qBox = document.getElementById('da-q-box');
-            const aBox = document.getElementById('da-a-box');
-
+            document.getElementById('da-n').innerText = state.teamA; document.getElementById('db-n').innerText = state.teamB;
+            document.getElementById('da-p').innerText = state.pts.a; document.getElementById('db-p').innerText = state.pts.b;
+            document.getElementById('d-bz-info').innerText = state.bzWinner ? state.bzWinner.name : (state.phase==='open' ? '؟' : '--');
             if(state.activeCell !== null && state.showQA) {
-                const cell = state.board[state.activeCell];
-                qBox.innerText = QBANK[cell.letter][0].q;
-                aBox.innerText = QBANK[cell.letter][0].a;
-                qBox.style.display = 'block';
-                aBox.style.display = state.phase === 'won' ? 'block' : 'none'; // عرض الإجابة فقط عند الفوز (اختياري)
-            } else {
-                qBox.style.display = 'none';
-                aBox.style.display = 'none';
-            }
-
+                document.getElementById('da-q-box').innerText = QBANK[state.board[state.activeCell].letter][0].q;
+                document.getElementById('da-q-box').style.display = 'block';
+            } else { document.getElementById('da-q-box').style.display = 'none'; }
             renderBoard('display-board');
         }
     </script>
