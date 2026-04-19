@@ -1,0 +1,8 @@
+body{
+  margin:0;
+  font-family:'Cairo',sans-serif;
+  background:#000;
+  color:#fff;
+  text-align:center;
+}
+#question{display:none;}
