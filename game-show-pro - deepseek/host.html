@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>لوحة المقدم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #111; color: #fff; padding: 30px; }
+        button, input { font-family: inherit; font-size: 20px; padding: 10px 20px; margin: 5px; border-radius: 8px; border: none; }
+        input { background: #222; color: #fff; border: 1px solid #555; }
+        button { background: #2a6f97; color: white; cursor: pointer; }
+        button:hover { background: #1e4f6b; }
+        .panel { background: #1e1e1e; padding: 20px; border-radius: 16px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>🎤 لوحة تحكم المقدم</h2>
+    <div class="panel">
+        <button onclick="createRoom()">إنشاء غرفة</button>
+        <p>كود الغرفة: <span id="roomCodeDisplay"></span></p>
+    </div>
+
+    <div class="panel">
+        <label>اختر الحرف:</label>
+        <input id="letter" placeholder="حرف (مثال: أ)" maxlength="1">
+        <button onclick="startRound()">ابدأ الجولة</button>
+        <button onclick="startTimer()">⏳ تشغيل المؤقت (30 ث)</button>
+        <button onclick="reveal()">👁️ إظهار السؤال</button>
+    </div>
+
+    <div class="panel">
+        <h3>منح النقاط</h3>
+        <button onclick="addPoint('a')">➕ نقطة للفريق 🔴</button>
+        <button onclick="addPoint('b')">➕ نقطة للفريق 🟢</button>
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase.js"></script>
+    <script src="js/questions.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // عرض كود الغرفة عند إنشائها
+        const originalCreate = createRoom;
+        createRoom = function() {
+            originalCreate();
+            setTimeout(() => {
+                document.getElementById('roomCodeDisplay').innerText = roomId || '';
+            }, 500);
+        };
+
+        function startRound() {
+            let l = document.getElementById("letter").value.trim();
+            if (!l) return alert("الرجاء إدخال حرف");
+            let qObj = getQuestion(l);
+            if (!qObj) return alert("لا يوجد سؤال لهذا الحرف");
+            update({
+                current: { 
+                    letter: l, 
+                    q: qObj.q, 
+                    show: false, 
+                    buzzer: null 
+                },
+                timer: 30
+            });
+        }
+
+        function reveal() {
+            update({ "current.show": true });
+        }
+
+        function addPoint(team) {
+            // إضافة نقطة وتحديث lastPoint لتحديث الشاشة
+            update({
+                lastPoint: team,
+                lastPointTime: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    </script>
+</body>
+</html>

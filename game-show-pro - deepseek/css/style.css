@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  font-family: 'Cairo', sans-serif;
+  background: #000;
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+}
+
+#question {
+  display: none;
+  font-size: 6vw;
+  margin-top: 5vh;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#letter {
+  font-size: 12vw;
+  font-weight: bold;
+  color: gold;
+  text-shadow: 0 0 20px orange;
+  margin-top: 5vh;
+}
+
+#hud {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background: #111;
+  font-size: 3vw;
+  border-bottom: 3px solid #333;
+}
+
+#timer {
+  font-size: 4vw;
+  background: #222;
+  padding: 10px 30px;
+  border-radius: 50px;
+}
+
+#leaderboard {
+  margin-top: 30px;
+  font-size: 2.5vw;
+}
