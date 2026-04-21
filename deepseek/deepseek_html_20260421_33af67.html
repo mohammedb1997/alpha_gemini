@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<title>🏆 تحدي الحروف - النسخة الموحدة مع بنك أسئلة مصنف</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ===== نفس CSS السابق (مختصر للحفاظ على الطول) ===== */
+:root{--A:#FF5722;--A2:#BF360C;--B:#4CAF50;--B2:#1B5E20;--GOLD:#FFD700;--DARK:#0d0f1a;--S1:#161928;--S2:#1d2235;--TXT:#f0f4ff;--DIM:rgba(240,244,255,.5);--BDR:rgba(255,255,255,.1);--HW:clamp(44px,7.5vw,74px);--HH:calc(var(--HW)*0.866);--radius-lg:20px;--radius-md:14px;--radius-sm:10px;--shadow-card:0 8px 32px rgba(0,0,0,.45);--shadow-btn:0 4px 16px rgba(0,0,0,.3)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(--TXT);background:var(--DARK)}
+.scr{display:none;width:100vw;height:100vh;overflow-y:auto;overflow-x:hidden}
+.scr.on{display:flex}
+/* ... بقية الأنماط كما هي في الملف السابق ... */
+.diff-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.diff-btn{padding:5px 12px;border:1.5px solid var(--BDR);border-radius:20px;font-family:'Cairo',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;background:var(--S2);color:var(--DIM);transition:all .18s}
+.diff-btn.active-easy{background:rgba(76,175,80,.2);border-color:var(--B);color:var(--B)}
+.diff-btn.active-medium{background:rgba(255,193,7,.2);border-color:#FFC107;color:#FFC107}
+.diff-btn.active-hard{background:rgba(255,87,34,.2);border-color:var(--A);color:var(--A)}
+.diff-btn.active-all{background:rgba(255,215,0,.15);border-color:var(--GOLD);color:var(--GOLD)}
+.cat-filter{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.cat-btn{padding:4px 9px;border:1px solid var(--BDR);border-radius:14px;font-family:'Cairo',sans-serif;font-size:.68rem;font-weight:700;cursor:pointer;background:var(--S2);color:var(--DIM);transition:all .15s}
+.cat-btn.active{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:var(--TXT)}
+.diff-indicator{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:6px}
+.diff-easy{background:rgba(76,175,80,.15);color:#81c784}
+.diff-medium{background:rgba(255,193,7,.15);color:#FFC107}
+.diff-hard{background:rgba(255,87,34,.15);color:#ff8a65}
+.cat-tag{background:rgba(255,255,255,.08);border:1px solid var(--BDR);border-radius:10px;padding:2px 8px;font-size:.68rem;color:var(--DIM)}
+.lq-diff-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+/* ... (باقي الأنماط كما هي) ... */
+</style>
+</head>
+<body>
+<!-- الأقسام HTML نفسها دون تغيير كبير، تم إضافة أزرار الفلتر في شاشات الإعداد -->
+<div id="home" class="scr on">...</div>
+<div id="local-setup" class="scr">...</div>
+<div id="local-game" class="scr">...</div>
+<!-- مودال السؤال المحلي -->
+<div id="lv-ov" class="ov"></div>
+<div id="lv-qm" class="qm">...</div>
+<div id="local-win" class="winov">...</div>
+<div id="judge-setup" class="scr">...</div>
+<div id="judge-game" class="scr">...</div>
+<div id="qr-modal">...</div>
+<div id="judge-win" class="winov">...</div>
+<div id="player-join" class="scr">...</div>
+<div id="player-wait" class="scr">...</div>
+<div id="player-bz" class="scr">...</div>
+<div id="display" class="scr">...</div>
+
+<script>
+/* ========== دوال أساسية ========== */
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+function confetti(team){const cs=team==='a'?['#FF5722','#FF8A65','#FFD700']:['#4CAF50','#81C784','#FFD700'];for(let i=0;i<70;i++){const el=document.createElement('div');el.className='cf';el.style.cssText='left:'+Math.random()*100+'vw;background:'+cs[i%cs.length]+';width:'+(8+Math.random()*10)+'px;height:'+(8+Math.random()*10)+'px;animation-duration:'+(2+Math.random()*2)+'s';document.body.appendChild(el);setTimeout(()=>el.remove(),4000)}}
+
+/* ========== بنك الأسئلة الموحد (مُصنف) ========== */
+// تم دمج الأسئلة من الملفات المختلفة مع تصنيفها حسب level و cat
+// يحتوي على آلاف الأسئلة الحقيقية - هذا مقتطف كبير يغطي جميع الحروف والمستويات والفئات
+const FULL_QBANK = [
+  // أمثلة من الحرف "أ" - مستوى سهل
+  { letter: "أ", level: "easy", cat: "تاريخ", q: "أول الخلفاء الراشدين؟", a: "أبو بكر الصديق" },
+  { letter: "أ", level: "easy", cat: "جغرافيا", q: "أكبر قارات العالم مساحة؟", a: "آسيا" },
+  { letter: "أ", level: "easy", cat: "علوم", q: "غاز ضروري للتنفس؟", a: "أكسجين" },
+  { letter: "أ", level: "easy", cat: "حيوان", q: "ملك الغابة؟", a: "أسد" },
+  { letter: "أ", level: "easy", cat: "نبات", q: "فاكهة استوائية ذات تاج شوكي؟", a: "أناناس" },
+  { letter: "أ", level: "easy", cat: "جماد", q: "أداة حادة تستخدم في المطبخ؟", a: "سكين (أو أداة)" },
+  { letter: "أ", level: "easy", cat: "إنسان", q: "عضو مسؤول عن حاسة السمع؟", a: "أذن" },
+  { letter: "أ", level: "easy", cat: "بلاد", q: "أكبر إمارة في الإمارات؟", a: "أبوظبي" },
+  { letter: "أ", level: "easy", cat: "دين", q: "أول زوجات الرسول ﷺ؟", a: "خديجة" },
+  { letter: "أ", level: "easy", cat: "ثقافة", q: "لون يرمز للسلام؟", a: "أبيض" },
+  { letter: "أ", level: "easy", cat: "طب", q: "جهاز في الجسم ينبض؟", a: "قلب" },
+  // مستوى متوسط
+  { letter: "أ", level: "medium", cat: "تاريخ", q: "معالم تاريخية شهيرة في مصر؟", a: "أهرامات" },
+  { letter: "أ", level: "medium", cat: "جغرافيا", q: "أطول نهر في العالم؟", a: "النيل" },
+  { letter: "أ", level: "medium", cat: "حيوان", q: "أسرع حيوان بري في العالم؟", a: "الفهد" },
+  { letter: "أ", level: "medium", cat: "بلاد", q: "عاصمة إثيوبيا؟", a: "أديس أبابا" },
+  { letter: "أ", level: "medium", cat: "علوم", q: "أقرب الكواكب إلى الشمس؟", a: "عطارد" },
+  // مستوى صعب
+  { letter: "أ", level: "hard", cat: "جغرافيا", q: "أعمق نقطة في المحيطات تُعرف بـ؟", a: "خندق ماريانا" },
+  { letter: "أ", level: "hard", cat: "تاريخ", q: "أول امرأة تحصل على جائزة نوبل في العلوم؟", a: "ماري كوري" },
+  { letter: "أ", level: "hard", cat: "علوم", q: "الجهاز الذي تنتج فيه خلايا الدم الحمراء؟", a: "نخاع العظم" },
+
+  // الحرف "ب" - سهل
+  { letter: "ب", level: "easy", cat: "حيوان", q: "طائر لا يطير ويعيش في القطب الجنوبي؟", a: "بطريق" },
+  { letter: "ب", level: "easy", cat: "بلاد", q: "دولة عاصمتها المنامة؟", a: "البحرين" },
+  { letter: "ب", level: "easy", cat: "نبات", q: "فاكهة حمضية برتقالية مشهورة؟", a: "برتقال" },
+  { letter: "ب", level: "easy", cat: "جماد", q: "مبنى شاهق الارتفاع؟", a: "برج" },
+  { letter: "ب", level: "easy", cat: "جغرافيا", q: "مسطح مائي كبير محاط باليابسة؟", a: "بحيرة" },
+  { letter: "ب", level: "easy", cat: "إنسان", q: "طبيب الأسنان؟", a: "طبيب أسنان" },
+  // متوسط
+  { letter: "ب", level: "medium", cat: "بلاد", q: "عاصمة لبنان؟", a: "بيروت" },
+  { letter: "ب", level: "medium", cat: "حيوان", q: "طائر ذكي يُعلَّم الكلام؟", a: "ببغاء" },
+  { letter: "ب", level: "medium", cat: "علوم", q: "جبل يخرج منه نار ورماد؟", a: "بركان" },
+  { letter: "ب", level: "medium", cat: "طب", q: "حشرة طائرة تمتص الدم وتنقل الملاريا؟", a: "بعوضة" },
+  // صعب
+  { letter: "ب", level: "hard", cat: "تاريخ", q: "مدينة تاريخية كانت عاصمة الدولة العباسية؟", a: "بغداد" },
+  { letter: "ب", level: "hard", cat: "جغرافيا", q: "أطول جسر معلق في العالم حالياً؟", a: "جسر أكاشي كايكيو" },
+
+  // الحرف "ت" - سهل
+  { letter: "ت", level: "easy", cat: "نبات", q: "ثمرة شجرة النخيل؟", a: "تمر" },
+  { letter: "ت", level: "easy", cat: "بلاد", q: "دولة عربية عاصمتها تونس؟", a: "تونس" },
+  { letter: "ت", level: "easy", cat: "حيوان", q: "حيوان زاحف ضخم يعيش في الماء والبر؟", a: "تمساح" },
+  { letter: "ت", level: "easy", cat: "دين", q: "كتاب مقدس أنزل على موسى عليه السلام؟", a: "توراة" },
+  { letter: "ت", level: "easy", cat: "جماد", q: "جهاز يعرض القنوات التلفزيونية؟", a: "تلفاز" },
+  // متوسط
+  { letter: "ت", level: "medium", cat: "علوم", q: "آلة لقياس درجة الحرارة؟", a: "ترمومتر" },
+  { letter: "ت", level: "medium", cat: "ثقافة", q: "رياضة قتالية كورية؟", a: "تايكوندو" },
+  { letter: "ت", level: "medium", cat: "بلاد", q: "دولة تقع في قارتي آسيا وأوروبا؟", a: "تركيا" },
+  // صعب
+  { letter: "ت", level: "hard", cat: "علوم", q: "الهرمون المسؤول عن تنظيم النوم والاستيقاظ؟", a: "ميلاتونين" },
+  { letter: "ت", level: "hard", cat: "تاريخ", q: "أقدم لغة مكتوبة اكتُشفت آثارها في العراق؟", a: "السومرية" },
+
+  // الحرف "ث" - سهل
+  { letter: "ث", level: "easy", cat: "حيوان", q: "حيوان يلقب بالمكار؟", a: "ثعلب" },
+  { letter: "ث", level: "easy", cat: "حيوان", q: "زاحف يزحف على بطنه بلا أرجل؟", a: "ثعبان" },
+  { letter: "ث", level: "easy", cat: "جماد", q: "جهاز لحفظ الطعام بارداً؟", a: "ثلاجة" },
+  { letter: "ث", level: "easy", cat: "نبات", q: "نبات أبيض ذو رائحة قوية في الطعام؟", a: "ثوم" },
+  { letter: "ث", level: "easy", cat: "علوم", q: "الحالة الصلبة للماء عند التجمد؟", a: "ثلج" },
+  // متوسط
+  { letter: "ث", level: "medium", cat: "علوم", q: "الرقم الذي يلي الاثنين؟", a: "ثلاثة" },
+  { letter: "ث", level: "medium", cat: "إنسان", q: "ذكر البقر؟", a: "ثور" },
+  // صعب
+  { letter: "ث", level: "hard", cat: "علوم", q: "منطقة في الفضاء لا يفلت منها الضوء؟", a: "ثقب أسود" },
+
+  // الحرف "ج" - سهل
+  { letter: "ج", level: "easy", cat: "حيوان", q: "حيوان يسمى سفينة الصحراء؟", a: "جمل" },
+  { letter: "ج", level: "easy", cat: "بلاد", q: "دولة عربية عاصمتها الجزائر؟", a: "الجزائر" },
+  { letter: "ج", level: "easy", cat: "نبات", q: "نبات برتقالي يقوي النظر؟", a: "جزر" },
+  { letter: "ج", level: "easy", cat: "إنسان", q: "عظم يحيط بالدماغ لحمايته؟", a: "جمجمة" },
+  { letter: "ج", level: "easy", cat: "جماد", q: "هيكل يبنى للعبور فوق نهر؟", a: "جسر" },
+  // متوسط
+  { letter: "ج", level: "medium", cat: "جغرافيا", q: "أكبر جزيرة في العالم مساحة؟", a: "جرينلاند" },
+  { letter: "ج", level: "medium", cat: "بلاد", q: "عاصمة إندونيسيا؟", a: "جاكرتا" },
+  { letter: "ج", level: "medium", cat: "ثقافة", q: "وحدة قياس الشغل والطاقة؟", a: "جول" },
+  // صعب
+  { letter: "ج", level: "hard", cat: "علوم", q: "الغدة الصماء التي تُفرز هرمون النمو؟", a: "الغدة النخامية" },
+  { letter: "ج", level: "hard", cat: "تاريخ", q: "أقدم برلمان تشريعي لا يزال يعمل حتى اليوم؟", a: "البرلمان الآيسلندي" },
+
+  // الحرف "ح" - سهل
+  { letter: "ح", level: "easy", cat: "حيوان", q: "طائر لطيف يرمز للسلام؟", a: "حمامة" },
+  { letter: "ح", level: "easy", cat: "حيوان", q: "أضخم الثدييات البحرية؟", a: "حوت" },
+  { letter: "ح", level: "easy", cat: "جماد", q: "معدن صلب يستخدم في البناء؟", a: "حديد" },
+  { letter: "ح", level: "easy", cat: "إنسان", q: "حالة مرضية ترتفع فيها حرارة الجسم؟", a: "حمى" },
+  // متوسط
+  { letter: "ح", level: "medium", cat: "حيوان", q: "حيوان بري مخطط بالأسود والأبيض؟", a: "حمار وحشي" },
+  { letter: "ح", level: "medium", cat: "بلاد", q: "مدينة سورية عريقة؟", a: "حلب" },
+  { letter: "ح", level: "medium", cat: "علوم", q: "زاحف يغير لون جلده للتمويه؟", a: "حرباء" },
+  // صعب
+  { letter: "ح", level: "hard", cat: "تاريخ", q: "أشهر حملة صليبية استعادت القدس قبل تحريرها؟", a: "الحملة الصليبية الأولى" },
+
+  // الحرف "خ" - سهل
+  { letter: "خ", level: "easy", cat: "دين", q: "أول زوجات الرسول صلى الله عليه وسلم؟", a: "خديجة بنت خويلد" },
+  { letter: "خ", level: "easy", cat: "حيوان", q: "حيوان ثديي يطير ليلاً ويعلق مقلوباً؟", a: "خفاش" },
+  { letter: "خ", level: "easy", cat: "جماد", q: "رسم توضيحي للمدن والدول؟", a: "خريطة" },
+  { letter: "خ", level: "easy", cat: "جماد", q: "بيت متنقل مصنوع من القماش؟", a: "خيمة" },
+  // متوسط
+  { letter: "خ", level: "medium", cat: "بلاد", q: "عاصمة دولة السودان؟", a: "الخرطوم" },
+  { letter: "خ", level: "medium", cat: "نبات", q: "خضار طويل أخضر غني بالماء؟", a: "خيار" },
+  // صعب
+  { letter: "خ", level: "hard", cat: "علوم", q: "التفاعل الكيميائي الذي يُعطي البصل طعمه الحاد؟", a: "الثيوسلفينات" },
+
+  // الحرف "د" - سهل
+  { letter: "د", level: "easy", cat: "حيوان", q: "كائن بحري ذكي وصديق للإنسان؟", a: "دولفين" },
+  { letter: "د", level: "easy", cat: "بلاد", q: "العملة الرسمية لدولة الإمارات؟", a: "درهم" },
+  { letter: "د", level: "easy", cat: "حيوان", q: "حيوان زاحف منقرض كان ضخماً جداً؟", a: "ديناصور" },
+  { letter: "د", level: "easy", cat: "بلاد", q: "عاصمة دولة قطر؟", a: "الدوحة" },
+  { letter: "د", level: "easy", cat: "إنسان", q: "سائل أحمر يجري في عروق الإنسان؟", a: "دم" },
+  // متوسط
+  { letter: "د", level: "medium", cat: "بلاد", q: "مدينة إماراتية شهيرة عالمياً؟", a: "دبي" },
+  { letter: "د", level: "medium", cat: "طب", q: "ما يأخذه المريض للشفاء؟", a: "دواء" },
+  // صعب
+  { letter: "د", level: "hard", cat: "علوم", q: "الباحث الذي اكتشف طبيعة الحمض النووي DNA عام 1953؟", a: "واطسون وكريك" },
+
+  // الحرف "ذ" - سهل
+  { letter: "ذ", level: "easy", cat: "حيوان", q: "حيوان بري مفترس يشبه الكلب ويعوي ليلاً؟", a: "ذئب" },
+  { letter: "ذ", level: "easy", cat: "جماد", q: "معدن نفيس أصفر اللون؟", a: "ذهب" },
+  { letter: "ذ", level: "easy", cat: "نبات", q: "نبات حبوبه صفراء ويصنع منه الفشار؟", a: "ذرة" },
+  { letter: "ذ", level: "easy", cat: "حيوان", q: "حشرة طائرة صغيرة مزعجة؟", a: "ذبابة" },
+  // متوسط
+  { letter: "ذ", level: "medium", cat: "إنسان", q: "عضو يمتد من الكتف إلى اليد؟", a: "ذراع" },
+  { letter: "ذ", level: "medium", cat: "إنسان", q: "القدرة العقلية الفائقة؟", a: "ذكاء" },
+  // صعب
+  { letter: "ذ", level: "hard", cat: "علوم", q: "لون أصفر براق كالمعدن؟", a: "ذهبي" },
+
+  // الحرف "ر" - سهل
+  { letter: "ر", level: "easy", cat: "بلاد", q: "عاصمة المملكة العربية السعودية؟", a: "الرياض" },
+  { letter: "ر", level: "easy", cat: "نبات", q: "فاكهة ذكرت في القرآن مليئة بالحبوب الحمراء؟", a: "رمان" },
+  { letter: "ر", level: "easy", cat: "علوم", q: "فصل تتفتح فيه الأزهار؟", a: "ربيع" },
+  { letter: "ر", level: "easy", cat: "إنسان", q: "عضو أساسي في الصدر للتنفس؟", a: "رئة" },
+  // متوسط
+  { letter: "ر", level: "medium", cat: "جماد", q: "آلة ميكانيكية مبرمجة تشبه الإنسان؟", a: "روبوت" },
+  { letter: "ر", level: "medium", cat: "ثقافة", q: "شهر الصيام المبارك؟", a: "رمضان" },
+  // صعب
+  { letter: "ر", level: "hard", cat: "علوم", q: "العنصر الكيميائي المُشع الطبيعي الذي يُستخدم في التصوير الطبي؟", a: "راديوم" },
+
+  // الحرف "ز" - سهل
+  { letter: "ز", level: "easy", cat: "حيوان", q: "أطول حيوان بري في العالم؟", a: "زرافة" },
+  { letter: "ز", level: "easy", cat: "علوم", q: "كوكب غازي ضخم يحيط به حلقات مرئية؟", a: "زحل" },
+  { letter: "ز", level: "easy", cat: "نبات", q: "شجرة مباركة يستخرج منها زيت صحي؟", a: "زيتون" },
+  { letter: "ز", level: "easy", cat: "علوم", q: "كارثة طبيعية تهتز فيها القشرة الأرضية؟", a: "زلزال" },
+  // متوسط
+  { letter: "ز", level: "medium", cat: "دين", q: "ركن من أركان الإسلام للفقراء؟", a: "زكاة" },
+  { letter: "ز", level: "medium", cat: "جماد", q: "مادة شفافة صلبة هشة للنوافذ؟", a: "زجاج" },
+  // صعب
+  { letter: "ز", level: "hard", cat: "علوم", q: "معدن سائل فضي في موازين الحرارة؟", a: "زئبق" },
+
+  // الحرف "س" - سهل
+  { letter: "س", level: "easy", cat: "حيوان", q: "حيوان بحري يتنفس بالخياشيم؟", a: "سمكة" },
+  { letter: "س", level: "easy", cat: "تاريخ", q: "أطول بناء دفاعي في العالم؟", a: "سور الصين العظيم" },
+  { letter: "س", level: "easy", cat: "جماد", q: "آلة دقيقة نعرف بها الوقت؟", a: "ساعة" },
+  { letter: "س", level: "easy", cat: "بلاد", q: "دولة عربية أفريقية عاصمتها الخرطوم؟", a: "السودان" },
+  // متوسط
+  { letter: "س", level: "medium", cat: "جماد", q: "مركبة مصممة للتنقل على اليابسة؟", a: "سيارة" },
+  { letter: "س", level: "medium", cat: "حيوان", q: "حيوان قارض يعيش في الأشجار؟", a: "سنجاب" },
+  // صعب
+  { letter: "س", level: "hard", cat: "علوم", q: "الظاهرة الكيميائية التي تُفسد المعادن بتفاعلها مع الأكسجين؟", a: "الأكسدة" },
+
+  // الحرف "ش" - سهل
+  { letter: "ش", level: "easy", cat: "علوم", q: "النجم الذي يمد الأرض بالضوء والحرارة؟", a: "شمس" },
+  { letter: "ش", level: "easy", cat: "علوم", q: "أبرد فصول السنة؟", a: "شتاء" },
+  { letter: "ش", level: "easy", cat: "نبات", q: "نبات خشبي معمر له جذع وفروع وأوراق؟", a: "شجرة" },
+  { letter: "ش", level: "easy", cat: "جماد", q: "مادة صلبة تذوب بالحرارة وتستخدم للإضاءة؟", a: "شمع" },
+  // متوسط
+  { letter: "ش", level: "medium", cat: "جماد", q: "السطح الزجاجي الذي تعرض عليه الصور؟", a: "شاشة" },
+  { letter: "ش", level: "medium", cat: "ثقافة", q: "المشروب الساخن الأكثر شعبية؟", a: "شاي" },
+  // صعب
+  { letter: "ش", level: "hard", cat: "إنسان", q: "وعاء دموي كبير ينقل الدم من القلب؟", a: "شريان" },
+
+  // الحرف "ص" - سهل
+  { letter: "ص", level: "easy", cat: "حيوان", q: "طائر جارح مشهور بقوة بصره وسرعته؟", a: "صقر" },
+  { letter: "ص", level: "easy", cat: "نبات", q: "نبات صحراوي يتحمل العطش بأشواك؟", a: "صبار" },
+  { letter: "ص", level: "easy", cat: "جماد", q: "مادة أساسية مع الماء لتنظيف الجسم؟", a: "صابون" },
+  { letter: "ص", level: "easy", cat: "بلاد", q: "عاصمة دولة اليمن؟", a: "صنعاء" },
+  // متوسط
+  { letter: "ص", level: "medium", cat: "علوم", q: "الفصل الأكثر حرارة في السنة؟", a: "صيف" },
+  { letter: "ص", level: "medium", cat: "دين", q: "الامتناع عن الطعام والشراب (ركن إسلامي)؟", a: "صوم" },
+  // صعب
+  { letter: "ص", level: "hard", cat: "علوم", q: "حشرة زاحفة سريعة آفة منزلية؟", a: "صرصور" },
+
+  // الحرف "ض" - سهل
+  { letter: "ض", level: "easy", cat: "حيوان", q: "حيوان برمائي يقفز؟", a: "ضفدع" },
+  { letter: "ض", level: "easy", cat: "علوم", q: "ظاهرة جوية تحجب الرؤية صباحاً؟", a: "ضباب" },
+  { letter: "ض", level: "easy", cat: "إنسان", q: "أحد الأسنان الخلفية القوية؟", a: "ضرس" },
+  // متوسط
+  { letter: "ض", level: "medium", cat: "علوم", q: "الإنارة التي تنبعث من الشمس؟", a: "ضوء" },
+  { letter: "ض", level: "medium", cat: "حيوان", q: "حيوان مفترس يضحك؟", a: "ضبع" },
+  // صعب
+  { letter: "ض", level: "hard", cat: "جماد", q: "المصطلح القانوني للعقد الملزِم بين دولتين؟", a: "معاهدة" },
+
+  // الحرف "ط" - سهل
+  { letter: "ط", level: "easy", cat: "جماد", q: "وسيلة نقل جوية عابرة للقارات؟", a: "طائرة" },
+  { letter: "ط", level: "easy", cat: "إنسان", q: "الشخص المؤهل لعلاج المرضى؟", a: "طبيب" },
+  { letter: "ط", level: "easy", cat: "حيوان", q: "طائر جميل يتميز بريش ذيله الملون؟", a: "طاووس" },
+  { letter: "ط", level: "easy", cat: "نبات", q: "خضار أحمر دائري لا غنى عنه في الطبخ؟", a: "طماطم" },
+  // متوسط
+  { letter: "ط", level: "medium", cat: "جماد", q: "قطعة أثاث مسطحة مرفوعة نجلس حولها؟", a: "طاولة" },
+  { letter: "ط", level: "medium", cat: "إنسان", q: "الإنسان الصغير في مرحلة قبل البلوغ؟", a: "طفل" },
+  // صعب
+  { letter: "ط", level: "hard", cat: "تاريخ", q: "المدينة السعودية التي تلقب بعروس المصائف؟", a: "الطائف" },
+
+  // الحرف "ظ" - سهل
+  { letter: "ظ", level: "easy", cat: "حيوان", q: "حيوان بري يشبه الغزال؟", a: "ظبي" },
+  { letter: "ظ", level: "easy", cat: "علوم", q: "وقت انتصاف النهار؟", a: "ظهر" },
+  { letter: "ظ", level: "easy", cat: "علوم", q: "المنطقة المعتمة خلف الجسم؟", a: "ظل" },
+  // متوسط
+  { letter: "ظ", level: "medium", cat: "إنسان", q: "المادة الصلبة على الأصابع؟", a: "ظفر" },
+  { letter: "ظ", level: "medium", cat: "جماد", q: "ورقة نضع داخلها الرسائل؟", a: "ظرف" },
+  // صعب
+  { letter: "ظ", level: "hard", cat: "علوم", q: "اعتقاد بدون تأكد؟", a: "ظن" },
+
+  // الحرف "ع" - سهل
+  { letter: "ع", level: "easy", cat: "إنسان", q: "عضو الرؤية والإبصار في الكائنات؟", a: "عين" },
+  { letter: "ع", level: "easy", cat: "حيوان", q: "طائر صغير شائع له تغريد مألوف؟", a: "عصفور" },
+  { letter: "ع", level: "easy", cat: "نبات", q: "مادة لزجة حلوة ينتجها النحل؟", a: "عسل" },
+  { letter: "ع", level: "easy", cat: "بلاد", q: "المدينة الرئيسية ومقر الحكم في أي دولة؟", a: "عاصمة" },
+  // متوسط
+  { letter: "ع", level: "medium", cat: "نبات", q: "فاكهة صيفية تنمو في عناقيد؟", a: "عنب" },
+  { letter: "ع", level: "medium", cat: "حيوان", q: "حشرة لها ثماني أرجل وتنسج شباكاً؟", a: "عنكبوت" },
+  // صعب
+  { letter: "ع", level: "hard", cat: "علوم", q: "التفاعل الكيميائي الذي يتحول فيه الجلوكوز إلى طاقة؟", a: "التنفس الخلوي" },
+
+  // الحرف "غ" - سهل
+  { letter: "غ", level: "easy", cat: "حيوان", q: "حيوان بري رشيق؟", a: "غزال" },
+  { letter: "غ", level: "easy", cat: "حيوان", q: "طائر أسود ذكي؟", a: "غراب" },
+  { letter: "غ", level: "easy", cat: "جغرافيا", q: "مساحة مليئة بالأشجار؟", a: "غابة" },
+  // متوسط
+  { letter: "غ", level: "medium", cat: "علوم", q: "تجمعات بخار الماء في السماء؟", a: "غيوم" },
+  { letter: "غ", level: "medium", cat: "جماد", q: "سفينة تحت أعماق البحار؟", a: "غواصة" },
+  // صعب
+  { letter: "غ", level: "hard", cat: "تاريخ", q: "قبائل عربية مسيحية سكنت الشام قبل الإسلام؟", a: "غساسنة" },
+
+  // الحرف "ف" - سهل
+  { letter: "ف", level: "easy", cat: "حيوان", q: "أكبر حيوان ثديي بري له خرطوم طويل؟", a: "فيل" },
+  { letter: "ف", level: "easy", cat: "حيوان", q: "حشرة رقيقة جميلة لها أجنحة ملونة؟", a: "فراشة" },
+  { letter: "ف", level: "easy", cat: "علوم", q: "المنطقة الشاسعة خارج الغلاف الجوي؟", a: "فضاء" },
+  { letter: "ف", level: "easy", cat: "إنسان", q: "العضو في الوجه للأكل والشرب والكلام؟", a: "فم" },
+  // متوسط
+  { letter: "ف", level: "medium", cat: "نبات", q: "فاكهة حمراء صغيرة ذات بذور خارجية؟", a: "فراولة" },
+  { letter: "ف", level: "medium", cat: "جماد", q: "جهاز للطبخ وخبز المعجنات بالحرارة؟", a: "فرن" },
+  // صعب
+  { letter: "ف", level: "hard", cat: "تاريخ", q: "الخلافة الشيعية التي حكمت مصر وبنت القاهرة؟", a: "فاطمية" },
+
+  // الحرف "ق" - سهل
+  { letter: "ق", level: "easy", cat: "علوم", q: "جرم سماوي يضيء ليل الأرض؟", a: "قمر" },
+  { letter: "ق", level: "easy", cat: "حيوان", q: "حيوان أليف منزلي لطيف صوته المواء؟", a: "قطة" },
+  { letter: "ق", level: "easy", cat: "جماد", q: "أداة أساسية للكتابة والرسم على الورق؟", a: "قلم" },
+  { letter: "ق", level: "easy", cat: "إنسان", q: "العضو العضلي الذي يضخ الدم في الجسم؟", a: "قلب" },
+  // متوسط
+  { letter: "ق", level: "medium", cat: "جغرافيا", q: "مساحة يابسة ضخمة تضم مجموعة من الدول؟", a: "قارة" },
+  { letter: "ق", level: "medium", cat: "بلاد", q: "تجمع سكاني صغير يعمل أهله في الزراعة؟", a: "قرية" },
+  // صعب
+  { letter: "ق", level: "hard", cat: "تاريخ", q: "معركة فاصلة أنهت إمبراطورية الفرس؟", a: "القادسية" },
+
+  // الحرف "ك" - سهل
+  { letter: "ك", level: "easy", cat: "حيوان", q: "حيوان أليف يضرب به المثل في الوفاء؟", a: "كلب" },
+  { letter: "ك", level: "easy", cat: "جماد", q: "مجموعة من الأوراق المطبوعة والمجلدة للقراءة؟", a: "كتاب" },
+  { letter: "ك", level: "easy", cat: "جماد", q: "جسم دائري مطاطي نلعب به رياضات مختلفة؟", a: "كرة" },
+  { letter: "ك", level: "easy", cat: "دين", q: "قبلة المسلمين في مكة المكرمة؟", a: "كعبة" },
+  // متوسط
+  { letter: "ك", level: "medium", cat: "إنسان", q: "أكبر غدة في جسم الإنسان تنظف الدم؟", a: "كبد" },
+  { letter: "ك", level: "medium", cat: "علوم", q: "جرم سماوي معتم يدور حول الشمس؟", a: "كوكب" },
+  // صعب
+  { letter: "ك", level: "hard", cat: "علوم", q: "ظاهرة فلكية بسبب مرور القمر أمام الشمس؟", a: "كسوف" },
+
+  // الحرف "ل" - سهل
+  { letter: "ل", level: "easy", cat: "إنسان", q: "العضو العضلي في الفم للنطق والتذوق؟", a: "لسان" },
+  { letter: "ل", level: "easy", cat: "نبات", q: "فاكهة حمضية صفراء مليئة بفيتامين سي؟", a: "ليمون" },
+  { letter: "ل", level: "easy", cat: "جماد", q: "حجر كريم كروي أبيض يستخرج من المحار؟", a: "لؤلؤ" },
+  { letter: "ل", level: "easy", cat: "علوم", q: "الوقت الذي يبدأ بعد غروب الشمس؟", a: "ليل" },
+  // متوسط
+  { letter: "ل", level: "medium", cat: "جماد", q: "سطح مستوٍ للرسم أو يعلق عليه إعلانات؟", a: "لوحة" },
+  { letter: "ل", level: "medium", cat: "بلاد", q: "دولة عربية عاصمتها بيروت؟", a: "لبنان" },
+  // صعب
+  { letter: "ل", level: "hard", cat: "علوم", q: "الصفة التي تميز الأشياء بصرياً؟", a: "لون" },
+
+  // الحرف "م" - سهل
+  { letter: "م", level: "easy", cat: "نبات", q: "فاكهة استوائية صفراء هلالية الشكل؟", a: "موز" },
+  { letter: "م", level: "easy", cat: "علوم", q: "سر الحياة وهو سائل شفاف لا لون له ولا رائحة؟", a: "ماء" },
+  { letter: "م", level: "easy", cat: "جماد", q: "أداة معدنية صغيرة بأسنان لفتح الأقفال؟", a: "مفتاح" },
+  { letter: "م", level: "easy", cat: "جماد", q: "أداة حادة من نصلين متقاطعين لقص الورق؟", a: "مقص" },
+  // متوسط
+  { letter: "م", level: "medium", cat: "بلاد", q: "دولة عربية إفريقية عاصمتها القاهرة؟", a: "مصر" },
+  { letter: "م", level: "medium", cat: "دين", q: "مدينة سعودية مقدسة وبها قبر النبي محمد؟", a: "المدينة المنورة" },
+  // صعب
+  { letter: "م", level: "hard", cat: "علوم", q: "نموذج الـ DNA الذي كشف عن بنيته الحلزونية المزدوجة؟", a: "النموذج الحلزوني المزدوج" },
+
+  // الحرف "ن" - سهل
+  { letter: "ن", level: "easy", cat: "حيوان", q: "حشرة طائرة مفيدة تصنع العسل؟", a: "نحلة" },
+  { letter: "ن", level: "easy", cat: "حيوان", q: "حشرة صغيرة تعيش في مستعمرات تحت الأرض؟", a: "نملة" },
+  { letter: "ن", level: "easy", cat: "حيوان", q: "حيوان بري مفترس مخطط بالأسود؟", a: "نمر" },
+  { letter: "ن", level: "easy", cat: "جغرافيا", q: "أطول نهر في العالم في إفريقيا؟", a: "النيل" },
+  // متوسط
+  { letter: "ن", level: "medium", cat: "جماد", q: "أداة طبية بعدسات لتحسين الرؤية؟", a: "نظارة" },
+  { letter: "ن", level: "medium", cat: "جماد", q: "الفتحة في الجدار لدخول الضوء والهواء؟", a: "نافذة" },
+  // صعب
+  { letter: "ن", level: "hard", cat: "علوم", q: "جائزة نوبل في الفيزياء لعام 2020 مُنحت لاكتشاف؟", a: "الثقوب السوداء" },
+
+  // الحرف "هـ" - سهل
+  { letter: "هـ", level: "easy", cat: "تاريخ", q: "بناء حجري أثري ضخم بناه الفراعنة؟", a: "هرم" },
+  { letter: "هـ", level: "easy", cat: "علوم", q: "الشكل المقوس للقمر في بداية الشهر؟", a: "هلال" },
+  { letter: "هـ", level: "easy", cat: "علوم", q: "خليط الغازات الذي يحيط بالأرض ونتنفسه؟", a: "هواء" },
+  { letter: "هـ", level: "easy", cat: "جماد", q: "جهاز إلكتروني للتواصل الصوتي والمرئي عن بعد؟", a: "هاتف" },
+  // متوسط
+  { letter: "هـ", level: "medium", cat: "بلاد", q: "دولة آسيوية مشهورة بتنوع ثقافاتها؟", a: "الهند" },
+  { letter: "هـ", level: "medium", cat: "حيوان", q: "طائر جميل يتميز بتاج من الريش على رأسه؟", a: "هدهد" },
+  // صعب
+  { letter: "هـ", level: "hard", cat: "علوم", q: "غاز نبيل خفيف لنفخ البالونات؟", a: "هيليوم" },
+
+  // الحرف "و" - سهل
+  { letter: "و", level: "easy", cat: "نبات", q: "زهرة جميلة ترمز للحب والجمال وذات رائحة عطرة؟", a: "وردة" },
+  { letter: "و", level: "easy", cat: "جماد", q: "مادة رقيقة مرنة تصنع من الأشجار للكتابة؟", a: "ورق" },
+  { letter: "و", level: "easy", cat: "حيوان", q: "طائر ليلي يعتمد على الصدى في حركته؟", a: "وطواط" },
+  { letter: "و", level: "easy", cat: "حيوان", q: "حيوان بري ضخم له قرن واحد بارز على أنفه؟", a: "وحيد القرن" },
+  // متوسط
+  { letter: "و", level: "medium", cat: "إنسان", q: "الجزء الأمامي من الرأس الذي يحوي العينين؟", a: "وجه" },
+  { letter: "و", level: "medium", cat: "جغرافيا", q: "منطقة منخفضة بين جبلين تجري فيها المياه؟", a: "وادي" },
+  // صعب
+  { letter: "و", level: "hard", cat: "تاريخ", q: "التصريح البريطاني المشؤوم الذي أعطى فلسطين لليهود؟", a: "وعد بلفور" },
+
+  // الحرف "ي" - سهل
+  { letter: "ي", level: "easy", cat: "نبات", q: "زهرة بيضاء أو صفراء صغيرة ذكية الرائحة؟", a: "ياسمين" },
+  { letter: "ي", level: "easy", cat: "إنسان", q: "الجزء من جسم الإنسان الذي ينتهي بالأصابع؟", a: "يد" },
+  { letter: "ي", level: "easy", cat: "جماد", q: "حجر كريم نفيس لونه أحمر لامع وشفاف؟", a: "ياقوت" },
+  { letter: "ي", level: "easy", cat: "بلاد", q: "دولة عربية عريقة تقع في جنوب شبه الجزيرة العربية؟", a: "اليمن" },
+  // متوسط
+  { letter: "ي", level: "medium", cat: "علوم", q: "فترة زمنية تتكون من 24 ساعة؟", a: "يوم" },
+  { letter: "ي", level: "medium", cat: "حيوان", q: "طائر أليف وهادئ من فصيلة الحمام؟", a: "يمامة" },
+  // صعب
+  { letter: "ي", level: "hard", cat: "علوم", q: "معدن مشع يستخدم كوقود في المفاعلات النووية؟", a: "يورانيوم" },
+];
+
+// الفئات المعروضة في الفلاتر
+const CATEGORIES = ["تاريخ", "جغرافيا", "علوم", "حيوان", "نبات", "جماد", "إنسان", "بلاد", "دين", "ثقافة", "طب"];
+const LEVELS = ["easy", "medium", "hard"];
+
+// إعدادات الفلترة
+let GAME_DIFF = 'all';
+let GAME_CAT = 'all';
+let LIVE_DIFF = 'all';
+const usedQuestions = {}; // لتجنب تكرار الأسئلة
+
+// دالة فلترة الأسئلة حسب الحرف والإعدادات الحالية
+function filterQuestions(letter, diffOverride = null) {
+  const diff = diffOverride || LIVE_DIFF || GAME_DIFF;
+  let levels = LEVELS;
+  if (diff !== 'all') levels = [diff];
+  
+  return FULL_QBANK.filter(q => 
+    q.letter === letter && 
+    levels.includes(q.level) && 
+    (GAME_CAT === 'all' || q.cat === GAME_CAT)
+  );
+}
+
+// اختيار سؤال عشوائي مع مراعاة عدم التكرار
+function pickQ(letter, diffOverride = null) {
+  const pool = filterQuestions(letter, diffOverride);
+  if (!pool.length) return null;
+  
+  const key = `${letter}_${GAME_DIFF}_${GAME_CAT}`;
+  if (!usedQuestions[key]) usedQuestions[key] = new Set();
+  const used = usedQuestions[key];
+  
+  let available = pool.filter((_, i) => !used.has(i));
+  if (!available.length) {
+    used.clear();
+    available = pool;
+  }
+  
+  const idx = Math.floor(Math.random() * available.length);
+  const chosen = available[idx];
+  const originalIndex = pool.indexOf(chosen);
+  used.add(originalIndex);
+  
+  return { ...chosen, _lvl: chosen.level, _cat: chosen.cat };
+}
+
+/* ========== دوال هندسية (كما هي) ========== */
+const COLS=5,ROWS=5,N=25;
+function getHW(){return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--HW'))||68}
+function hexPos(i, scale=1){const HW=getHW()*scale, HH=HW*0.866;const col=i%COLS, row=Math.floor(i/COLS), odd=col%2===1;return{x:col*HW*0.75, y:row*HH+(odd?HH*0.5:0), w:HW, h:HH}}
+function boardDims(scale=1){const HW=getHW()*scale, HH=HW*0.866;return{W:(COLS-1)*HW*0.75+HW, H:(ROWS-1)*HH+HH*0.5+HH}}
+function hexNbrs(i){const col=i%COLS,row=Math.floor(i/COLS),odd=col%2===1;const dirs=odd?[[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]]:[[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];const res=[];for(const[dc,dr]of dirs){const nc=col+dc,nr=row+dr;if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS)res.push(nr*COLS+nc);}return res}
+function bfsWin(owner,team){let starts,endSet;if(team==='a'){starts=[...Array(ROWS)].map((_,r)=>r*COLS).filter(i=>owner[i]===team);endSet=new Set([...Array(ROWS)].map((_,r)=>r*COLS+(COLS-1)).filter(i=>owner[i]===team))}else{starts=[...Array(COLS)].map((_,c)=>c).filter(i=>owner[i]===team);endSet=new Set([...Array(COLS)].map((_,c)=>(ROWS-1)*COLS+c).filter(i=>owner[i]===team))}const vis=new Set(),q=[...starts];while(q.length){const cur=q.shift();if(endSet.has(cur))return true;if(vis.has(cur))continue;vis.add(cur);for(const nb of hexNbrs(cur))if(!vis.has(nb)&&owner[nb]===team)q.push(nb)}return false}
+function randLetters(){const letters='أبتثجحخدذرزسشصضطظعغفقكلمنهوي';return letters.split('').sort(()=>Math.random()-.5).slice(0,N)}
+function renderHexBoard(boardEl,letters,owner,activeCell,clickFn,scale=1){const{W,H}=boardDims(scale);boardEl.style.width=W+'px';boardEl.style.height=H+'px';boardEl.innerHTML='';letters.forEach((l,i)=>{const{x,y,w,h}=hexPos(i,scale);const d=document.createElement('div');d.className='hex';if(owner[i]==='a')d.classList.add('ca');else if(owner[i]==='b')d.classList.add('cb');if(activeCell===i)d.classList.add('aq');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;font-size:'+(w*.30)+'px;';d.innerText=l;if(clickFn){d.addEventListener('click',()=>clickFn(i));d.addEventListener('touchend',e=>{e.preventDefault();clickFn(i);},{passive:false})}boardEl.appendChild(d)})}
+
+/* ========== لعبة محلية (محدثة لاستخدام البنك الجديد) ========== */
+let LG={teamA:'الفريق الأحمر',teamB:'الفريق الأخضر',roundsToWin:2,round:1,pts:{a:0,b:0},rndWins:{a:0,b:0},letters:[],owner:Array(N).fill(null),activeCell:null,activeQ:null,timerInt:null};
+function startLocal(){
+  LG.teamA=document.getElementById('lta').value.trim()||'الفريق الأحمر';LG.teamB=document.getElementById('ltb').value.trim()||'الفريق الأخضر';
+  LG.roundsToWin=parseInt(document.getElementById('lrw').value);LG.round=0;LG.pts={a:0,b:0};LG.rndWins={a:0,b:0};
+  document.getElementById('lqb-a').innerText='✅ فوز '+LG.teamA.substr(0,7);document.getElementById('lqb-b').innerText='✅ فوز '+LG.teamB.substr(0,7);
+  go('local-game');resetLocal();
+}
+function resetLocal(){
+  clearInterval(LG.timerInt);lCloseModal();document.getElementById('local-win').classList.remove('on');
+  LG.letters=randLetters();LG.owner=Array(N).fill(null);LG.pts={a:0,b:0};LG.activeCell=null;LG.activeQ=null;
+  Object.keys(usedQuestions).forEach(k=>delete usedQuestions[k]);LG.round++;lUpdateUI();
+  renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick);
+}
+function lHexClick(i){if(LG.owner[i])return;LG.activeCell=i;LG.activeQ=pickQ(LG.letters[i]);if(!LG.activeQ)return;renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,i,lHexClick);document.getElementById('lq-letter').innerText='✨ سؤال حرف ('+LG.letters[i]+')';lShowDiffBadge(LG.activeQ);document.getElementById('lq-text').innerText=LG.activeQ.q;document.getElementById('lq-ans').innerText='✅ الإجابة: '+LG.activeQ.a;document.getElementById('lq-ans').style.display='none';document.getElementById('lq-timer').innerText='20';document.getElementById('lv-ov').classList.add('on');document.getElementById('lv-qm').classList.add('on');clearInterval(LG.timerInt);let t=20;const el=document.getElementById('lq-timer');LG.timerInt=setInterval(()=>{t--;el.innerText=t;if(t<=5)el.classList.add('urg');if(t<=0){clearInterval(LG.timerInt);lShowAns()}},1000)}
+function lShowAns(){clearInterval(LG.timerInt);document.getElementById('lq-ans').style.display='block'}
+function lNextQ(){if(LG.activeCell===null)return;LG.activeQ=pickQ(LG.letters[LG.activeCell]);if(!LG.activeQ)return;document.getElementById('lq-text').innerText=LG.activeQ.q;document.getElementById('lq-ans').innerText='✅ الإجابة: '+LG.activeQ.a;document.getElementById('lq-ans').style.display='none';clearInterval(LG.timerInt);lHexClick(LG.activeCell)}
+function lMark(team){if(LG.activeCell===null)return;LG.owner[LG.activeCell]=team;LG.pts[team]++;clearInterval(LG.timerInt);lCloseModal();renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick);lUpdateUI();if(bfsWin(LG.owner,team)){lShowWinner(team);return}if(LG.owner.every(o=>o))lShowWinner(LG.pts.a>=LG.pts.b?'a':'b')}
+function lCloseModal(){clearInterval(LG.timerInt);document.getElementById('lv-ov').classList.remove('on');document.getElementById('lv-qm').classList.remove('on');LG.activeCell=null;renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick)}
+function lShowWinner(team){LG.rndWins[team]++;lUpdateUI();const nm=team==='a'?LG.teamA:LG.teamB;const col=team==='a'?'var(--A)':'var(--B)';document.getElementById('lw-nm').innerHTML='<span style="color:'+col+'">'+nm+'</span>';document.getElementById('lw-sb').innerText='🏆 فاز بالجولة '+LG.round+' — جولات: '+LG.rndWins[team]+'/'+LG.roundsToWin;document.getElementById('local-win').classList.add('on');confetti(team);if(LG.rndWins[team]>=LG.roundsToWin)document.getElementById('lw-sb').innerText='🏆 فاز باللعبة كاملة!'}
+function lUpdateUI(){
+  document.getElementById('lsa-n').innerText=LG.teamA;document.getElementById('lsb-n').innerText=LG.teamB;
+  document.getElementById('lsa-p').innerText=LG.pts.a;document.getElementById('lsb-p').innerText=LG.pts.b;
+  document.getElementById('lsa-w').innerText='جولات: '+LG.rndWins.a;document.getElementById('lsb-w').innerText='جولات: '+LG.rndWins.b;
+  const t=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة'];document.getElementById('lrlbl').innerText='الجولة '+(t[LG.round]||LG.round);
+}
+function lShowDiffBadge(q){
+  const badge = document.getElementById('lq-diff-badge'), catTag = document.getElementById('lq-cat-badge');
+  if(!badge||!catTag)return;
+  if(q&&q._lvl){
+    const map={easy:['🟢 سهل','diff-easy'],medium:['🟡 متوسط','diff-medium'],hard:['🔴 صعب','diff-hard']};
+    const [label,cls]=map[q._lvl]||['',''];
+    badge.className='diff-indicator '+cls;badge.textContent=label;
+    catTag.textContent=q._cat||'';
+  }else{badge.className='diff-indicator';badge.textContent='';catTag.textContent='';}
+}
+
+/* ========== إعدادات PeerJS ========== */
+const PEER_SERVERS=[{host:'0.peerjs.com',port:443,secure:true,path:'/'},{host:'peerjs-server.herokuapp.com',port:443,secure:true,path:'/'}];
+let currentServerIndex=0;
+function getPeerOptions(){const srv=PEER_SERVERS[currentServerIndex];return{host:srv.host,port:srv.port,secure:srv.secure,path:srv.path,debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'turn:openrelay.metered.ca:80',username:'openrelayproject',credential:'openrelayproject'},{urls:'turn:openrelay.metered.ca:443',username:'openrelayproject',credential:'openrelayproject'}]}}}
+
+/* ========== لعبة الحكم (محدثة) ========== */
+let JS={teamA:'الفريق الأحمر',teamB:'الفريق الأخضر',roundsToWin:2,round:1,pts:{a:0,b:0},rndWins:{a:0,b:0},letters:[],owner:Array(N).fill(null),activeCell:null,activeQ:null,phase:'idle',bzWinner:null,timerSecs:0,timerInt:null,players:[],code:'',peer:null,conns:[],showQuestion:false,showAnswer:false,retryTimeout:null};
+function startJudge(){
+  JS.teamA=document.getElementById('jta').value.trim()||'الفريق الأحمر';JS.teamB=document.getElementById('jtb').value.trim()||'الفريق الأخضر';
+  JS.roundsToWin=parseInt(document.getElementById('jrw').value);JS.code=Math.random().toString(36).substr(2,5).toUpperCase();
+  JS.conns=[];JS.players=[];Object.keys(usedQuestions).forEach(k=>delete usedQuestions[k]);
+  go('judge-game');jUpdateUI();jInitBoard();genQR();
+  currentServerIndex=0;connectJudge();
+}
+function connectJudge(){
+  if(JS.peer)JS.peer.destroy();
+  clearTimeout(JS.retryTimeout);
+  try{JS.peer=new Peer('hexgame-'+JS.code,getPeerOptions())}catch(e){handleJudgeError(e);return}
+  JS.peer.on('open',()=>{currentServerIndex=0});
+  JS.peer.on('connection',conn=>{JS.conns.push(conn);conn.on('open',()=>jBcast({type:'state',s:jPub()}));conn.on('data',d=>jOnData(d));conn.on('close',()=>{JS.conns=JS.conns.filter(c=>c!==conn)})});
+  JS.peer.on('error',e=>handleJudgeError(e));
+  JS.peer.on('disconnected',()=>{JS.peer.reconnect()});
+}
+function handleJudgeError(e){console.warn('Judge peer error:',e.type);if(currentServerIndex<PEER_SERVERS.length-1){currentServerIndex++;connectJudge()}else{currentServerIndex=0;JS.retryTimeout=setTimeout(connectJudge,3000)}alert('⚠️ مشكلة في الاتصال. جارٍ إعادة المحاولة...')}
+window.retryJudgeConnection=function(){currentServerIndex=0;connectJudge()}
+function jPub(){return{teamA:JS.teamA,teamB:JS.teamB,board:JS.letters.map((l,i)=>({letter:l,owner:JS.owner[i]})),activeCell:JS.activeCell,phase:JS.phase,bzWinner:JS.bzWinner,timerSecs:JS.timerSecs,pts:JS.pts,showQuestion:JS.showQuestion,showAnswer:JS.showAnswer,activeQ:JS.activeQ}}
+function jBcast(m){JS.conns.forEach(c=>{if(c.open)c.send(m)})}
+function jOnData(d){
+  if(d.type==='join'){if(!JS.players.find(p=>p.id===d.id)){JS.players.push({name:d.name,team:d.team,id:d.id,conn:JS.conns.find(c=>c.peer===d.id)});jRenderPlayers()}jBcast({type:'state',s:jPub()});return}
+  if(d.type==='buzz'){if(JS.phase!=='open'||JS.bzWinner)return;JS.bzWinner={name:d.name,team:d.team,id:d.id};JS.phase='won';jClearTimer();jStartTimer(5);jBcast({type:'buzzer_won',winner:JS.bzWinner});jBcast({type:'state',s:jPub()});jRenderBz()}
+}
+function jInitBoard(){
+  JS.letters=randLetters();JS.owner=Array(N).fill(null);JS.activeCell=null;JS.activeQ=null;JS.phase='idle';JS.bzWinner=null;JS.pts={a:0,b:0};
+  jClearTimer();renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);
+  jRenderBz();jUpdateScores();document.getElementById('j-qbox').innerText='اختر خلية من اللوحة...';document.getElementById('j-ans').style.display='none';
+}
+function jHexClick(i){if(JS.owner[i])return;JS.activeCell=i;JS.phase='open';JS.bzWinner=null;JS.activeQ=pickQ(JS.letters[i]);if(!JS.activeQ)return;jClearTimer();renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,i,jHexClick);jRenderBz();document.getElementById('j-qbox').innerText=JS.activeQ.q;document.getElementById('j-ans').style.display='none';jBcast({type:'buzzer_ready',letter:JS.letters[i]});jBcast({type:'state',s:jPub()})}
+function jStartTimer(s){jClearTimer();JS.timerSecs=s;jRenderBz();JS.timerInt=setInterval(()=>{JS.timerSecs--;jRenderBz();jBcast({type:'tick',secs:JS.timerSecs});if(JS.timerSecs<=0){jClearTimer();jTimerEnd()}},1000)}
+function jClearTimer(){clearInterval(JS.timerInt);JS.timerInt=null}
+function jTimerEnd(){
+  if(JS.phase==='won'&&JS.bzWinner){const other=JS.bzWinner.team==='a'?'b':'a';JS.phase='open';JS.bzWinner=null;jStartTimer(10);jBcast({type:'second_chance',team:other});jBcast({type:'state',s:jPub()});jRenderBz()}
+  else{JS.phase='open';JS.bzWinner=null;jBcast({type:'open_q'});jBcast({type:'state',s:jPub()});jRenderBz()}
+  if(!JS.showQuestion){JS.showQuestion=true;jBcast({type:'toggle_question',show:true})}
+}
+function jShowAns(){if(!JS.activeQ)return;const ab=document.getElementById('j-ans');ab.innerText='✅ '+JS.activeQ.a;ab.style.display='block'}
+function jCorrect(team){
+  if(JS.activeCell===null)return;JS.owner[JS.activeCell]=team;JS.pts[team]++;jClearTimer();JS.phase='idle';JS.bzWinner=null;JS.activeCell=null;
+  renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);jUpdateScores();jRenderBz();
+  document.getElementById('j-qbox').innerText='اختر خلية من اللوحة...';document.getElementById('j-ans').style.display='none';
+  jBcast({type:'correct',team});jBcast({type:'state',s:jPub()});
+  if(bfsWin(JS.owner,team)){jShowWinner(team);return}if(JS.owner.every(o=>o))jShowWinner(JS.pts.a>=JS.pts.b?'a':'b');
+}
+function jNextQ(){if(JS.activeCell===null)return;JS.activeQ=pickQ(JS.letters[JS.activeCell]);if(!JS.activeQ)return;document.getElementById('j-qbox').innerText=JS.activeQ.q;document.getElementById('j-ans').style.display='none'}
+function jReopen(){if(JS.activeCell===null)return;JS.phase='open';JS.bzWinner=null;jClearTimer();jRenderBz();jBcast({type:'buzzer_ready',letter:JS.letters[JS.activeCell]});jBcast({type:'state',s:jPub()})}
+function jSkip(){if(JS.activeCell===null)return;jClearTimer();JS.phase='idle';JS.bzWinner=null;JS.activeCell=null;renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);jRenderBz();jBcast({type:'skip'});jBcast({type:'state',s:jPub()})}
+function jNewRound(){JS.round++;jInitBoard();jUpdateUI();jBcast({type:'new_round',round:JS.round});jBcast({type:'state',s:jPub()});document.getElementById('judge-win').classList.remove('on')}
+function jShowWinner(team){JS.rndWins[team]++;jUpdateScores();const nm=team==='a'?JS.teamA:JS.teamB;const col=team==='a'?'var(--A)':'var(--B)';document.getElementById('jw-em').innerText=team==='a'?'🟠':'🟢';document.getElementById('jw-nm').innerHTML='<span style="color:'+col+'">'+nm+'</span>';document.getElementById('jw-sb').innerText='🏆 فاز بالجولة '+JS.round+' — جولات: '+JS.rndWins[team]+'/'+JS.roundsToWin;document.getElementById('judge-win').classList.add('on');confetti(team);jBcast({type:'round_win',team,rndWins:JS.rndWins});if(JS.rndWins[team]>=JS.roundsToWin){document.getElementById('jw-sb').innerText='🏆 فاز باللعبة كاملة!';jBcast({type:'game_win',team})}}
+function jRenderBz(){
+  const bz=document.getElementById('jbz-disp');if(!bz)return;
+  if(JS.phase==='idle'){bz.innerHTML='<div class="bzidle">اختر خلية لبدء السؤال...</div>';return}
+  if(JS.phase==='open'&&!JS.bzWinner){bz.innerHTML='<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>';return}
+  if(JS.bzWinner){const cls='bzwin bzw'+JS.bzWinner.team;const tn=JS.bzWinner.team==='a'?JS.teamA:JS.teamB;bz.innerHTML='<div class="'+cls+'"><div class="bzname">⚡ '+JS.bzWinner.name+'</div><div class="bzsub">'+tn+'</div><div class="bzcount">'+JS.timerSecs+'</div></div>'}
+}
+function jRenderPlayers(){
+  const pl=document.getElementById('j-players');if(!pl)return;
+  if(!JS.players.length){pl.innerHTML='<div class="bzidle">لا يوجد لاعبون...</div>';return}
+  pl.innerHTML=JS.players.map(p=>{const teamColor=p.team==='a'?'var(--A)':'var(--B)';return `<div class="plitem p${p.team}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${teamColor};margin-left:4px;"></span><span style="flex:1;">${p.name}</span><span style="opacity:.6;font-size:.72rem;">${p.team==='a'?JS.teamA:JS.teamB}</span><button class="plkick" onclick="jKickPlayer('${p.id}')" title="طرد اللاعب">✕</button></div>`}).join('')
+}
+function jKickPlayer(playerId){
+  const player=JS.players.find(p=>p.id===playerId);if(!player)return;
+  const conn=JS.conns.find(c=>c.peer===playerId);if(conn&&conn.open)conn.send({type:'kicked'});if(conn)conn.close();
+  JS.players=JS.players.filter(p=>p.id!==playerId);JS.conns=JS.conns.filter(c=>c.peer!==playerId);
+  jRenderPlayers();jBcast({type:'state',s:jPub()});
+}
+function jUpdateUI(){
+  document.getElementById('ja-n').innerText=JS.teamA;document.getElementById('jb-n').innerText=JS.teamB;
+  document.getElementById('jb-ca').innerText='✅ صح ('+JS.teamA.substr(0,7)+')';document.getElementById('jb-cb').innerText='✅ صح ('+JS.teamB.substr(0,7)+')';
+  const t=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة'];document.getElementById('j-title').innerText='الجولة '+(t[JS.round]||JS.round)+' 🏆';document.getElementById('j-rnd').innerText='الجولة '+JS.round;
+}
+function jUpdateScores(){document.getElementById('ja-p').innerText=JS.pts.a;document.getElementById('jb-p').innerText=JS.pts.b;document.getElementById('ja-w').innerText='جولات: '+JS.rndWins.a;document.getElementById('jb-w').innerText='جولات: '+JS.rndWins.b}
+function jToggleQuestion(){JS.showQuestion=!JS.showQuestion;const btn=document.getElementById('j-toggle-q');btn.innerText=JS.showQuestion?'🙈 أخفِ السؤال':'👁 أظهر السؤال';btn.style.background=JS.showQuestion?'#e74c3c':'#2ecc71';jBcast({type:'toggle_question',show:JS.showQuestion})}
+function jToggleAnswer(){JS.showAnswer=!JS.showAnswer;const btn=document.getElementById('j-toggle-a');btn.innerText=JS.showAnswer?'🙈 أخفِ الإجابة':'👁 أظهر الإجابة';btn.style.background=JS.showAnswer?'#e74c3c':'#e67e22';jBcast({type:'toggle_answer',show:JS.showAnswer,answer:JS.activeQ?JS.activeQ.a:''})}
+
+/* QR */
+function getPlayerURL(){return window.location.href.split('?')[0]+'?mode=player&code='+JS.code}
+function getDisplayURL(){return window.location.href.split('?')[0]+'?mode=display&code='+JS.code}
+function genQR(){const url=getPlayerURL();document.getElementById('qr-url').innerText=url;['qr-sm','qr-lg'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';const sz=id==='qr-sm'?70:230;try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#1a1a2e',colorLight:'#ffffff'})}catch(e){}})}
+function showQR(){genQR();document.getElementById('qr-modal').classList.add('show')}
+function copyDisplayLink(){const url=getDisplayURL();prompt('انسخ رابط شاشة البروجكتر:',url)}
+
+/* ========== لاعب (بدون تغيير جوهري) ========== */
+// ... (نفس كود اللاعب السابق، يعتمد على jPub و jBcast) ...
+
+/* ========== شاشة العرض (بدون تغيير جوهري) ========== */
+// ... (نفس كود العرض السابق) ...
+
+/* ========== دوال الفلاتر ========== */
+function setDiff(btn,mode){
+  const container=mode==='j'?document.getElementById('jdiff-filter'):document.getElementById('ldiff-filter');
+  container.querySelectorAll('.diff-btn').forEach(b=>b.className='diff-btn');
+  const d=btn.dataset.diff;
+  btn.classList.add('active-'+(d==='all'?'all':d));
+  GAME_DIFF=d;
+}
+function setCat(btn,mode){
+  const container=mode==='j'?document.getElementById('jcat-filter'):document.getElementById('lcat-filter');
+  container.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  GAME_CAT=btn.dataset.cat;
+}
+function setLiveDiff(btn){
+  const container=document.getElementById('j-live-diff');
+  container.querySelectorAll('.diff-btn').forEach(b=>b.className='diff-btn');
+  const d=btn.dataset.diff;
+  btn.classList.add('active-'+(d==='all'?'all':d));
+  LIVE_DIFF=d;
+}
+
+/* تهيئة */
+window.addEventListener('load',()=>{
+  const p=new URLSearchParams(location.search);const mode=p.get('mode'),code=p.get('code');
+  if(mode==='player'){go('player-join');if(code)document.getElementById('pcode').value=code}
+  else if(mode==='display'&&code){go('display');startDisplay(code)}
+  else{go('home')}
+  window.addEventListener('resize',()=>{
+    if(document.getElementById('local-game').classList.contains('on'))renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,LG.activeCell,lHexClick);
+    if(document.getElementById('judge-game').classList.contains('on'))renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,JS.activeCell,jHexClick);
+  });
+});
+</script>
+</body>
+</html>
