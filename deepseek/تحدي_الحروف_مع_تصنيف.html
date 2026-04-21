@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<title>🏆 تحدي الحروف - النسخة النهائية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ===== المتغيرات ===== */
+:root {
+  --A:    #FF5722;  --A2: #BF360C;
+  --B:    #4CAF50;  --B2: #1B5E20;
+  --GOLD: #FFD700;
+  --DARK: #0d0f1a;
+  --S1:   #161928;
+  --S2:   #1d2235;
+  --TXT:  #f0f4ff;
+  --DIM:  rgba(240,244,255,.5);
+  --BDR:  rgba(255,255,255,.1);
+  --HW: clamp(44px,7.5vw,74px);
+  --HH: calc(var(--HW) * 0.866);
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow-card: 0 8px 32px rgba(0,0,0,.45);
+  --shadow-btn: 0 4px 16px rgba(0,0,0,.3);
+}
+
+/* ===== إعادة الضبط ===== */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(--TXT);background:var(--DARK);}
+.scr{display:none;width:100vw;height:100vh;overflow-y:auto;overflow-x:hidden;}
+.scr.on{display:flex;}
+
+/* ===== الشاشة الرئيسية ===== */
+#home{
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(14px,3vh,26px);padding:clamp(20px,4vw,40px) clamp(16px,5vw,32px);
+  background:var(--DARK);
+  position:relative;
+  overflow:hidden;
+}
+#home::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 55% 45% at 15% 20%, rgba(255,87,34,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 80%, rgba(76,175,80,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 50% 50%, rgba(255,215,0,.05) 0%, transparent 70%);
+}
+#home::after{
+  content:'';position:absolute;inset:0;z-index:0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:32px 32px;
+}
+.home-title{position:relative;z-index:1;text-align:center;}
+.home-title h1{
+  font-size:clamp(2rem,6vw,3.4rem);font-weight:900;line-height:1.1;
+  background:linear-gradient(135deg, #fff 20%, var(--GOLD) 60%, #ff9800 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 2px 12px rgba(255,215,0,.25));
+}
+.home-title p{font-size:clamp(.85rem,2.2vw,1.05rem);color:var(--DIM);margin-top:4px;font-weight:600;}
+.home-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,2vw,16px);width:100%;max-width:500px}
+.hbtn{
+  background:var(--S1);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-lg);
+  padding:clamp(16px,3vh,24px) clamp(12px,2vw,18px);cursor:pointer;
+  text-align:center;box-shadow:var(--shadow-card);transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  font-family:'Cairo',sans-serif;
+  position:relative;overflow:hidden;
+}
+.hbtn::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(135deg,rgba(255,255,255,.05),transparent);
+  pointer-events:none;
+}
+.hbtn:hover,.hbtn:active{transform:translateY(-3px) scale(1.02);border-color:rgba(255,255,255,.18);box-shadow:0 16px 40px rgba(0,0,0,.5);}
+.hbtn .ic{font-size:clamp(1.8rem,4vw,2.6rem);display:block;margin-bottom:6px;}
+.hbtn h2{font-size:clamp(.85rem,2vw,1.05rem);font-weight:900;color:#fff;margin-bottom:3px;}
+.hbtn p{font-size:clamp(.68rem,1.5vw,.8rem);color:var(--DIM);line-height:1.4;}
+.hbtn.span2{grid-column:span 2}
+.hbtn.ca{border-color:rgba(255,87,34,.25);background:linear-gradient(135deg,rgba(255,87,34,.12),var(--S1));}
+.hbtn.cb{border-color:rgba(76,175,80,.25);background:linear-gradient(135deg,rgba(76,175,80,.12),var(--S1));}
+.hbtn.cg{border-color:rgba(255,215,0,.2);background:linear-gradient(135deg,rgba(255,215,0,.08),var(--S1));}
+
+/* ===== الإعداد المحلي ===== */
+#local-setup{
+  flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3vh,20px);
+  padding:clamp(20px,4vw,40px) clamp(16px,5vw,24px);
+  background:var(--DARK);
+  position:relative;overflow:hidden;
+}
+#local-setup::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 50% 50% at 25% 30%, rgba(255,87,34,.12) 0%, transparent 60%),
+             radial-gradient(ellipse 50% 50% at 75% 70%, rgba(76,175,80,.12) 0%, transparent 60%);
+}
+.scard{
+  position:relative;z-index:1;
+  background:var(--S1);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--radius-lg);padding:clamp(20px,4vw,28px) clamp(18px,4vw,26px);
+  width:100%;max-width:450px;box-shadow:var(--shadow-card);
+}
+.scard h2{font-size:clamp(1.05rem,2.5vw,1.3rem);font-weight:900;color:var(--GOLD);text-align:center;margin-bottom:clamp(14px,3vh,20px);}
+.srow{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,13px);margin-bottom:clamp(10px,2vh,14px);}
+.sf label{display:block;font-size:.78rem;font-weight:700;margin-bottom:5px;opacity:.85;}
+.sf.fa label{color:var(--A)}.sf.fb label{color:var(--B)}
+.sf input,.sf select{
+  width:100%;background:var(--S2);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:var(--radius-sm);
+  padding:clamp(8px,1.5vh,12px) 12px;
+  font-family:'Cairo',sans-serif;font-size:clamp(.85rem,2vw,.95rem);font-weight:700;
+  text-align:center;outline:none;color:var(--TXT);
+  transition:border-color .2s;
+}
+.sf input:focus,.sf select:focus{border-color:var(--GOLD);}
+.sf select option{background:var(--S2);}
+.btn-go{
+  width:100%;padding:clamp(12px,2vh,16px);border:none;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--GOLD),#e67e22);color:#0d0f1a;
+  font-family:'Cairo',sans-serif;font-size:clamp(1rem,2.5vw,1.15rem);font-weight:900;cursor:pointer;
+  box-shadow:0 5px 20px rgba(255,180,0,.3);margin-top:6px;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.btn-go:hover,.btn-go:active{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,180,0,.45);}
+.btn-bk{
+  position:relative;z-index:1;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  border-radius:40px;padding:10px 24px;
+  font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;color:var(--DIM);
+  transition:all .2s;
+}
+.btn-bk:hover{background:rgba(255,255,255,.13);color:var(--TXT);}
+
+/* ===== اللعبة المحلية ===== */
+#local-game{flex-direction:row;position:relative;overflow:hidden;}
+#local-game::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 45% 60% at 0% 50%, rgba(255,87,34,.14) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 60% at 100% 50%, rgba(76,175,80,.14) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(76,175,80,.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 50% 100%, rgba(76,175,80,.08) 0%, transparent 50%),
+    var(--DARK);
+}
+.local-side{
+  position:relative;z-index:2;
+  width:clamp(60px,13vw,125px);flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:clamp(10px,2vh,16px) clamp(5px,1vw,10px);
+  background:rgba(0,0,0,.25);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.05);
+}
+.sblock{text-align:center;background:rgba(0,0,0,.3);border-radius:var(--radius-md);padding:clamp(8px,1.5vh,13px) 8px;width:100%;}
+.sblock .slbl{font-size:clamp(.65rem,1.5vw,.78rem);font-weight:700;color:rgba(255,255,255,.7);margin-bottom:2px;}
+.sblock .sval{font-size:clamp(1.6rem,4vw,2.8rem);font-weight:900;color:white;line-height:1.1;}
+.swn{font-size:clamp(.6rem,1.3vw,.72rem);color:rgba(255,255,255,.5);margin-top:3px;}
+.warrow{text-align:center;opacity:.4;}
+.wi{font-size:1.2rem;}.wl{font-size:.6rem;color:rgba(255,255,255,.5);}
+.rlbl{font-size:clamp(.65rem,1.5vw,.78rem);font-weight:700;color:var(--GOLD);text-align:center;opacity:.75;}
+.barea{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(8px,2vw,14px);}
+.topbar{display:flex;gap:8px;margin-bottom:clamp(8px,1.5vh,12px);}
+.tbtn{
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:28px;padding:8px 16px;
+  font-family:'Cairo',sans-serif;font-size:clamp(.75rem,1.8vw,.85rem);font-weight:700;
+  cursor:pointer;color:var(--TXT);transition:all .18s;
+}
+.tbtn:hover{background:rgba(255,255,255,.15);}
+
+/* ===== اللوحة السداسية ===== */
+.bwrap{position:relative;display:inline-block;}
+.bwrap::before,.bwrap::after{content:'';position:absolute;border-radius:6px;z-index:12;}
+.bwrap::before{top:-10px;left:0;right:0;height:8px;background:linear-gradient(90deg,var(--B2),var(--B),var(--B2));}
+.bwrap::after{bottom:-10px;left:0;right:0;height:8px;background:linear-gradient(90deg,var(--B2),var(--B),var(--B2));}
+.bwrap .bdr-r{position:absolute;right:-10px;top:0;bottom:0;width:8px;border-radius:6px;z-index:12;background:linear-gradient(180deg,var(--A2),var(--A),var(--A2));}
+.bwrap .bdr-l{position:absolute;left:-10px;top:0;bottom:0;width:8px;border-radius:6px;z-index:12;background:linear-gradient(180deg,var(--A2),var(--A),var(--A2));}
+
+.hex{
+  position:absolute;clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cairo',sans-serif;font-weight:900;cursor:pointer;
+  background:rgba(255,255,255,.9);color:#1a1a2e;
+  box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.4);
+  transition:filter .15s,transform .12s;user-select:none;touch-action:manipulation;
+}
+.hex:hover:not(.ca):not(.cb){filter:brightness(1.08);transform:scale(1.05);}
+.hex.ca{background:linear-gradient(145deg,#ff7043,var(--A2))!important;color:#fff!important;box-shadow:0 2px 12px rgba(255,87,34,.4)!important;}
+.hex.cb{background:linear-gradient(145deg,#66bb6a,var(--B2))!important;color:#fff!important;box-shadow:0 2px 12px rgba(76,175,80,.4)!important;}
+.hex.aq{
+  animation: strongPulse 0.9s ease infinite alternate;
+  box-shadow: 0 0 20px 5px var(--GOLD), 0 0 0 4px rgba(255,215,0,0.5) !important;
+  border: 2px solid var(--GOLD) !important;
+  z-index: 20;
+}
+@keyframes strongPulse {
+  from { box-shadow: 0 0 15px 3px var(--GOLD), 0 0 0 3px rgba(255,215,0,0.4); transform:scale(1); }
+  to { box-shadow: 0 0 30px 12px #ffaa00, 0 0 0 6px var(--GOLD); transform:scale(1.06); }
+}
+
+/* ===== المودال ===== */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:1000;}
+.ov.on{display:block;}
+.qm{
+  display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:var(--S1);border:1px solid rgba(255,255,255,.1);
+  width:92%;max-width:490px;max-height:90vh;overflow-y:auto;
+  padding:clamp(18px,4vw,26px) clamp(16px,4vw,22px);
+  border-radius:var(--radius-lg);z-index:1001;text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 0 1px rgba(255,215,0,.1);
+}
+.qm.on{display:block;}
+.qlt{
+  font-size:clamp(.95rem,2.2vw,1.1rem);font-weight:900;
+  background:linear-gradient(135deg,var(--GOLD),#ff9800);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:10px;
+}
+.qtxt{
+  font-size:clamp(1rem,2.5vw,1.2rem);font-weight:700;line-height:1.65;
+  background:var(--S2);border:1px solid rgba(255,255,255,.06);
+  padding:clamp(12px,2.5vw,16px);border-radius:var(--radius-md);
+  margin-bottom:10px;color:var(--TXT);
+}
+.qtmr{font-size:clamp(2.8rem,7vw,3.5rem);font-weight:900;color:var(--GOLD);margin:6px 0;font-variant-numeric:tabular-nums;}
+.qans{
+  display:none;background:rgba(76,175,80,.12);
+  border:1.5px solid rgba(76,175,80,.4);border-radius:var(--radius-md);
+  padding:12px 16px;font-weight:700;font-size:clamp(1rem,2.5vw,1.15rem);
+  color:#81c784;margin:10px 0;
+}
+.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:clamp(7px,1.5vw,10px);margin-top:12px;}
+.qb{
+  padding:clamp(10px,2vh,13px) 8px;border:none;border-radius:var(--radius-md);
+  font-family:'Cairo',sans-serif;font-weight:700;font-size:clamp(.82rem,2vw,.92rem);
+  cursor:pointer;color:white;box-shadow:var(--shadow-btn);
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+}
+.qb:hover,.qb:active{transform:translateY(-2px);filter:brightness(1.1);}
+.qb-sh{background:linear-gradient(135deg,#8e44ad,#6c3483);grid-column:span 2;}
+.qb-a{background:linear-gradient(135deg,var(--A),var(--A2));}
+.qb-b{background:linear-gradient(135deg,var(--B),var(--B2));}
+.qb-ch{background:linear-gradient(135deg,#e67e22,#ca6f1e);grid-column:span 2;}
+.qb-cl{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:var(--DIM);grid-column:span 2;}
+
+/* ===== شاشة الحكم ===== */
+#judge-setup{
+  background:var(--DARK);flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(14px,3vh,20px);padding:clamp(20px,4vw,40px) clamp(16px,5vw,24px);
+  position:relative;overflow:hidden;
+}
+#judge-setup::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 50% 50% at 80% 20%, rgba(255,215,0,.07) 0%, transparent 60%);
+}
+.jcard{
+  position:relative;z-index:1;
+  background:var(--S1);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--radius-lg);padding:clamp(20px,4vw,30px) clamp(18px,4vw,28px);
+  width:100%;max-width:470px;box-shadow:var(--shadow-card);
+}
+.jcard h2{font-size:clamp(1rem,2.5vw,1.2rem);font-weight:700;color:var(--GOLD);text-align:center;margin-bottom:clamp(14px,3vh,20px);}
+.jrow{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,13px);margin-bottom:clamp(10px,2vh,14px);}
+.jf label{display:block;font-size:.78rem;font-weight:700;margin-bottom:5px;opacity:.85;}
+.jf.ja label{color:var(--A)}.jf.jb label{color:var(--B)}
+.jf input,.jf select{
+  width:100%;background:var(--S2);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:var(--radius-sm);
+  padding:clamp(9px,1.8vh,12px) 12px;color:var(--TXT);
+  font-family:'Cairo',sans-serif;font-size:clamp(.85rem,2vw,.95rem);font-weight:700;
+  text-align:center;outline:none;transition:border-color .2s;
+}
+.jf input:focus,.jf select:focus{border-color:var(--GOLD);}
+.jf select option{background:var(--S2);}
+.btn-gold{
+  width:100%;padding:clamp(12px,2vh,16px);border:none;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--GOLD),#e67e22);color:#0d0f1a;
+  font-family:'Cairo',sans-serif;font-size:clamp(1rem,2.5vw,1.15rem);font-weight:900;cursor:pointer;
+  box-shadow:0 5px 20px rgba(255,180,0,.3);transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.btn-gold:hover,.btn-gold:active{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,180,0,.45);}
+.btn-bkd{
+  position:relative;z-index:1;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:40px;padding:10px 24px;
+  font-family:'Cairo',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;color:var(--DIM);
+  transition:all .2s;
+}
+.btn-bkd:hover{background:rgba(255,255,255,.12);color:var(--TXT);}
+
+/* ===== لعبة الحكم ===== */
+#judge-game{flex-direction:row;background:var(--DARK);position:relative;overflow:hidden;}
+#judge-game::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 35% 70% at 0% 50%, rgba(255,87,34,.06) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 70% at 100% 50%, rgba(76,175,80,.06) 0%, transparent 55%);
+}
+.jlp{
+  position:relative;z-index:2;
+  width:clamp(140px,17vw,195px);flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:clamp(10px,2vh,16px) clamp(8px,1.5vw,13px);
+  background:rgba(0,0,0,.3);
+  border-left:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(4px);
+}
+.jsc{width:100%;border-radius:var(--radius-md);padding:clamp(10px,2vh,15px) 10px;text-align:center;}
+.jsc.jca{background:rgba(255,87,34,.1);border:1.5px solid rgba(255,87,34,.3);}
+.jsc.jcb{background:rgba(76,175,80,.1);border:1.5px solid rgba(76,175,80,.3);}
+.jsc .jn{font-size:clamp(.72rem,1.5vw,.82rem);font-weight:700;opacity:.8;margin-bottom:2px;}
+.jsc .jv{font-size:clamp(2rem,4vw,2.6rem);font-weight:900;line-height:1;}
+.jw{font-size:clamp(.62rem,1.3vw,.72rem);opacity:.6;margin-top:3px;}
+.jrnd{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.2);border-radius:40px;padding:5px 12px;font-size:clamp(.7rem,1.5vw,.82rem);font-weight:700;color:var(--GOLD);}
+.jleg{margin:6px 0;}
+.jlr{display:flex;align-items:center;gap:5px;font-size:.68rem;opacity:.6;margin:2px 0;}
+.jll{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.qrmini{background:white;border-radius:10px;padding:6px;cursor:pointer;display:inline-block;}
+.qrlbl{font-size:.65rem;opacity:.5;margin-top:4px;text-align:center;}
+.jcenter{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(8px,2vw,14px);}
+.jtitle{font-size:clamp(1rem,2.2vw,1.2rem);font-weight:900;color:var(--GOLD);margin-bottom:clamp(8px,2vh,14px);}
+.jrp{
+  position:relative;z-index:2;
+  width:clamp(220px,22vw,290px);flex-shrink:0;
+  display:flex;flex-direction:column;
+  padding:clamp(8px,2vh,14px) clamp(8px,1.5vw,13px);gap:clamp(6px,1.5vh,10px);
+  background:rgba(0,0,0,.3);
+  border-right:1px solid rgba(255,255,255,.06);
+  overflow-y:auto;backdrop-filter:blur(4px);
+}
+.ps{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:var(--radius-md);padding:clamp(9px,2vh,13px) clamp(10px,2vw,14px);
+}
+.ps h3{font-size:clamp(.68rem,1.4vw,.75rem);font-weight:700;color:var(--GOLD);margin-bottom:clamp(6px,1.5vh,9px);opacity:.85;}
+.qbx{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:var(--radius-sm);padding:clamp(9px,2vh,12px);
+  font-size:clamp(.88rem,1.8vw,.98rem);font-weight:700;line-height:1.6;
+  color:var(--TXT);min-height:50px;
+}
+.ansbx{
+  display:none;background:rgba(76,175,80,.1);
+  border:1.5px dashed rgba(76,175,80,.35);border-radius:var(--radius-sm);
+  padding:9px;color:#81c784;font-weight:700;margin-top:7px;font-size:.9rem;
+}
+.bzidle{color:var(--DIM);font-size:clamp(.78rem,1.8vw,.86rem);text-align:center;padding:6px 0;}
+.jg{display:grid;grid-template-columns:1fr 1fr;gap:clamp(5px,1vw,8px);}
+.jb{
+  padding:clamp(8px,1.8vh,11px) 6px;border:none;border-radius:var(--radius-sm);
+  font-family:'Cairo',sans-serif;font-size:clamp(.75rem,1.6vw,.85rem);font-weight:700;
+  cursor:pointer;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+}
+.jb:hover,.jb:active{transform:translateY(-2px);filter:brightness(1.12);}
+.jbca{background:linear-gradient(135deg,var(--A),var(--A2));}
+.jbcb{background:linear-gradient(135deg,var(--B),var(--B2));}
+.jbans{background:linear-gradient(135deg,#8e44ad,#6c3483);grid-column:span 2;}
+.jbnq{background:linear-gradient(135deg,#e67e22,#d35400);grid-column:span 2;}
+.jbop{background:linear-gradient(135deg,#2980b9,#1a5276);grid-column:span 2;}
+.jbsk{background:rgba(255,255,255,.07);color:var(--DIM);grid-column:span 2;border:1px solid rgba(255,255,255,.1);}
+.jbnr{background:linear-gradient(135deg,var(--GOLD),#e67e22);color:#0d0f1a;grid-column:span 2;}
+.jbhm{background:rgba(255,255,255,.06);color:var(--DIM);border:1px solid rgba(255,255,255,.1);grid-column:span 2;}
+.pllist{max-height:clamp(90px,15vh,130px);overflow-y:auto;}
+.plitem{
+  display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;
+  font-size:clamp(.72rem,1.5vw,.8rem);font-weight:700;margin-bottom:3px;
+  background:rgba(255,255,255,.04);
+}
+.plitem.pa{background:rgba(255,87,34,.08);color:var(--A);}
+.plitem.pb{background:rgba(76,175,80,.08);color:var(--B);}
+.plkick{
+  margin-right:auto;background:none;border:1px solid rgba(255,255,255,.18);
+  color:#ff8888;border-radius:50%;width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;transition:all .18s;
+}
+.plkick:hover{background:#ff4444;color:white;border-color:#ff4444;}
+
+/* ===== QR Modal ===== */
+#qr-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(14px);z-index:9000;align-items:center;justify-content:center;}
+#qr-modal.show{display:flex;}
+.qrcard{
+  background:var(--S1);border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--radius-lg);padding:clamp(20px,4vw,28px);
+  text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.65);
+  max-width:320px;width:90%;
+}
+.qrcard h2{font-size:1.1rem;font-weight:900;color:var(--GOLD);margin-bottom:6px;}
+.qrcard p{font-size:.82rem;opacity:.6;margin-bottom:16px;}
+.qrwrap{background:#fff;border-radius:var(--radius-md);padding:10px;display:inline-block;}
+.qrurl{margin-top:12px;background:var(--S2);border-radius:var(--radius-sm);padding:8px 13px;font-size:.72rem;color:var(--B);word-break:break-all;font-family:monospace;}
+.qrclose{
+  margin-top:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:40px;padding:9px 22px;font-family:'Cairo',sans-serif;
+  font-size:.88rem;font-weight:700;cursor:pointer;color:var(--DIM);
+}
+
+/* ===== شاشة اللاعب ===== */
+#player-join,#player-wait,#player-bz{
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(20px,5vw,32px);gap:clamp(14px,3vh,20px);min-height:100vh;
+  background:var(--DARK);position:relative;overflow:hidden;
+}
+#player-join::before,#player-wait::before,#player-bz::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.plogo{position:relative;z-index:1;text-align:center;}
+.plogo h1{font-size:clamp(1.6rem,5vw,2.2rem);font-weight:900;
+  background:linear-gradient(135deg,#fff 20%,var(--GOLD) 70%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.plogo p{font-size:.85rem;color:var(--DIM);margin-top:3px;}
+.pcard{
+  position:relative;z-index:1;
+  background:var(--S1);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--radius-lg);padding:clamp(18px,4vw,26px) clamp(16px,4vw,22px);
+  width:100%;max-width:380px;box-shadow:var(--shadow-card);
+}
+.pcard h2{font-size:1.05rem;font-weight:900;color:var(--GOLD);margin-bottom:14px;text-align:center;}
+.pinp{
+  width:100%;background:var(--S2);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:var(--radius-sm);
+  padding:clamp(11px,2vh,14px) 14px;
+  color:var(--TXT);font-family:'Cairo',sans-serif;
+  font-size:clamp(.95rem,2.5vw,1.05rem);font-weight:700;text-align:center;outline:none;
+  margin-bottom:clamp(10px,2vh,14px);transition:border-color .2s;
+}
+.pinp:focus{border-color:var(--GOLD);}
+.pteam-row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,12px);margin-bottom:clamp(10px,2vh,14px);}
+.ptbtn{
+  padding:clamp(12px,2.5vh,16px) 8px;border:2.5px solid transparent;
+  border-radius:var(--radius-md);font-family:'Cairo',sans-serif;
+  font-size:clamp(.85rem,2.2vw,.95rem);font-weight:900;cursor:pointer;
+  background:var(--S2);color:var(--DIM);transition:all .2s;
+}
+.ptbtn.psa{background:rgba(255,87,34,.15);border-color:var(--A);color:var(--A);}
+.ptbtn.psb{background:rgba(76,175,80,.15);border-color:var(--B);color:var(--B);}
+.pjoin{
+  width:100%;padding:clamp(12px,2.5vh,15px);border:none;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--GOLD),#e67e22);color:#0d0f1a;
+  font-family:'Cairo',sans-serif;font-size:clamp(1rem,2.5vw,1.1rem);font-weight:900;cursor:pointer;
+  box-shadow:0 5px 20px rgba(255,180,0,.3);transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.pjoin:hover,.pjoin:active{transform:translateY(-2px);box-shadow:0 8px 28px rgba(255,180,0,.45);}
+.perr{
+  background:rgba(255,87,34,.12);border:1px solid rgba(255,87,34,.35);
+  border-radius:var(--radius-sm);padding:9px 12px;color:var(--A);
+  font-size:.85rem;font-weight:700;display:none;margin-top:10px;text-align:center;
+}
+.pavatar{
+  position:relative;z-index:1;
+  width:clamp(68px,15vw,88px);height:clamp(68px,15vw,88px);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(2rem,5vw,2.6rem);animation:flt 2.2s ease-in-out infinite;
+}
+.pava{background:rgba(255,87,34,.12);border:3px solid var(--A);}
+.pavb{background:rgba(76,175,80,.12);border:3px solid var(--B);}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.pwname{position:relative;z-index:1;font-size:clamp(1.5rem,5vw,1.9rem);font-weight:900;}
+.pwname.ta{color:var(--A)}.pwname.tb{color:var(--B)}
+.pbadge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:7px;padding:6px 18px;border-radius:40px;font-size:.9rem;font-weight:700;}
+.pwmsg{position:relative;z-index:1;font-size:clamp(.85rem,2.2vw,.95rem);color:var(--DIM);font-weight:600;text-align:center;}
+.pba{background:rgba(255,87,34,.12);border:1.5px solid rgba(255,87,34,.3);color:var(--A);}
+.pbb{background:rgba(76,175,80,.12);border:1.5px solid rgba(76,175,80,.3);color:var(--B);}
+
+/* ===== البازر ===== */
+.bzbtn{
+  position:relative;z-index:1;
+  width:min(220px,60vw);height:min(220px,60vw);border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;
+  font-family:'Cairo',sans-serif;font-weight:900;font-size:clamp(1rem,3vw,1.2rem);
+  touch-action:manipulation;transition:transform .12s;
+}
+.bzbtn:active{transform:scale(.95);}
+.bzbtn.bza{
+  background:radial-gradient(circle at 35% 30%,#ff8060,var(--A) 60%,var(--A2));
+  color:white;
+  box-shadow:0 14px 50px rgba(255,87,34,.45),0 0 0 10px rgba(255,87,34,.08),0 0 0 22px rgba(255,87,34,.04);
+}
+.bzbtn.bzb{
+  background:radial-gradient(circle at 35% 30%,#81c784,var(--B) 60%,var(--B2));
+  color:#0a1a0a;
+  box-shadow:0 14px 50px rgba(76,175,80,.45),0 0 0 10px rgba(76,175,80,.08),0 0 0 22px rgba(76,175,80,.04);
+}
+.bzbtn.rdy.bza{animation:pza 1.1s ease infinite;}
+@keyframes pza{0%,100%{box-shadow:0 14px 50px rgba(255,87,34,.4),0 0 0 10px rgba(255,87,34,.08),0 0 0 22px rgba(255,87,34,.04);}50%{box-shadow:0 18px 70px rgba(255,87,34,.75),0 0 0 28px rgba(255,87,34,.05),0 0 0 46px rgba(255,87,34,.02);}}
+.bzbtn.rdy.bzb{animation:pzb 1.1s ease infinite;}
+@keyframes pzb{0%,100%{box-shadow:0 14px 50px rgba(76,175,80,.4),0 0 0 10px rgba(76,175,80,.08),0 0 0 22px rgba(76,175,80,.04);}50%{box-shadow:0 18px 70px rgba(76,175,80,.75),0 0 0 28px rgba(76,175,80,.05),0 0 0 46px rgba(76,175,80,.02);}}
+.bzbtn.off{opacity:.3;cursor:not-allowed;animation:none!important;}
+.bzic{font-size:clamp(2rem,8vw,3rem);display:block;}
+.bzlbl{font-size:clamp(.9rem,2.5vw,1.05rem);}
+.rescard{
+  display:none;position:relative;z-index:1;
+  background:var(--S1);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--radius-lg);padding:clamp(12px,3vh,18px) clamp(16px,4vw,22px);
+  text-align:center;max-width:340px;width:90%;box-shadow:var(--shadow-card);
+}
+.resnm{font-size:clamp(1.1rem,3vw,1.3rem);font-weight:900;margin-bottom:4px;}
+.ressub{font-size:clamp(.78rem,2vw,.88rem);color:var(--DIM);margin-bottom:8px;}
+.rescnt{font-size:clamp(3rem,8vw,3.8rem);font-weight:900;font-family:monospace;color:var(--GOLD);}
+.bzst{position:relative;z-index:1;color:var(--DIM);font-size:clamp(.82rem,2.2vw,.9rem);font-weight:700;text-align:center;}
+.mini-board-wrap{
+  position:relative;z-index:1;margin-top:12px;
+  width:100%;max-width:230px;height:190px;
+  margin-left:auto;margin-right:auto;
+  overflow:auto;background:rgba(0,0,0,.25);
+  border-radius:var(--radius-md);padding:6px;
+  border:1px solid rgba(255,255,255,.06);
+}
+.mini-hex{
+  position:absolute;clip-path:polygon(25% 0%,75% 0%,100% 50%,75% 100%,25% 100%,0% 50%);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;color:#fff;background:rgba(255,255,255,.18);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+  border:1px solid rgba(255,255,255,.12);
+  text-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+.mini-hex.a{background:var(--A);border-color:rgba(255,178,150,.5);}
+.mini-hex.b{background:var(--B);border-color:rgba(165,214,167,.5);}
+
+/* ===== شاشة العرض ===== */
+#display{flex-direction:row;background:var(--DARK);position:relative;overflow:hidden;}
+#display::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 40% 60% at 5% 50%, rgba(255,87,34,.06) 0%, transparent 55%),
+             radial-gradient(ellipse 40% 60% at 95% 50%, rgba(76,175,80,.06) 0%, transparent 55%);
+  pointer-events:none;
+}
+.dpleft{
+  position:relative;z-index:2;
+  width:clamp(160px,17vw,210px);flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:clamp(14px,3vh,22px) clamp(10px,2vw,16px);
+  background:rgba(0,0,0,.3);border-left:1px solid rgba(255,255,255,.06);backdrop-filter:blur(4px);
+}
+.dpcenter{
+  position:relative;z-index:2;flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(10px,2vw,18px);
+}
+.dpsc{width:100%;border-radius:var(--radius-md);padding:clamp(10px,2vh,16px) 10px;text-align:center;}
+.dpsc.dpa{background:rgba(255,87,34,.1);border:1.5px solid rgba(255,87,34,.25);}
+.dpsc.dpb{background:rgba(76,175,80,.1);border:1.5px solid rgba(76,175,80,.25);}
+.dpsc .dn{font-size:clamp(.78rem,1.6vw,.9rem);font-weight:700;opacity:.8;margin-bottom:3px;}
+.dpsc .dv{font-size:clamp(2.5rem,5vw,3.4rem);font-weight:900;line-height:1;}
+.dpa .dv{color:var(--A);}.dpb .dv{color:var(--B);}
+.dprnd{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.2);border-radius:40px;padding:5px 14px;font-size:clamp(.72rem,1.4vw,.82rem);font-weight:700;color:var(--GOLD);}
+.dpleg{margin:8px 0;}
+.dplr{display:flex;align-items:center;gap:5px;font-size:.7rem;opacity:.55;margin:2px 0;}
+.dpll{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.dpbzbox{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+  border-radius:var(--radius-md);padding:clamp(9px,2vh,13px);
+  text-align:center;min-height:clamp(55px,10vh,75px);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;
+}
+.dpq{
+  background:var(--S1);border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--radius-lg);
+  padding:clamp(14px,2.5vw,20px) clamp(16px,3vw,24px);
+  font-size:clamp(1.2rem,2.8vw,1.6rem);font-weight:700;line-height:1.65;
+  text-align:center;max-width:580px;width:100%;margin-bottom:clamp(10px,2vh,16px);
+  min-height:clamp(65px,12vh,85px);display:flex;align-items:center;justify-content:center;
+}
+.dpans{
+  background:rgba(76,175,80,.1);border:1.5px dashed rgba(76,175,80,.4);
+  border-radius:var(--radius-md);padding:12px 16px;color:#81c784;
+  font-weight:700;margin-top:8px;display:none;
+  font-size:clamp(1rem,2.3vw,1.2rem);width:100%;max-width:580px;text-align:center;
+}
+
+/* ===== نافذة الفائز ===== */
+.winov{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(18px);
+  z-index:9500;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.5vh,16px);
+}
+.winov.on{display:flex;}
+.winem{font-size:clamp(4rem,12vw,6rem);}
+.winnm{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;color:white;text-align:center;}
+.winsb{font-size:clamp(.85rem,2.2vw,1rem);color:var(--DIM);font-weight:700;text-align:center;}
+.winrow{display:flex;gap:12px;margin-top:8px;}
+.winbtn{
+  padding:clamp(10px,2vh,14px) clamp(18px,4vw,28px);border:none;border-radius:40px;
+  font-family:'Cairo',sans-serif;font-size:clamp(.88rem,2vw,.98rem);font-weight:900;cursor:pointer;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+}
+.winbtn:hover{transform:translateY(-2px);}
+.winbtn.nw{background:linear-gradient(135deg,var(--GOLD),#e67e22);color:#0d0f1a;box-shadow:0 5px 20px rgba(255,180,0,.3);}
+.winbtn.cl{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--DIM);}
+
+/* ===== كونفيتي ===== */
+.cf{position:fixed;border-radius:2px;top:-20px;animation:cfall 3s ease-in forwards;z-index:9999;pointer-events:none;}
+@keyframes cfall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ===== الـ Scrollbar والعناصر المشتركة ===== */
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:3px;}
+.retry-btn{
+  background:linear-gradient(135deg,#e67e22,#ca6f1e);color:white;border:none;
+  border-radius:20px;padding:8px 18px;font-family:'Cairo',sans-serif;
+  font-size:.8rem;font-weight:700;cursor:pointer;margin-top:6px;
+}
+
+/* ===== أشرطة بازر الحكم ===== */
+.bzwin{border-radius:var(--radius-md);padding:10px 12px;text-align:center;}
+.bzwina{background:rgba(255,87,34,.1);border:1.5px solid rgba(255,87,34,.3);}
+.bzwinb{background:rgba(76,175,80,.1);border:1.5px solid rgba(76,175,80,.3);}
+.bzname{font-size:clamp(1rem,2.5vw,1.25rem);font-weight:900;}
+.bzsub{font-size:.75rem;opacity:.7;margin-top:2px;}
+.bzcount{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:900;font-family:monospace;margin-top:4px;}
+
+/* ===== تكيّف الجوال ===== */
+@media (max-width:600px) {
+  :root{--HW:clamp(38px,8.5vw,52px);}
+  .jlp{width:clamp(110px,28vw,145px);}
+  .jrp{width:clamp(170px,42vw,220px);}
+  .local-side{width:clamp(52px,15vw,80px);}
+  #judge-game,#local-game,#display{overflow-x:auto;}
+}
+@media (max-width:420px) {
+  .home-grid{grid-template-columns:1fr;}
+  .hbtn.span2{grid-column:span 1;}
+}
+@media (min-width:1024px) {
+  :root{--HW:clamp(62px,5.5vw,80px);}
+}
+
+/* ===== فلتر الصعوبة والنوع ===== */
+.diff-filter { display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px; }
+.diff-btn {
+  padding:5px 12px;border:1.5px solid var(--BDR);border-radius:20px;
+  font-family:'Cairo',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;
+  background:var(--S2);color:var(--DIM);transition:all .18s;
+}
+.diff-btn.active-easy  { background:rgba(76,175,80,.2);border-color:var(--B);color:var(--B); }
+.diff-btn.active-medium{ background:rgba(255,193,7,.2);border-color:#FFC107;color:#FFC107; }
+.diff-btn.active-hard  { background:rgba(255,87,34,.2);border-color:var(--A);color:var(--A); }
+.diff-btn.active-all   { background:rgba(255,215,0,.15);border-color:var(--GOLD);color:var(--GOLD); }
+.cat-filter { display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px; }
+.cat-btn {
+  padding:4px 9px;border:1px solid var(--BDR);border-radius:14px;
+  font-family:'Cairo',sans-serif;font-size:.68rem;font-weight:700;cursor:pointer;
+  background:var(--S2);color:var(--DIM);transition:all .15s;
+}
+.cat-btn.active { background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:var(--TXT); }
+.diff-indicator {
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;
+  margin-bottom:6px;
+}
+.diff-easy   { background:rgba(76,175,80,.15);color:#81c784; }
+.diff-medium { background:rgba(255,193,7,.15);color:#FFC107; }
+.diff-hard   { background:rgba(255,87,34,.15);color:#ff8a65; }
+.cat-tag     { background:rgba(255,255,255,.08);border:1px solid var(--BDR);border-radius:10px;padding:2px 8px;font-size:.68rem;color:var(--DIM); }
+/* تغيير لون العمود الإضافي بمودال السؤال المحلي */
+.lq-diff-row { display:flex;align-items:center;gap:8px;margin-bottom:6px; }
+
+</style>
+</head>
+<body>
+
+<!-- ① HOME -->
+<div id="home" class="scr on">
+  <div class="home-title"><h1>🏆 تحدي الحروف</h1><p>لعبة المسابقات الذكية</p></div>
+  <div class="home-grid">
+    <div class="hbtn ca" onclick="go('local-setup')"><div class="ic">🎮</div><h2>لعب محلي</h2><p>فريقان على نفس الجهاز</p></div>
+    <div class="hbtn cb" onclick="go('judge-setup')"><div class="ic">📡</div><h2>لعب مشترك</h2><p>حكم + بروجكتر + بازرات</p></div>
+    <div class="hbtn cg span2" onclick="showDisplayScreen()"><div class="ic">📺</div><h2>شاشة البروجكتر</h2><p>افتحها على شاشة العرض</p></div>
+    <div class="hbtn cg span2" onclick="go('player-join')"><div class="ic">⚡</div><h2>شاشة اللاعب (بازر)</h2><p>افتحها على هاتف اللاعب</p></div>
+  </div>
+</div>
+
+<!-- ② LOCAL SETUP -->
+<div id="local-setup" class="scr">
+  <div class="scard"><h2>⚙️ إعداد اللعبة المحلية</h2>
+    <div class="srow"><div class="sf fa"><label>🟠 اسم الفريق أ</label><input id="lta" value="الفريق الأحمر" maxlength="14"></div><div class="sf fb"><label>🟢 اسم الفريق ب</label><input id="ltb" value="الفريق الأخضر" maxlength="14"></div></div>
+    <div class="srow"><div class="sf" style="grid-column:span 2"><label>🏆 الجولات للفوز</label><select id="lrw"><option value="1">جولة واحدة</option><option value="2" selected>جولتان</option><option value="3">3 جولات</option></select></div></div>
+
+    <div style="margin-bottom:12px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px">🎯 مستوى الصعوبة</div>
+      <div class="diff-filter" id="ldiff-filter">
+        <button class="diff-btn active-all" data-diff="all" onclick="setDiff(this,'l')">🌟 الكل</button>
+        <button class="diff-btn" data-diff="easy" onclick="setDiff(this,'l')">🟢 سهل</button>
+        <button class="diff-btn" data-diff="medium" onclick="setDiff(this,'l')">🟡 متوسط</button>
+        <button class="diff-btn" data-diff="hard" onclick="setDiff(this,'l')">🔴 صعب</button>
+      </div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px;margin-top:8px">📂 نوع الأسئلة</div>
+      <div class="cat-filter" id="lcat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="setCat(this,'l')">الكل</button>
+        <button class="cat-btn" data-cat="حيوان" onclick="setCat(this,'l')">حيوان 🐾</button>
+        <button class="cat-btn" data-cat="نبات" onclick="setCat(this,'l')">نبات 🌿</button>
+        <button class="cat-btn" data-cat="جماد" onclick="setCat(this,'l')">جماد 💎</button>
+        <button class="cat-btn" data-cat="إنسان" onclick="setCat(this,'l')">إنسان 🧬</button>
+        <button class="cat-btn" data-cat="بلاد" onclick="setCat(this,'l')">بلاد 🗺️</button>
+        <button class="cat-btn" data-cat="جغرافي" onclick="setCat(this,'l')">جغرافي 🌍</button>
+        <button class="cat-btn" data-cat="تاريخ" onclick="setCat(this,'l')">تاريخ 📜</button>
+        <button class="cat-btn" data-cat="ثقافي" onclick="setCat(this,'l')">ثقافي 🎓</button>
+        <button class="cat-btn" data-cat="اجتماعي" onclick="setCat(this,'l')">اجتماعي 👥</button>
+        <button class="cat-btn" data-cat="طب" onclick="setCat(this,'l')">طب 🏥</button>
+        <button class="cat-btn" data-cat="علاقات" onclick="setCat(this,'l')">علاقات ❤️</button>
+      </div>
+    </div>
+    <button class="btn-go" onclick="startLocal()">▶ ابدأ اللعب</button>
+  </div>
+  <button class="btn-bk" onclick="go('home')">🔙 العودة</button>
+</div>
+
+<!-- ③ LOCAL GAME -->
+<div id="local-game" class="scr">
+  <div class="local-side"><div class="sblock"><div class="slbl" id="lsa-n">الفريق أ</div><div class="sval" id="lsa-p">0</div><div class="swn" id="lsa-w">جولات: 0</div></div><div class="warrow"><div class="wi">◀▶</div><div class="wl">يمين←يسار</div></div><div class="rlbl" id="lrlbl">الجولة 1</div></div>
+  <div class="barea"><div class="topbar"><button class="tbtn" onclick="resetLocal()">🔄 جولة جديدة</button><button class="tbtn" onclick="go('home')">🏠</button></div><div class="bwrap" id="local-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="local-board"></div></div></div>
+  <div class="local-side"><div class="sblock"><div class="slbl" id="lsb-n">الفريق ب</div><div class="sval" id="lsb-p">0</div><div class="swn" id="lsb-w">جولات: 0</div></div><div class="warrow"><div class="wi">▲▼</div><div class="wl">أعلى←أسفل</div></div><div class="rlbl" style="opacity:0">-</div></div>
+</div>
+
+<!-- مودال السؤال المحلي -->
+<div id="lv-ov" class="ov"></div>
+<div id="lv-qm" class="qm">
+  <div class="qlt" id="lq-letter">✨ سؤال</div><div class="lq-diff-row"><span id="lq-diff-badge"></span><span id="lq-cat-badge" class="cat-tag"></span></div><div class="qtxt" id="lq-text"></div><div class="qtmr" id="lq-timer">20</div><div class="qans" id="lq-ans"></div>
+  <div class="qbtns"><button class="qb qb-sh" onclick="lShowAns()">👁 إظهار الإجابة</button><button class="qb qb-a" id="lqb-a" onclick="lMark('a')">✅ فوز أ</button><button class="qb qb-b" id="lqb-b" onclick="lMark('b')">✅ فوز ب</button><button class="qb qb-ch" onclick="lNextQ()">🔄 سؤال آخر</button><button class="qb qb-cl" onclick="lCloseModal()">✕ إغلاق</button></div>
+</div>
+<div id="local-win" class="winov"><div class="winem">🏆</div><div class="winnm" id="lw-nm">الفائز!</div><div class="winsb" id="lw-sb"></div><div style="display:flex;gap:12px;margin-top:8px;"><button class="winbtn nw" onclick="resetLocal()">🔄 جولة جديدة</button><button class="winbtn cl" onclick="document.getElementById('local-win').classList.remove('on')">✕</button></div></div>
+
+<!-- ④ JUDGE SETUP -->
+<div id="judge-setup" class="scr" style="flex-direction:column;align-items:center;justify-content:center;">
+  <div class="jcard"><h2>🎯 شاشة الحكم — إعداد الجلسة</h2>
+    <div class="jrow"><div class="jf ja"><label>🟠 الفريق أ</label><input id="jta" value="الفريق الأحمر" maxlength="16"></div><div class="jf jb"><label>🟢 الفريق ب</label><input id="jtb" value="الفريق الأخضر" maxlength="16"></div></div>
+    <div class="jrow"><div class="jf" style="grid-column:span 2"><label>🏁 الجولات للفوز</label><select id="jrw"><option value="1">جولة واحدة</option><option value="2" selected>جولتان</option><option value="3">3 جولات</option></select></div></div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px">🎯 مستوى الصعوبة</div>
+      <div class="diff-filter" id="jdiff-filter">
+        <button class="diff-btn active-all" data-diff="all" onclick="setDiff(this,'j')">🌟 الكل</button>
+        <button class="diff-btn" data-diff="easy" onclick="setDiff(this,'j')">🟢 سهل</button>
+        <button class="diff-btn" data-diff="medium" onclick="setDiff(this,'j')">🟡 متوسط</button>
+        <button class="diff-btn" data-diff="hard" onclick="setDiff(this,'j')">🔴 صعب</button>
+      </div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px;margin-top:10px">📂 نوع الأسئلة</div>
+      <div class="cat-filter" id="jcat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="setCat(this,'j')">الكل</button>
+        <button class="cat-btn" data-cat="حيوان" onclick="setCat(this,'j')">حيوان 🐾</button>
+        <button class="cat-btn" data-cat="نبات" onclick="setCat(this,'j')">نبات 🌿</button>
+        <button class="cat-btn" data-cat="جماد" onclick="setCat(this,'j')">جماد 💎</button>
+        <button class="cat-btn" data-cat="إنسان" onclick="setCat(this,'j')">إنسان 🧬</button>
+        <button class="cat-btn" data-cat="بلاد" onclick="setCat(this,'j')">بلاد 🗺️</button>
+        <button class="cat-btn" data-cat="جغرافي" onclick="setCat(this,'j')">جغرافي 🌍</button>
+        <button class="cat-btn" data-cat="تاريخ" onclick="setCat(this,'j')">تاريخ 📜</button>
+        <button class="cat-btn" data-cat="ثقافي" onclick="setCat(this,'j')">ثقافي 🎓</button>
+        <button class="cat-btn" data-cat="اجتماعي" onclick="setCat(this,'j')">اجتماعي 👥</button>
+        <button class="cat-btn" data-cat="طب" onclick="setCat(this,'j')">طب 🏥</button>
+        <button class="cat-btn" data-cat="علاقات" onclick="setCat(this,'j')">علاقات ❤️</button>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="startJudge()">🚀 إنشاء الغرفة وبدء اللعب</button>
+  </div>
+  <button class="btn-bkd" onclick="go('home')">🔙 العودة</button>
+</div>
+
+<!-- ⑤ JUDGE GAME -->
+<div id="judge-game" class="scr">
+  <div class="jlp">
+    <div class="jsc jca"><div class="jn" id="ja-n">الفريق أ</div><div class="jv" id="ja-p">0</div><div class="jw" id="ja-w">جولات: 0</div></div>
+    <div style="text-align:center"><div class="jrnd" id="j-rnd">الجولة 1</div><div class="jleg"><div class="jlr"><div class="jll" style="background:var(--A)"></div><span>أ — أفقي ◀▶</span></div><div class="jlr"><div class="jll" style="background:var(--B)"></div><span>ب — عمودي ▲▼</span></div></div>
+    <div class="qrmini" onclick="showQR()"><canvas id="qr-sm" width="70" height="70"></canvas></div><div class="qrlbl">📱 امسح للانضمام</div>
+    <button class="jb jbop" style="margin-top:8px;padding:6px" onclick="copyDisplayLink()">📺 رابط البروجكتر</button></div>
+    <div class="jsc jcb"><div class="jn" id="jb-n">الفريق ب</div><div class="jv" id="jb-p">0</div><div class="jw" id="jb-w">جولات: 0</div></div>
+  </div>
+  <div class="jcenter"><div class="jtitle" id="j-title">الجولة الأولى 🏆</div><div class="bwrap" id="judge-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="judge-board"></div></div></div>
+  <div class="jrp">
+    <div class="ps"><h3>⚡ البازر</h3><div id="jbz-disp"><div class="bzidle">اختر خلية لبدء السؤال...</div></div></div>
+    <div class="ps"><h3>❓ السؤال</h3><div class="qbx" id="j-qbox">اختر خلية من اللوحة...</div><div class="ansbx" id="j-ans"></div></div>
+    <div class="ps"><h3>🎯 مستوى الصعوبة (مباشر)</h3>
+      <div class="diff-filter" id="j-live-diff">
+        <button class="diff-btn active-all" data-diff="all" onclick="setLiveDiff(this)">🌟 الكل</button>
+        <button class="diff-btn" data-diff="easy" onclick="setLiveDiff(this)">🟢 سهل</button>
+        <button class="diff-btn" data-diff="medium" onclick="setLiveDiff(this)">🟡 متوسط</button>
+        <button class="diff-btn" data-diff="hard" onclick="setLiveDiff(this)">🔴 صعب</button>
+      </div>
+    </div>
+    <div class="ps"><h3>🎮 تحكم الحكم</h3>
+      <div class="jg">
+        <button class="jb jbans" onclick="jShowAns()">👁 إظهار الإجابة</button>
+        <button class="jb jbca" id="jb-ca" onclick="jCorrect('a')">✅ صح (أ)</button>
+        <button class="jb jbcb" id="jb-cb" onclick="jCorrect('b')">✅ صح (ب)</button>
+        <button class="jb jbnq" onclick="jNextQ()">🔄 سؤال آخر</button>
+        <button class="jb jbop" onclick="jReopen()">🔓 إعادة فتح البازر</button>
+        <button class="jb jbsk" onclick="jSkip()">⏭ تخطي</button>
+        <button class="jb jbnr" onclick="jNewRound()">🏁 جولة جديدة</button>
+        <button class="jb jbhm" onclick="go('home')">🏠 الرئيسية</button>
+        <button class="jb" id="j-toggle-q" style="background:#2ecc71;grid-column:span 1" onclick="jToggleQuestion()">👁 أظهر السؤال</button>
+        <button class="jb" id="j-toggle-a" style="background:#e67e22;grid-column:span 1" onclick="jToggleAnswer()">👁 أظهر الإجابة</button>
+      </div>
+    </div>
+    <div class="ps"><h3>👥 اللاعبون</h3><div class="pllist" id="j-players"><div class="bzidle">لا يوجد لاعبون...</div></div></div>
+  </div>
+</div>
+<div id="qr-modal"><div class="qrcard"><h2>📱 انضم للعبة</h2><p>امسح الكود أو انسخ الرابط</p><div class="qrwrap"><div id="qr-lg"></div></div><div class="qrurl" id="qr-url">—</div><br><button class="qrclose" onclick="document.getElementById('qr-modal').classList.remove('show')">✕ إغلاق</button></div></div>
+<div id="judge-win" class="winov"><div class="winem" id="jw-em">🏆</div><div class="winnm" id="jw-nm">الفائز!</div><div class="winsb" id="jw-sb"></div><div style="display:flex;gap:12px;margin-top:8px;"><button class="winbtn nw" onclick="jNewRound()">🔄 جولة جديدة</button><button class="winbtn cl" onclick="document.getElementById('judge-win').classList.remove('on')">✕</button></div></div>
+
+<!-- ⑥ PLAYER -->
+<div id="player-join" class="scr">
+  <div class="plogo"><h1>⚡ تحدي الحروف</h1><p>انضم كلاعب</p></div>
+  <div class="pcard"><h2>👤 أدخل بياناتك</h2><input id="pname" class="pinp" placeholder="اكتب اسمك" maxlength="20"><div class="pteam-row"><button class="ptbtn" id="ptbtn-a" onclick="pSelTeam('a')">🟠 الفريق أ</button><button class="ptbtn" id="ptbtn-b" onclick="pSelTeam('b')">🟢 الفريق ب</button></div><div style="margin-bottom:12px"><div style="font-size:.8rem;color:var(--DIM);margin-bottom:5px">كود الجلسة</div><input id="pcode" class="pinp" placeholder="مثال: AB123" maxlength="8"></div><button class="pjoin" onclick="pJoin()">انضم للعبة 🚀</button><div class="perr" id="perr"></div></div>
+  <button class="btn-bkd" onclick="go('home')">🔙 العودة</button>
+</div>
+
+<div id="player-wait" class="scr">
+  <div class="pavatar" id="pav">🎮</div><div class="pwname" id="pwn"></div><div id="pbdg"></div><div class="pwmsg" id="pwmsg">في انتظار بدء السؤال...</div>
+</div>
+
+<div id="player-bz" class="scr">
+  <div class="pcard" id="pbz-q" style="display:none;padding:14px 17px;font-size:1.05rem;font-weight:700;text-align:center"></div>
+  <div class="pcard" id="pbz-ans" style="display:none;background:rgba(76,175,80,.12);border:2px dashed rgba(76,175,80,.5);padding:10px;font-weight:700;color:var(--B);"></div>
+  <button class="bzbtn off" id="main-bz" ontouchstart="pPressBz(event)" onmousedown="pPressBz(event)"><span class="bzic">⚡</span><span class="bzlbl">اضغط!</span></button>
+  <div class="rescard" id="pres"><div class="resnm" id="pres-nm"></div><div class="ressub" id="pres-sub"></div><div class="rescnt" id="pres-cnt"></div></div>
+  <div class="bzst" id="pbz-st">في انتظار الإشارة...</div>
+  <div id="miniBoardWrap" class="mini-board-wrap"></div>
+</div>
+
+<!-- ⑦ DISPLAY -->
+<div id="display" class="scr">
+  <div class="dpleft"><div class="dpsc dpa"><div class="dn" id="dp-an">الفريق أ</div><div class="dv" id="dp-as">0</div></div><div style="text-align:center"><div class="dprnd" id="dp-rnd">الجولة 1</div><div class="dpbzbox" id="dp-bz"><span style="color:rgba(240,244,255,.3);font-size:.83rem">جاري الاتصال...</span></div><div class="dpleg"><div class="dplr"><div class="dpll" style="background:var(--A)"></div><span>أ — أفقي ◀▶</span></div><div class="dplr"><div class="dpll" style="background:var(--B)"></div><span>ب — عمودي ▲▼</span></div></div></div><div class="dpsc dpb"><div class="dn" id="dp-bn">الفريق ب</div><div class="dv" id="dp-bs">0</div></div></div>
+  <div class="dpcenter"><div class="dpq" id="dp-q" style="display:none"></div><div class="dpans" id="dp-ans"></div><div class="bwrap" id="display-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="display-board"></div></div></div>
+</div>
+
+<script>
+/* ========== دوال أساسية ========== */
+function go(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function confetti(team){const cs=team==='a'?['#FF5722','#FF8A65','#FFD700']:['#4CAF50','#81C784','#FFD700'];for(let i=0;i<70;i++){const el=document.createElement('div');el.className='cf';el.style.cssText='left:'+Math.random()*100+'vw;background:'+cs[i%cs.length]+';width:'+(8+Math.random()*10)+'px;height:'+(8+Math.random()*10)+'px;animation-duration:'+(2+Math.random()*2)+'s';document.body.appendChild(el);setTimeout(()=>el.remove(),4000);}}
+
+/* ========== بنك الأسئلة ========== */
+const QBANK={"أ":[{q:"أول الخلفاء الراشدين؟",a:"أبو بكر الصديق"},{q:"ملك الغابة؟",a:"أسد"},{q:"أكبر قارات العالم مساحة؟",a:"آسيا"},{q:"غاز ضروري للتنفس؟",a:"أكسجين"},{q:"أطول نهر في العالم؟",a:"النيل"},{q:"كائن بحري له ثمانية أذرع؟",a:"أخطبوط"},{q:"معالم تاريخية شهيرة في مصر؟",a:"أهرامات"},{q:"أسرع حيوان بري في العالم؟",a:"الفهد"},{q:"عاصمة إثيوبيا؟",a:"أديس أبابا"},{q:"عضو مسؤول عن حاسة السمع؟",a:"أذن"},{q:"أكبر محيط في العالم؟",a:"المحيط الهادئ"},{q:"أكبر إمارة في الإمارات؟",a:"أبوظبي"},{q:"لون يرمز للسلام؟",a:"أبيض"},{q:"أقرب الكواكب إلى الشمس؟",a:"عطارد"},{q:"فاكهة استوائية ذات تاج شوكي؟",a:"أناناس"}],"ب":[{q:"طائر لا يطير ويعيش في القطب الجنوبي؟",a:"بطريق"},{q:"دولة عاصمتها المنامة؟",a:"البحرين"},{q:"فاكهة حمضية برتقالية مشهورة؟",a:"برتقال"},{q:"عاصمة لبنان؟",a:"بيروت"},{q:"طائر ذكي يُعلَّم الكلام؟",a:"ببغاء"},{q:"مبنى شاهق الارتفاع؟",a:"برج"},{q:"مدخل المنزل أو الغرفة؟",a:"باب"},{q:"فاكهة صيفية كبيرة حمراء من الداخل؟",a:"بطيخ"},{q:"عاصمة العراق؟",a:"بغداد"},{q:"آلة موسيقية وترية كبيرة ذات مفاتيح؟",a:"بيانو"},{q:"طائر جارح ليلي؟",a:"بومة"},{q:"حيوان من الأنعام يعطينا الحليب؟",a:"بقرة"},{q:"جبل يخرج منه نار ورماد؟",a:"بركان"},{q:"مسطح مائي كبير محاط باليابسة؟",a:"بحيرة"},{q:"حشرة طائرة تمتص الدم؟",a:"بعوضة"}],"ت":[{q:"ثمرة شجرة النخيل؟",a:"تمر"},{q:"دولة عربية عاصمتها تونس؟",a:"تونس"},{q:"حيوان زاحف ضخم يعيش في الماء والبر؟",a:"تمساح"},{q:"كتاب مقدس أنزل على موسى؟",a:"توراة"},{q:"ما يلبس فوق الرأس للملوك؟",a:"تاج"},{q:"فاكهة صغيرة حمراء أو سوداء عنقودية؟",a:"توت"},{q:"دولة تقع في قارتي آسيا وأوروبا؟",a:"تركيا"},{q:"آلة لقياس درجة الحرارة؟",a:"ترمومتر"},{q:"فاكهة حمراء أو خضراء لذيذة مشهورة؟",a:"تفاحة"},{q:"رياضة قتالية كورية؟",a:"تايكوندو"},{q:"وعاء يحفظ حرارة السوائل؟",a:"ترمس"},{q:"جهاز يعرض القنوات التلفزيونية؟",a:"تلفاز"},{q:"حيوان أسطوري ينفث النار؟",a:"تنين"},{q:"عاصمة تايوان؟",a:"تايبيه"},{q:"جهاز التواصل عن بعد بالصوت؟",a:"تلفون"}],"ث":[{q:"حيوان يلقب بالمكار؟",a:"ثعلب"},{q:"زاحف يزحف على بطنه بلا أرجل؟",a:"ثعبان"},{q:"جهاز لحفظ الطعام بارداً؟",a:"ثلاجة"},{q:"نبات أبيض ذو رائحة قوية في الطعام؟",a:"ثوم"},{q:"الرقم الذي يلي الاثنين؟",a:"ثلاثة"},{q:"الحالة الصلبة للماء عند التجمد؟",a:"ثلج"},{q:"ثالث أيام الأسبوع؟",a:"الثلاثاء"},{q:"وحدة زمنية أصغر من الدقيقة؟",a:"ثانية"},{q:"رقم يلي السبعة؟",a:"ثمانية"},{q:"ذكر البقر؟",a:"ثور"},{q:"فصيلة الحيوانات التي تلد وترضع صغارها؟",a:"ثدييات"},{q:"منطقة في الفضاء لا يفلت منها الضوء؟",a:"ثقب أسود"},{q:"ما يرتديه الإنسان ليستر جسده؟",a:"ثوب"},{q:"الفتحة أو الفجوة الصغيرة؟",a:"ثقب"},{q:"عكس كلمة متحرك؟",a:"ثابت"}],"ج":[{q:"حيوان يسمى سفينة الصحراء؟",a:"جمل"},{q:"دولة عربية عاصمتها الجزائر؟",a:"الجزائر"},{q:"نبات برتقالي يقوي النظر؟",a:"جزر"},{q:"عظم يحيط بالدماغ لحمايته؟",a:"جمجمة"},{q:"أكبر جزيرة في العالم مساحة؟",a:"جرينلاند"},{q:"صغير الكلب؟",a:"جرو"},{q:"عاصمة إندونيسيا؟",a:"جاكرتا"},{q:"الكرم والعطاء الكثير؟",a:"جود"},{q:"مدينة مصرية تشتهر بالأهرامات؟",a:"الجيزة"},{q:"فاكهة استوائية بيضاء من الداخل؟",a:"جوز الهند"},{q:"وحدة قياس الشغل والطاقة؟",a:"جول"},{q:"آلة موسيقية وترية غربية شهيرة؟",a:"جيتار"},{q:"العملة الرسمية في مصر؟",a:"جنيه"},{q:"هيكل يبنى للعبور فوق نهر؟",a:"جسر"},{q:"مؤسسة للتعليم العالي؟",a:"جامعة"}],"ح":[{q:"طائر لطيف يرمز للسلام؟",a:"حمامة"},{q:"أضخم الثدييات البحرية؟",a:"حوت"},{q:"حيوان بري مخطط بالأسود والأبيض؟",a:"حمار وحشي"},{q:"مدينة سورية عريقة؟",a:"حلب"},{q:"زاحف يغير لون جلده للتمويه؟",a:"حرباء"},{q:"سائل غذائي أبيض تنتجه الثدييات؟",a:"حليب"},{q:"معدن صلب يستخدم في البناء؟",a:"حديد"},{q:"حيوان أصيل يستخدم في الركوب والسباقات؟",a:"حصان"},{q:"ما يلبس في القدمين لحمايتها؟",a:"حذاء"},{q:"أداة لفتح وإغلاق تدفق المياه؟",a:"حنفية"},{q:"حالة مرضية ترتفع فيها حرارة الجسم؟",a:"حمى"},{q:"شريط يلف حول الخصر؟",a:"حزام"},{q:"كائن بطيء يحمل قوقعة حلزونية؟",a:"حلزون"},{q:"ألياف قوية مجدولة للربط؟",a:"حبل"},{q:"قطعة صلبة من الصخور؟",a:"حجر"}],"خ":[{q:"أول زوجات الرسول ﷺ؟",a:"خديجة"},{q:"حيوان ثديي يطير ليلاً ويعلق مقلوباً؟",a:"خفاش"},{q:"رسم توضيحي للمدن والدول؟",a:"خريطة"},{q:"بيت متنقل مصنوع من القماش؟",a:"خيمة"},{q:"عاصمة دولة السودان؟",a:"الخرطوم"},{q:"سلاح أبيض قصير؟",a:"خنجر"},{q:"مادة صلبة من جذوع الأشجار؟",a:"خشب"},{q:"سائل حامضي يضاف للطعام؟",a:"خل"},{q:"الطعام الأساسي المصنوع من الدقيق؟",a:"خبز"},{q:"حيوان أليف يغطيه الصوف؟",a:"خروف"},{q:"خضار طويل أخضر غني بالماء؟",a:"خيار"},{q:"فصل تتساقط فيه أوراق الشجر؟",a:"خريف"},{q:"قصة كاذبة ومبالغ فيها؟",a:"خرافة"},{q:"حيوان ضخم بقرن واحد على أنفه؟",a:"خرتيت"},{q:"فاكهة صيفية بداخلها بذرة قاسية؟",a:"خوخ"}],"د":[{q:"كائن بحري ذكي وصديق للإنسان؟",a:"دولفين"},{q:"العملة الرسمية لدولة الإمارات؟",a:"درهم"},{q:"حيوان زاحف منقرض كان ضخماً جداً؟",a:"ديناصور"},{q:"عاصمة دولة قطر؟",a:"الدوحة"},{q:"سائل أحمر يجري في عروق الإنسان؟",a:"دم"},{q:"مدينة إماراتية شهيرة عالمياً؟",a:"دبي"},{q:"طائر داجن نأخذ منه البيض واللحم؟",a:"دجاجة"},{q:"المسحوق الناعم من طحن القمح؟",a:"دقيق"},{q:"ما يأخذه المريض للشفاء؟",a:"دواء"},{q:"الجزء الرئيسي من الجهاز العصبي؟",a:"دماغ"},{q:"حيوان مفترس ضخم يعيش في الغابات؟",a:"دب"},{q:"وعاء تقليدي لصنع القهوة العربية؟",a:"دلة"},{q:"ذكر الدجاج؟",a:"ديك"},{q:"تقاطع دائري لتنظيم حركة المرور؟",a:"دوار"},{q:"عكس كلمة خارج؟",a:"داخل"}],"ذ":[{q:"حيوان بري مفترس يشبه الكلب ويعوي ليلاً؟",a:"ذئب"},{q:"معدن نفيس أصفر اللون؟",a:"ذهب"},{q:"نبات حبوبه صفراء ويصنع منه الفشار؟",a:"ذرة"},{q:"حشرة طائرة صغيرة مزعجة؟",a:"ذبابة"},{q:"الامتداد في نهاية جسم بعض الحيوانات؟",a:"ذيل"},{q:"عضو يمتد من الكتف إلى اليد؟",a:"ذراع"},{q:"القدرة العقلية الفائقة؟",a:"ذكاء"},{q:"القدرة على تخزين واسترجاع المعلومات؟",a:"ذاكرة"},{q:"عكس كلمة أنثى؟",a:"ذكر"},{q:"حاسة إدراك طعم الأشياء؟",a:"ذوق"},{q:"لون أصفر براق كالمعدن؟",a:"ذهبي"},{q:"الخوف والهلع الشديد؟",a:"ذعر"},{q:"الضعف والاستكانة؟",a:"ذل"},{q:"الجزء السفلي من الوجه؟",a:"ذقن"},{q:"بمعنى صاحب الشيء؟",a:"ذو"}],"ر":[{q:"عاصمة المملكة العربية السعودية؟",a:"الرياض"},{q:"فاكهة ذكرت في القرآن مليئة بالحبوب الحمراء؟",a:"رمان"},{q:"فصل تتفتح فيه الأزهار؟",a:"ربيع"},{q:"عضو أساسي في الصدر للتنفس؟",a:"رئة"},{q:"آلة ميكانيكية مبرمجة تشبه الإنسان؟",a:"روبوت"},{q:"الصوت المدوي الذي يرافق البرق؟",a:"رعد"},{q:"الغطاء الناعم الذي يكسو جسم الطيور؟",a:"ريش"},{q:"شهر الصيام المبارك؟",a:"رمضان"},{q:"قائد المجموعة أو الدولة؟",a:"رئيس"},{q:"العملة الرسمية للسعودية وقطر؟",a:"ريال"},{q:"من يبعثه الله لهداية الناس؟",a:"رسول"},{q:"بقايا الاحتراق من الخشب؟",a:"رماد"},{q:"الجزء الأعلى من الجسم؟",a:"رأس"},{q:"الشخص الذي يقود السفينة؟",a:"ربان"},{q:"شخص يسافر للفضاء؟",a:"رائد فضاء"}],"ز":[{q:"أطول حيوان بري في العالم؟",a:"زرافة"},{q:"كوكب غازي ضخم يحيط به حلقات مرئية؟",a:"زحل"},{q:"شجرة مباركة يستخرج منها زيت صحي؟",a:"زيتون"},{q:"كارثة طبيعية تهتز فيها القشرة الأرضية؟",a:"زلزال"},{q:"الصوت العالي والمخيف للأسد؟",a:"زئير"},{q:"معدن سائل فضي في موازين الحرارة؟",a:"زئبق"},{q:"ركن من أركان الإسلام للفقراء؟",a:"زكاة"},{q:"حجر كريم أخضر نفيس؟",a:"زمرد"},{q:"نبات عطري شعبي مع الزيت والخبز؟",a:"زعتر"},{q:"عنب مجفف للحلويات والطبخ؟",a:"زبيب"},{q:"مادة شفافة صلبة هشة للنوافذ؟",a:"زجاج"},{q:"قارب صغير للتنقل في المياه؟",a:"زورق"},{q:"مرض فيروسي تنفسي شائع في الشتاء؟",a:"زكام"},{q:"منتج دهني من الحليب للحلويات؟",a:"زبدة"},{q:"نبات جذري حريف يستخدم كمشروب دافئ؟",a:"زنجبيل"}],"س":[{q:"حيوان بحري يتنفس بالخياشيم؟",a:"سمكة"},{q:"أطول بناء دفاعي في العالم؟",a:"سور الصين العظيم"},{q:"الفضاء الواسع الأزرق فوقنا؟",a:"سماء"},{q:"آلة دقيقة نعرف بها الوقت؟",a:"ساعة"},{q:"دولة عربية أفريقية عاصمتها الخرطوم؟",a:"السودان"},{q:"أداة حادة لتقطيع الطعام؟",a:"سكين"},{q:"كائن زاحف بطيء يحمل قوقعة صلبة؟",a:"سلحفاة"},{q:"مادة بيضاء بلورية حلوة الطعم؟",a:"سكر"},{q:"دولة عربية عاصمتها دمشق؟",a:"سوريا"},{q:"مركبة مصممة للتنقل على اليابسة؟",a:"سيارة"},{q:"طائر صغير سريع يهاجر في أسراب؟",a:"سنونو"},{q:"سلاح أبيض طويل حاد من الحروب القديمة؟",a:"سيف"},{q:"مركبة ضخمة تسافر في البحار؟",a:"سفينة"},{q:"رقم يأتي بعد الستة؟",a:"سبعة"},{q:"حيوان قارض يعيش في الأشجار؟",a:"سنجاب"}],"ش":[{q:"النجم الذي يمد الأرض بالضوء والحرارة؟",a:"شمس"},{q:"أبرد فصول السنة؟",a:"شتاء"},{q:"نبات خشبي معمر له جذع وفروع وأوراق؟",a:"شجرة"},{q:"مادة صلبة تذوب بالحرارة وتستخدم للإضاءة؟",a:"شمع"},{q:"وعاء دموي كبير ينقل الدم من القلب؟",a:"شريان"},{q:"السطح الزجاجي الذي تعرض عليه الصور؟",a:"شاشة"},{q:"المشروب الساخن الأكثر شعبية؟",a:"شاي"},{q:"أكلة فطور شعبية من البيض والطماطم؟",a:"شكشوكة"},{q:"أداة معدنية بأسنان لتناول الطعام؟",a:"شوكة"},{q:"حلوى بنية تصنع من الكاكاو؟",a:"شوكولاتة"},{q:"لعبة ذكاء واستراتيجية على رقعة؟",a:"شطرنج"},{q:"الجانب الأيسر (عكس يمين)؟",a:"شمال"},{q:"الكلام المنظوم والمقفى؟",a:"شعر"},{q:"منطقة خالية للمرور فيها؟",a:"شارع"},{q:"قطعة قماش دافئة حول الرقبة؟",a:"شال"}],"ص":[{q:"طائر جارح مشهور بقوة بصره وسرعته؟",a:"صقر"},{q:"نبات صحراوي يتحمل العطش بأشواك؟",a:"صبار"},{q:"مادة أساسية مع الماء لتنظيف الجسم؟",a:"صابون"},{q:"عاصمة دولة اليمن؟",a:"صنعاء"},{q:"الصوت الذي يصدره الحصان؟",a:"صهيل"},{q:"الفصل الأكثر حرارة في السنة؟",a:"صيف"},{q:"الامتناع عن الطعام والشراب (ركن إسلامي)؟",a:"صوم"},{q:"الشخص المقرب الذي تشاركه أسرارك؟",a:"صديق"},{q:"الغطاء الكثيف الذي يكسو جسم الخروف؟",a:"صوف"},{q:"قطعة كبيرة من الحجارة القاسية؟",a:"صخر"},{q:"المياه الغازية الشفافة الفوارة؟",a:"صودا"},{q:"الفترة التي تلي الفجر؟",a:"صباح"},{q:"الكلام المطابق للحقيقة؟",a:"صدق"},{q:"حشرة زاحفة سريعة آفة منزلية؟",a:"صرصور"},{q:"الذبذبات التي نسمعها بواسطة الآذان؟",a:"صوت"}],"ط":[{q:"وسيلة نقل جوية عابرة للقارات؟",a:"طائرة"},{q:"الشخص المؤهل لعلاج المرضى؟",a:"طبيب"},{q:"طائر جميل يتميز بريش ذيله الملون؟",a:"طاووس"},{q:"خضار أحمر دائري لا غنى عنه في الطبخ؟",a:"طماطم"},{q:"قطعة أثاث مسطحة مرفوعة نجلس حولها؟",a:"طاولة"},{q:"الإنسان الصغير في مرحلة قبل البلوغ؟",a:"طفل"},{q:"المسار المعبد الذي نسير عليه بالسيارات؟",a:"طريق"},{q:"النكهة واللذة التي نشعر بها عند الأكل؟",a:"طعم"},{q:"أداة مسطحة مستديرة لتقديم الطعام؟",a:"طبق"},{q:"المدينة السعودية التي تلقب بعروس المصائف؟",a:"الطائف"},{q:"الوقوف في صف منتظم لانتظار الدور؟",a:"طابور"},{q:"قبعة خفيفة تلبس على الرأس؟",a:"طاقية"},{q:"من يطلب العلم والمعرفة؟",a:"طالب"},{q:"آلة طحن الحبوب قديماً؟",a:"طاحونة"},{q:"عملية التحليق في الهواء؟",a:"طيران"}],"ع":[{q:"عضو الرؤية والإبصار في الكائنات؟",a:"عين"},{q:"طائر صغير شائع له تغريد مألوف؟",a:"عصفور"},{q:"مادة لزجة حلوة ينتجها النحل؟",a:"عسل"},{q:"المعرفة والدراسة المنهجية؟",a:"علم"},{q:"القدرة الذهنية للتفكير والتمييز؟",a:"عقل"},{q:"المدينة الرئيسية ومقر الحكم في أي دولة؟",a:"عاصمة"},{q:"فاكهة صيفية تنمو في عناقيد؟",a:"عنب"},{q:"حشرة لها ثماني أرجل وتنسج شباكاً؟",a:"عنكبوت"},{q:"مشروب سائل مستخلص من الفواكه؟",a:"عصير"},{q:"النسيج الصلب الذي يكون الهيكل الداخلي؟",a:"عظم"},{q:"يوم احتفال للمسلمين مرتين في السنة؟",a:"عيد"},{q:"الحبل الأسود المجدول فوق الشماغ؟",a:"عقال"},{q:"أخ الأب؟",a:"عم"},{q:"الشعور بالحاجة الشديدة لشرب الماء؟",a:"عطش"},{q:"حيوان زاحف سام لدغته مميتة؟",a:"عقرب"}],"ف":[{q:"أكبر حيوان ثديي بري له خرطوم طويل؟",a:"فيل"},{q:"حشرة رقيقة جميلة لها أجنحة ملونة؟",a:"فراشة"},{q:"المنطقة الشاسعة خارج الغلاف الجوي؟",a:"فضاء"},{q:"العضو في الوجه للأكل والشرب والكلام؟",a:"فم"},{q:"الأنثى من الخيل؟",a:"فرس"},{q:"الوقت الذي يبدأ بظهور النور قبل الشروق؟",a:"فجر"},{q:"خضار جذري لونه أحمر أو أبيض طعمه لاذع؟",a:"فجل"},{q:"اللباس الأنيق المتصل للمناسبات؟",a:"فستان"},{q:"مجموعة من اللاعبين يتعاونون في الرياضة؟",a:"فريق"},{q:"الانتصار وتحقيق المركز الأول؟",a:"فوز"},{q:"كائن دقيق جداً يسبب الأمراض والعدوى؟",a:"فيروس"},{q:"نبات يضاف للطعام كبهار حار أو بارد؟",a:"فلفل"},{q:"فاكهة حمراء صغيرة ذات بذور خارجية؟",a:"فراولة"},{q:"جهاز للطبخ وخبز المعجنات بالحرارة؟",a:"فرن"},{q:"الحيوان السنوري السريع المنقط؟",a:"فهد"}],"ق":[{q:"جرم سماوي يضيء ليل الأرض؟",a:"قمر"},{q:"حيوان أليف منزلي لطيف صوته المواء؟",a:"قطة"},{q:"أداة أساسية للكتابة والرسم على الورق؟",a:"قلم"},{q:"العضو العضلي الذي يضخ الدم في الجسم؟",a:"قلب"},{q:"مساحة يابسة ضخمة تضم مجموعة من الدول؟",a:"قارة"},{q:"حيوان ذكي جداً يتسلق الأشجار بمهارة؟",a:"قرد"},{q:"وسيلة نقل عامة تسير على قضبان حديدية؟",a:"قطار"},{q:"مشروب ساخن شهير جداً لونه بني منبه؟",a:"قهوة"},{q:"تجمع سكاني صغير يعمل أهله في الزراعة؟",a:"قرية"},{q:"وحدة قياس دقيقة لوزن الذهب؟",a:"قيراط"},{q:"بهار لحاؤه بني يستخدم في المشروبات؟",a:"قرفة"},{q:"هيكل لحبس الطيور أو الحيوانات؟",a:"قفص"},{q:"سلاح قديم مشدود بخيط لرمي السهام؟",a:"قوس"},{q:"سفينة صغيرة للتنقل أو الصيد في البحر؟",a:"قارب"},{q:"طائر صحراوي يضرب به المثل في الاهتداء؟",a:"قطا"}],"ك":[{q:"حيوان أليف يضرب به المثل في الوفاء؟",a:"كلب"},{q:"مجموعة من الأوراق المطبوعة والمجلدة للقراءة؟",a:"كتاب"},{q:"جسم دائري مطاطي نلعب به رياضات مختلفة؟",a:"كرة"},{q:"قبلة المسلمين في مكة المكرمة؟",a:"كعبة"},{q:"أكبر غدة في جسم الإنسان تنظف الدم؟",a:"كبد"},{q:"قطعة أثاث للجلوس ذات أربعة أرجل ومسند؟",a:"كرسي"},{q:"جرم سماوي معتم يدور حول الشمس؟",a:"كوكب"},{q:"فتحة واسعة وتجويف طبيعي عميق في الجبل؟",a:"كهف"},{q:"أعواد خشبية برأس قابل للاشتعال؟",a:"كبريت"},{q:"فاكهة حمراء صغيرة لامعة بداخلها نواة؟",a:"كرز"},{q:"ظاهرة فلكية بسبب مرور القمر أمام الشمس؟",a:"كسوف"},{q:"الجزء الداخلي أو باطن اليد؟",a:"كف"},{q:"آلة موسيقية وترية كلاسيكية تعزف بالقوس؟",a:"كمان"},{q:"أشهر أكلة شعبية سعودية من الأرز واللحم؟",a:"كبسة"},{q:"وعاء زجاجي أو خزفي للشرب الساخن؟",a:"كوب"}],"ل":[{q:"العضو العضلي في الفم للنطق والتذوق؟",a:"لسان"},{q:"فاكهة حمضية صفراء مليئة بفيتامين سي؟",a:"ليمون"},{q:"حجر كريم كروي أبيض يستخرج من المحار؟",a:"لؤلؤ"},{q:"الوقت الذي يبدأ بعد غروب الشمس؟",a:"ليل"},{q:"الصفة التي تميز الأشياء بصرياً؟",a:"لون"},{q:"سطح مستوٍ للرسم أو يعلق عليه إعلانات؟",a:"لوحة"},{q:"نوع من المكسرات المفيدة؟",a:"لوز"},{q:"سائل غذائي أبيض مغذي نأخذه من الأنعام؟",a:"لبن"},{q:"النسيج العضلي الذي يغطي العظم؟",a:"لحم"},{q:"غطاء سميك ومحشو للتدفئة أثناء النوم؟",a:"لحاف"},{q:"الجزء المشتعل من النار الذي يرتفع في الهواء؟",a:"لهب"},{q:"مادة صمغية معطرة تمضغ في الفم (علكة)؟",a:"لبان"},{q:"دولة عربية عاصمتها بيروت؟",a:"لبنان"},{q:"أنثى الأسد؟",a:"لبؤة"},{q:"قطعة من الخبز المقطوعة؟",a:"لقمة"}],"م":[{q:"فاكهة استوائية صفراء هلالية الشكل؟",a:"موز"},{q:"سر الحياة وهو سائل شفاف لا لون له ولا رائحة؟",a:"ماء"},{q:"أداة معدنية صغيرة بأسنان لفتح الأقفال؟",a:"مفتاح"},{q:"أداة حادة من نصلين متقاطعين لقص الورق؟",a:"مقص"},{q:"المؤسسة التعليمية للعلم والمعرفة؟",a:"مدرسة"},{q:"بيت الله والمكان المخصص للصلاة للمسلمين؟",a:"مسجد"},{q:"الكوكب الرابع في المجموعة الشمسية؟",a:"مريخ"},{q:"قطرات الماء التي تتساقط من الغيوم؟",a:"مطر"},{q:"مادة بيضاء بلورية لتتبيل الطعام؟",a:"ملح"},{q:"الشخص الذي يتولى مقاليد الحكم في المملكة؟",a:"ملك"},{q:"جهاز كهربائي ذو شفرات لتلطيف هواء الغرفة؟",a:"مروحة"},{q:"فاكهة استوائية صيفية لذيذة صفراء أو خضراء؟",a:"مانجو"},{q:"مدينة سعودية مقدسة وبها قبر النبي محمد؟",a:"المدينة المنورة"},{q:"أداة معدنية يطرق بها على المسامير؟",a:"مطرقة"},{q:"دولة عربية إفريقية عاصمتها القاهرة؟",a:"مصر"}],"ن":[{q:"حشرة طائرة مفيدة تصنع العسل؟",a:"نحلة"},{q:"حشرة صغيرة تعيش في مستعمرات تحت الأرض؟",a:"نملة"},{q:"حيوان بري مفترس مخطط بالأسود؟",a:"نمر"},{q:"أطول نهر في العالم في إفريقيا؟",a:"النيل"},{q:"الطاقة الحرارية والضوئية المشتعلة؟",a:"نار"},{q:"الجرم السماوي المضيء في سماء الليل؟",a:"نجم"},{q:"أداة طبية بعدسات لتحسين الرؤية؟",a:"نظارة"},{q:"الفتحة في الجدار لدخول الضوء والهواء؟",a:"نافذة"},{q:"أي كائن حي ينمو في الأرض وله جذور؟",a:"نبات"},{q:"طائر جارح ضخم وقوي يلقب بملك الطيور؟",a:"نسر"},{q:"الحرفي الذي يصنع الأثاث والأبواب من الأخشاب؟",a:"نجار"},{q:"الشعور بالحسرة على فعل خاطئ؟",a:"ندم"},{q:"الأموال والعملات للبيع والشراء؟",a:"نقود"},{q:"نبات عطري يضاف للشاي بنكهة رائعة؟",a:"نعناع"},{q:"شجرة مباركة وطويلة تنتج التمر؟",a:"نخلة"}],"هـ":[{q:"بناء حجري أثري ضخم بناه الفراعنة؟",a:"هرم"},{q:"الشكل المقوس للقمر في بداية الشهر؟",a:"هلال"},{q:"خليط الغازات الذي يحيط بالأرض ونتنفسه؟",a:"هواء"},{q:"جهاز إلكتروني للتواصل الصوتي والمرئي عن بعد؟",a:"هاتف"},{q:"دولة آسيوية مشهورة بتنوع ثقافاتها؟",a:"الهند"},{q:"ما يقدمه الشخص لغيره تعبيراً عن الحب؟",a:"هدية"},{q:"حالة السكون التام وانعدام الضجيج؟",a:"هدوء"},{q:"اسم آخر ومألوف للقطة الأليفة؟",a:"هرة"},{q:"طائر جميل يتميز بتاج من الريش على رأسه؟",a:"هدهد"},{q:"الدائرة المضيئة حول القمر أو الشمس؟",a:"هالة"},{q:"التحدث بصوت خفيض جداً؟",a:"همس"},{q:"وحدة القياس العالمية للتردد في الفيزياء؟",a:"هرتز"},{q:"بهار ونبات عطري أساسي في القهوة العربية؟",a:"هيل"},{q:"أكلة شعبية خليجية من القمح المهروس واللحم؟",a:"هريس"},{q:"غاز نبيل خفيف لنفخ البالونات؟",a:"هيليوم"}],"و":[{q:"زهرة جميلة ترمز للحب والجمال وذات رائحة عطرة؟",a:"وردة"},{q:"مادة رقيقة مرنة تصنع من الأشجار للكتابة؟",a:"ورق"},{q:"طائر ليلي يعتمد على الصدى في حركته؟",a:"وطواط"},{q:"حيوان بري ضخم له قرن واحد بارز على أنفه؟",a:"وحيد القرن"},{q:"الجزء الأمامي من الرأس الذي يحوي العينين؟",a:"وجه"},{q:"المقدار والزمن بالساعات والدقائق والأيام؟",a:"وقت"},{q:"المخدة الطرية التي نضع عليها رؤوسنا للنوم؟",a:"وسادة"},{q:"إناء أو مجوف لحفظ أو حمل السوائل؟",a:"وعاء"},{q:"الصدق والإخلاص في العهود وعدم الخيانة؟",a:"وفاء"},{q:"منطقة منخفضة بين جبلين تجري فيها المياه؟",a:"وادي"},{q:"الأرض والبلد الذي ينتمي إليه الإنسان؟",a:"وطن"},{q:"عاصمة الولايات المتحدة الأمريكية؟",a:"واشنطن"},{q:"الابن الذكر للإنسان؟",a:"ولد"},{q:"المطر الغزير والشديد جداً؟",a:"وابل"},{q:"الورقة الرسمية والمستند القانوني؟",a:"وثيقة"}],"ي":[{q:"زهرة بيضاء أو صفراء صغيرة ذكية الرائحة؟",a:"ياسمين"},{q:"الجزء من جسم الإنسان الذي ينتهي بالأصابع؟",a:"يد"},{q:"حجر كريم نفيس لونه أحمر لامع وشفاف؟",a:"ياقوت"},{q:"دولة عربية عريقة تقع في جنوب شبه الجزيرة العربية؟",a:"اليمن"},{q:"فترة زمنية تتكون من 24 ساعة؟",a:"يوم"},{q:"العملة النقدية الرسمية لدولة اليابان؟",a:"ين"},{q:"طائر أليف وهادئ من فصيلة الحمام؟",a:"يمامة"},{q:"الاتجاه المعاكس لجهة اليمين؟",a:"يسار"},{q:"الطفل الذي فقد والده قبل البلوغ؟",a:"يتيم"},{q:"التأكد التام والعلم الجازم الخالي من أي شك؟",a:"يقين"},{q:"رياضة روحية وبدنية هندية للاسترخاء والتأمل؟",a:"يوجا"},{q:"الشهر السابع من شهور السنة الميلادية؟",a:"يوليو"},{q:"جهة تعتبر جهة الخير (عكس اليسار)؟",a:"يمين"},{q:"الشهر الأول من السنة الميلادية؟",a:"يناير"},{q:"معدن مشع يستخدم كوقود في المفاعلات النووية؟",a:"يورانيوم"}]};
+
+const QBANK2={"أ":{"easy":[{"q":"حيوان مفترس يُلقَّب بملك الغابة؟","a":"أسد","cat":"حيوان"},{"q":"أكبر قارات العالم مساحةً؟","a":"آسيا","cat":"جغرافي"},{"q":"عاصمة المملكة العربية السعودية؟","a":"الرياض","cat":"بلاد"},{"q":"الغاز الضروري للتنفس؟","a":"أكسجين","cat":"طب"},{"q":"أطول نهر في العالم؟","a":"النيل","cat":"جغرافي"},{"q":"كائن بحري له ثمانية أذرع؟","a":"أخطبوط","cat":"حيوان"},{"q":"عضو مسؤول عن حاسة السمع؟","a":"أذن","cat":"إنسان"},{"q":"معالم تاريخية شهيرة بُنيت في مصر قديماً؟","a":"أهرامات","cat":"تاريخ"},{"q":"لون يرمز للنقاء والسلام؟","a":"أبيض","cat":"ثقافي"},{"q":"فاكهة استوائية تُشبه التاج الشوكي؟","a":"أناناس","cat":"نبات"},{"q":"أكبر إمارة في دولة الإمارات؟","a":"أبوظبي","cat":"بلاد"},{"q":"ثمرة شجرة النخيل الحلوة الشهيرة؟","a":"أتمر","cat":"نبات"}],"medium":[{"q":"أسرع حيوان بري على وجه الأرض؟","a":"الفهد","cat":"حيوان"},{"q":"عاصمة إثيوبيا؟","a":"أديس أبابا","cat":"بلاد"},{"q":"أكبر محيط في العالم مساحةً؟","a":"المحيط الهادئ","cat":"جغرافي"},{"q":"أول خليفة راشدي بعد وفاة النبي ﷺ؟","a":"أبو بكر الصديق","cat":"تاريخ"},{"q":"نبات صحراوي مليء بالأشواك يحتفظ بالماء؟","a":"صبار (أكتوس)","cat":"نبات"},{"q":"أقرب الكواكب إلى الشمس؟","a":"عطارد","cat":"جغرافي"},{"q":"أكبر بلد عربي من حيث المساحة؟","a":"الجزائر","cat":"بلاد"},{"q":"المعدن النفيس الأكثر شهرةً والأغلى ثمناً؟","a":"ألماس","cat":"جماد"},{"q":"صوت الأسد المرعب؟","a":"زئير","cat":"حيوان"},{"q":"الشعور العاطفي القوي تجاه شخص قريب؟","a":"ألفة","cat":"اجتماعي"},{"q":"عملية الشهيق والزفير التي نمارسها دائماً؟","a":"تنفس","cat":"طب"},{"q":"العضو الذي يُرشَّح فيه الدم في الجسم؟","a":"الكلى","cat":"طب"}],"hard":[{"q":"الجهاز الذي تنتج فيه خلايا الدم الحمراء؟","a":"نخاع العظم","cat":"طب"},{"q":"أعمق نقطة في المحيطات تُعرف بـ؟","a":"هوّة ماريانا","cat":"جغرافي"},{"q":"العالِم الذي اكتشف الجاذبية الأرضية بحسب الروايات الشائعة؟","a":"إسحاق نيوتن","cat":"تاريخ"},{"q":"أصغر دولة في العالم من حيث المساحة؟","a":"الفاتيكان","cat":"بلاد"},{"q":"المادة الكيميائية التي تعطي التفاحة طعمها الحامض؟","a":"حمض الماليك","cat":"طب"},{"q":"الاتفاقية الدولية لحماية التراث الطبيعي والثقافي؟","a":"اليونسكو","cat":"ثقافي"},{"q":"أطول سلسلة جبلية في العالم؟","a":"جبال الأنديز","cat":"جغرافي"},{"q":"العنصر الكيميائي الذي رمزه Au في الجدول الدوري؟","a":"الذهب","cat":"جماد"},{"q":"اسم أول سفينة فضائية نقلت بشراً إلى القمر؟","a":"أبولو 11","cat":"تاريخ"},{"q":"حالة مرضية تصيب المفاصل وتُسبب التهابها؟","a":"التهاب المفاصل","cat":"طب"},{"q":"المصطلح اللاتيني لعملية ترتيب المشترين وفق الأولوية الطبية؟","a":"تريّاج","cat":"طب"},{"q":"أول امرأة تحصل على جائزة نوبل في العلوم؟","a":"ماري كوري","cat":"تاريخ"}]},"ب":{"easy":[{"q":"طائر لا يطير ويعيش في القطب الجنوبي؟","a":"بطريق","cat":"حيوان"},{"q":"دولة عاصمتها المنامة؟","a":"البحرين","cat":"بلاد"},{"q":"فاكهة حمضية برتقالية شهيرة في العالم؟","a":"برتقال","cat":"نبات"},{"q":"عاصمة لبنان؟","a":"بيروت","cat":"بلاد"},{"q":"مبنى شاهق الارتفاع في المدن؟","a":"برج","cat":"جماد"},{"q":"فاكهة صيفية كبيرة حمراء من الداخل؟","a":"بطيخ","cat":"نبات"},{"q":"عاصمة العراق؟","a":"بغداد","cat":"بلاد"},{"q":"طائر ذكي يُعلَّم الكلام؟","a":"ببغاء","cat":"حيوان"},{"q":"آلة موسيقية وترية كبيرة ذات مفاتيح؟","a":"بيانو","cat":"ثقافي"},{"q":"جبل يخرج منه نار ورماد؟","a":"بركان","cat":"جغرافي"},{"q":"حيوان من الأنعام يعطينا الحليب؟","a":"بقرة","cat":"حيوان"},{"q":"مسطح مائي كبير محاط باليابسة؟","a":"بحيرة","cat":"جغرافي"}],"medium":[{"q":"حشرة طائرة تمتص دم الإنسان وتنقل الملاريا؟","a":"بعوضة","cat":"حيوان"},{"q":"أكبر بحيرة في العالم؟","a":"بحر قزوين","cat":"جغرافي"},{"q":"طائر جارح ليلي يُعرف بحكمته؟","a":"بومة","cat":"حيوان"},{"q":"صغير الجمل قبل أن يكبر؟","a":"بكرة","cat":"حيوان"},{"q":"مدخل المنزل أو الغرفة الرئيسي؟","a":"باب","cat":"جماد"},{"q":"دولة أوروبية عاصمتها برلين؟","a":"ألمانيا","cat":"بلاد"},{"q":"الشعور بالسعادة الغامرة من نجاح أو فرحة؟","a":"بهجة","cat":"اجتماعي"},{"q":"شجرة استوائية تنتج ثمراً ناعماً أصفر؟","a":"بابايا","cat":"نبات"},{"q":"خلية الدم المسؤولة عن مكافحة العدوى؟","a":"كريات الدم البيضاء","cat":"طب"},{"q":"أقدم حضارة نهرية في بلاد الرافدين؟","a":"الحضارة البابلية","cat":"تاريخ"},{"q":"العلاقة التي تجمع أبناء العمومة؟","a":"قرابة","cat":"علاقات"},{"q":"بيت النحل الذي تُحكم بناءه؟","a":"بنية (خلية)","cat":"حيوان"}],"hard":[{"q":"النظرية البيولوجية القائلة بتطور الكائنات الحية؟","a":"نظرية التطور لداروين","cat":"ثقافي"},{"q":"مدينة تاريخية كانت عاصمة الدولة العباسية؟","a":"بغداد","cat":"تاريخ"},{"q":"البروتين الذي يعطي الدم لونه الأحمر؟","a":"هيموغلوبين","cat":"طب"},{"q":"أطول جسر معلق في العالم حالياً؟","a":"جسر أكاشي كايكيو باليابان","cat":"جغرافي"},{"q":"المصطلح الطبي لعملية نقل الدم؟","a":"نقل الدم","cat":"طب"},{"q":"أول ملك لمملكة البحرين الحديثة؟","a":"حمد بن عيسى آل خليفة","cat":"تاريخ"},{"q":"نسبة الذكاء التي تُعتبر مرجعاً للعبقرية؟","a":"فوق 140","cat":"إنسان"},{"q":"المعادلة التي تصف علاقة الكتلة والطاقة؟","a":"E=mc²","cat":"ثقافي"},{"q":"الخلل الجيني الوراثي الذي يُسبب الهيموفيليا؟","a":"طفرة في جين عامل التخثر","cat":"طب"},{"q":"أقدم مدينة مأهولة في شبه الجزيرة العربية؟","a":"صنعاء","cat":"تاريخ"},{"q":"التفاعل الكيميائي الذي يُعطي البصل طعمه الحاد؟","a":"الثيوسلفينات","cat":"جماد"},{"q":"المفهوم البيولوجي لانتقال الصفات الوراثية للأجيال؟","a":"الوراثة الجينية","cat":"طب"}]},"ت":{"easy":[{"q":"ثمرة شجرة النخيل الحلوة؟","a":"تمر","cat":"نبات"},{"q":"دولة عربية عاصمتها تونس؟","a":"تونس","cat":"بلاد"},{"q":"حيوان زاحف ضخم يعيش في الأنهار؟","a":"تمساح","cat":"حيوان"},{"q":"كتاب مقدس أُنزل على موسى ﷺ؟","a":"توراة","cat":"ثقافي"},{"q":"ما يلبسه الملوك فوق الرأس رمزاً للسلطة؟","a":"تاج","cat":"تاريخ"},{"q":"فاكهة صغيرة حمراء أو سوداء عنقودية؟","a":"توت","cat":"نبات"},{"q":"دولة تقع في قارتي آسيا وأوروبا معاً؟","a":"تركيا","cat":"بلاد"},{"q":"جهاز يعرض القنوات التلفزيونية في المنازل؟","a":"تلفاز","cat":"جماد"},{"q":"فاكهة حمراء أو خضراء مشهورة ولذيذة؟","a":"تفاحة","cat":"نبات"},{"q":"عاصمة دولة تايوان؟","a":"تايبيه","cat":"بلاد"},{"q":"جهاز التواصل عن بعد بالصوت؟","a":"تلفون","cat":"جماد"},{"q":"وعاء معدني يحفظ حرارة السوائل لفترة طويلة؟","a":"ترمس","cat":"جماد"}],"medium":[{"q":"آلة لقياس درجة حرارة الجسم؟","a":"ترمومتر","cat":"طب"},{"q":"رياضة قتالية كورية تعتمد على اللكمات والركلات؟","a":"تايكوندو","cat":"ثقافي"},{"q":"حيوان أسطوري في الفلكلور الشرقي يطير وينفث النار؟","a":"تنين","cat":"ثقافي"},{"q":"عملية تحويل الطعام إلى طاقة في الجسم؟","a":"التمثيل الغذائي","cat":"طب"},{"q":"العلاقة العاطفية بين الأخوة والأخوات؟","a":"التآخي","cat":"علاقات"},{"q":"المرض الناجم عن نقص هرمون الأنسولين؟","a":"السكري","cat":"طب"},{"q":"النبات الذي يُستخدم في صناعة القماش القطني؟","a":"قطن","cat":"نبات"},{"q":"أداة الرصد الفلكي الأشهر في التاريخ؟","a":"تلسكوب","cat":"ثقافي"},{"q":"الظاهرة التي تجعل الأجسام الساقطة تتسارع نحو الأرض؟","a":"الجاذبية","cat":"ثقافي"},{"q":"أكبر مدينة في تركيا من حيث السكان؟","a":"إسطنبول","cat":"بلاد"},{"q":"عملية نقل البيانات والمعلومات عبر شبكة الإنترنت؟","a":"التواصل الرقمي","cat":"ثقافي"},{"q":"الدولة التي بنت قناة السويس في القرن التاسع عشر؟","a":"مصر بدعم فرنسي","cat":"تاريخ"}],"hard":[{"q":"العالِم الذي صاغ نظرية الكم الأساسية عام 1900؟","a":"ماكس بلانك","cat":"تاريخ"},{"q":"الدولة التي تمتلك أطول سواحل بحرية في العالم؟","a":"كندا","cat":"جغرافي"},{"q":"فيلسوف يوناني كتب الجمهورية وصاغ مفهوم الأكاديمية؟","a":"أفلاطون","cat":"تاريخ"},{"q":"الهرمون المسؤول عن تنظيم النوم والاستيقاظ؟","a":"ميلاتونين","cat":"طب"},{"q":"أقدم لغة مكتوبة اكتُشفت آثارها في العراق؟","a":"السومرية","cat":"تاريخ"},{"q":"التقنية الطبية التي تُصوِّر الأعضاء الداخلية بالرنين المغناطيسي؟","a":"التصوير بالرنين المغناطيسي MRI","cat":"طب"},{"q":"المعاهدة الدولية التي أنهت الحرب العالمية الأولى؟","a":"معاهدة فرساي","cat":"تاريخ"},{"q":"نوع من الجسيمات دون الذرية لا كتلة له ويشكّل الضوء؟","a":"فوتون","cat":"ثقافي"},{"q":"العلم الذي يدرس الأوبئة والأمراض في المجتمعات؟","a":"علم الوبائيات","cat":"طب"},{"q":"الهضبة التي تقع فيها أنقرة عاصمة تركيا؟","a":"هضبة الأناضول","cat":"جغرافي"},{"q":"أول دولة في التاريخ تُعطي المرأة حق التصويت؟","a":"نيوزيلندا","cat":"تاريخ"},{"q":"الجزيء الذي يحمل المعلومات الجينية في الخلايا الحية؟","a":"الحمض النووي DNA","cat":"طب"}]},"ج":{"easy":[{"q":"حيوان يُسمى سفينة الصحراء؟","a":"جمل","cat":"حيوان"},{"q":"دولة عربية عاصمتها الجزائر؟","a":"الجزائر","cat":"بلاد"},{"q":"نبات برتقالي يُقوّي النظر ويدخل في الطعام؟","a":"جزر","cat":"نبات"},{"q":"عظم صلب يُحيط بالدماغ لحمايته؟","a":"جمجمة","cat":"إنسان"},{"q":"أكبر جزيرة في العالم من حيث المساحة؟","a":"جرينلاند","cat":"جغرافي"},{"q":"صغير الكلب في مرحلة الطفولة؟","a":"جرو","cat":"حيوان"},{"q":"عاصمة إندونيسيا؟","a":"جاكرتا","cat":"بلاد"},{"q":"هيكل مبني للعبور فوق نهر أو واد؟","a":"جسر","cat":"جماد"},{"q":"مؤسسة للتعليم الجامعي والبحث العلمي؟","a":"جامعة","cat":"ثقافي"},{"q":"فاكهة استوائية لبّها أبيض وتحتوي على ماء؟","a":"جوز الهند","cat":"نبات"},{"q":"آلة موسيقية وترية شهيرة في الموسيقى الغربية؟","a":"جيتار","cat":"ثقافي"},{"q":"العملة الرسمية في جمهورية مصر العربية؟","a":"جنيه","cat":"بلاد"}],"medium":[{"q":"وحدة قياس الطاقة والشغل في النظام الدولي؟","a":"جول","cat":"ثقافي"},{"q":"مدينة مصرية تشتهر بالأهرامات والآثار؟","a":"الجيزة","cat":"تاريخ"},{"q":"الكرم والعطاء الكبير دون توقع مقابل؟","a":"جود","cat":"اجتماعي"},{"q":"أكبر صحراء في العالم؟","a":"الصحراء الكبرى","cat":"جغرافي"},{"q":"الأمراض التي تنتقل عبر الجهاز الهضمي؟","a":"أمراض معدية-معوية","cat":"طب"},{"q":"العلاقة الوثيقة التي تجمع الجيران في الحارة؟","a":"جيرة ومودة","cat":"علاقات"},{"q":"دولة إفريقية صغيرة على ساحل خليج عدن؟","a":"جيبوتي","cat":"بلاد"},{"q":"حضارة تاريخية قامت على نهر النيل؟","a":"الحضارة الفرعونية","cat":"تاريخ"},{"q":"الطائر الكبير الذي لا يطير ويعيش في أفريقيا؟","a":"نعامة","cat":"حيوان"},{"q":"نبات طبي يُستخدم لعلاج التوتر والقلق؟","a":"جنكة بيلوبا","cat":"نبات"},{"q":"جهاز يُحدد الموقع الجغرافي بالقمر الصناعي؟","a":"GPS","cat":"جماد"},{"q":"الشعور النفسي الذي يجعل الإنسان يتماهى مع آلام الآخرين؟","a":"تعاطف وجداني","cat":"اجتماعي"}],"hard":[{"q":"الظاهرة الجيولوجية المسؤولة عن تشكّل البراكين والزلازل؟","a":"حركة الصفائح التكتونية","cat":"جغرافي"},{"q":"الغدة الصماء التي تُفرز هرمون النمو؟","a":"الغدة النخامية","cat":"طب"},{"q":"أقدم برلمان تشريعي لا يزال يعمل حتى اليوم؟","a":"البرلمان الآيسلندي ألثينغ","cat":"تاريخ"},{"q":"المصطلح الاقتصادي الذي يصف ارتفاع الأسعار المستمر؟","a":"التضخم","cat":"ثقافي"},{"q":"المركب الكيميائي الأساسي في الكلوروفيل المُعطي للنبات لونه؟","a":"المغنيسيوم","cat":"نبات"},{"q":"عالِم عربي كتب كتاب الجبر ومؤسس علم الجبر؟","a":"الخوارزمي","cat":"تاريخ"},{"q":"البنية الخلوية التي تُنتج الطاقة في خلايا الجسم؟","a":"الميتوكندريا","cat":"طب"},{"q":"أعلى قمة في سلسلة جبال الهيمالايا؟","a":"جبل إيفرست","cat":"جغرافي"},{"q":"الانجراف الجيني الذي يُحدث تغيرات تطورية في السكان المعزولين؟","a":"الانجراف الجيني","cat":"ثقافي"},{"q":"الحرب التي أُطلق عليها اسم حرب الأيام الستة عام 1967؟","a":"حرب 1967","cat":"تاريخ"},{"q":"الظاهرة النفسية التي تجعل الإنسان يُحاكي مشاعر الآخرين؟","a":"التعاطف الوجداني (إمباثي)","cat":"إنسان"},{"q":"أكثر مجموعات الجزر كثافةً سكانية في المحيط الهادئ؟","a":"جزر اليابان","cat":"جغرافي"}]},"ح":{"easy":[{"q":"طائر أبيض يرمز للسلام ويُحبّ الحبوب؟","a":"حمامة","cat":"حيوان"},{"q":"أضخم الثدييات البحرية في العالم؟","a":"حوت","cat":"حيوان"},{"q":"حيوان بري مخطط بالأسود والأبيض يشبه الحصان؟","a":"حمار وحشي","cat":"حيوان"},{"q":"سائل غذائي أبيض تنتجه الثدييات لإطعام صغارها؟","a":"حليب","cat":"إنسان"},{"q":"معدن صلب يُستخدم في البناء والصناعة؟","a":"حديد","cat":"جماد"},{"q":"حيوان نبيل يُستخدم في الركوب والسباقات؟","a":"حصان","cat":"حيوان"},{"q":"ما يُلبس في القدمين لحمايتهما؟","a":"حذاء","cat":"جماد"},{"q":"حالة مرضية ترتفع فيها درجة حرارة الجسم؟","a":"حمى","cat":"طب"},{"q":"كائن بطيء يحمل قوقعة حلزونية على ظهره؟","a":"حلزون","cat":"حيوان"},{"q":"ألياف قوية مجدولة تُستخدم للربط والتسلق؟","a":"حبل","cat":"جماد"},{"q":"أداة لفتح وإغلاق تدفق المياه في البيوت؟","a":"حنفية","cat":"جماد"},{"q":"شريط يُلفّ حول الخصر لحمل الملابس؟","a":"حزام","cat":"جماد"}],"medium":[{"q":"زاحف يُغيّر لون جلده حسب البيئة للتمويه؟","a":"حرباء","cat":"حيوان"},{"q":"مدينة سورية عريقة تُعدّ من أقدم مدن العالم؟","a":"حلب","cat":"تاريخ"},{"q":"العلاقة العاطفية المتبادلة بين الزوجين؟","a":"حب وتعاطف","cat":"علاقات"},{"q":"قطعة صلبة من الصخور الطبيعية؟","a":"حجر","cat":"جماد"},{"q":"الشعور النفسي بالتشوق والانتظار لشيء مرغوب؟","a":"حنين","cat":"اجتماعي"},{"q":"نوع من الحشرات يعيش في خلايا ويُنتج العسل؟","a":"نحل","cat":"حيوان"},{"q":"عاصمة الفيتنام على نهر الأحمر؟","a":"هانوي","cat":"بلاد"},{"q":"الشعور بالارتياح والأمان داخل المنزل؟","a":"حميمية","cat":"اجتماعي"},{"q":"العملية الجراحية لاستئصال جزء من الجسم المتضرر؟","a":"بتر أو استئصال","cat":"طب"},{"q":"الإحساس الداخلي الذي يُنبئنا بما هو صحيح وما هو خاطئ؟","a":"حدس أو ضمير","cat":"إنسان"},{"q":"العلم الذي يدرس خصائص الذرات والجزيئات؟","a":"كيمياء","cat":"ثقافي"},{"q":"مدينة يمنية تُعدّ من أقدم مدن العالم المأهولة؟","a":"حضرموت (شبام)","cat":"تاريخ"}],"hard":[{"q":"الجهاز الذي يُساعد على تحليل الحمض النووي في المختبر؟","a":"PCR تفاعل تضخيم الحمض النووي","cat":"طب"},{"q":"أشهر حملة صليبية استعادت القدس قبل تحريرها؟","a":"الحملة الصليبية الأولى 1099","cat":"تاريخ"},{"q":"المصطلح الطبي لالتهاب الكبد الفيروسي المزمن؟","a":"التهاب كبدي مزمن هيباتيتس","cat":"طب"},{"q":"الأنثروبولوجي الذي صاغ مفهوم الثقافة النسبية؟","a":"فرانز بواس","cat":"ثقافي"},{"q":"الحضارة التي بنت مدينة قرطاجة في تونس قديماً؟","a":"الفينيقيون","cat":"تاريخ"},{"q":"النظرية الرياضية التي تصف الفوضى وعدم الاستقرار؟","a":"نظرية الكاوس","cat":"ثقافي"},{"q":"أكبر صنف من الثدييات البحرية في المحيط؟","a":"الحوت الأزرق","cat":"حيوان"},{"q":"أول اتفاقية دولية لحقوق الإنسان وقعتها الأمم المتحدة؟","a":"الإعلان العالمي لحقوق الإنسان 1948","cat":"تاريخ"},{"q":"الظاهرة التي يُصبح فيها العقل مدمناً لمادة ما؟","a":"الإدمان العصبي","cat":"طب"},{"q":"العنصر الكيميائي الأكثر وفرةً في القشرة الأرضية؟","a":"السيليكون","cat":"جماد"},{"q":"المصطلح الجغرافي لمنطقة منخفضة بين تضاريس مرتفعة؟","a":"حوض أو وادٍ داخلي","cat":"جغرافي"},{"q":"الظاهرة النفسية لتراكم الصدمات العاطفية دون معالجة؟","a":"صدمة معقدة","cat":"إنسان"}]},"د":{"easy":[{"q":"كائن بحري ذكي جداً وصديق للإنسان؟","a":"دولفين","cat":"حيوان"},{"q":"العملة الرسمية لدولة الإمارات؟","a":"درهم","cat":"بلاد"},{"q":"حيوان زاحف منقرض كان يسيطر على الأرض قديماً؟","a":"ديناصور","cat":"حيوان"},{"q":"عاصمة دولة قطر؟","a":"الدوحة","cat":"بلاد"},{"q":"سائل أحمر يجري في عروق الإنسان وينقل الأكسجين؟","a":"دم","cat":"إنسان"},{"q":"مدينة إماراتية شهيرة بناطحات السحاب؟","a":"دبي","cat":"بلاد"},{"q":"طائر داجن نأخذ منه البيض واللحم؟","a":"دجاجة","cat":"حيوان"},{"q":"المسحوق الناعم الناتج عن طحن القمح؟","a":"دقيق","cat":"نبات"},{"q":"ما يأخذه المريض من الصيدلية للشفاء؟","a":"دواء","cat":"طب"},{"q":"الجزء الرئيسي من الجهاز العصبي داخل الجمجمة؟","a":"دماغ","cat":"إنسان"},{"q":"حيوان مفترس يعيش في الغابات من الثدييات الكبيرة؟","a":"دب","cat":"حيوان"},{"q":"وعاء تقليدي يُستخدم لصنع القهوة العربية؟","a":"دلّة","cat":"ثقافي"}],"medium":[{"q":"ذكر الدجاج الذي يصيح في الصباح؟","a":"ديك","cat":"حيوان"},{"q":"تقاطع دائري يُنظّم حركة المرور في التقاطعات؟","a":"دوّار","cat":"جماد"},{"q":"الإحساس بالنقص العاطفي والوحدة الداخلية؟","a":"وحدة","cat":"اجتماعي"},{"q":"أداة موسيقية إيقاعية تُضرب باليد أو العصا؟","a":"دف","cat":"ثقافي"},{"q":"المرض الجلدي الذي يُسبب بقعاً حمراء وحكة شديدة؟","a":"الأكزيما","cat":"طب"},{"q":"العلاقة بين الدولة المُرسِلة والمُستقبِلة للسفراء؟","a":"دبلوماسية","cat":"علاقات"},{"q":"أكبر مدن الهند السكانية؟","a":"دلهي ومومباي","cat":"بلاد"},{"q":"الظاهرة الطبيعية التي تجعل المياه تُدور حول الأعاصير؟","a":"دوّامة جوية","cat":"جغرافي"},{"q":"أقدم نظام ري مائي في التاريخ؟","a":"نظام قنوات الري البابلية","cat":"تاريخ"},{"q":"الطائرة التي تُقلع وتهبط عمودياً؟","a":"طائرة هليكوبتر","cat":"جماد"},{"q":"الدين الإبراهيمي الذي يُؤمن بالتثليث؟","a":"المسيحية","cat":"ثقافي"},{"q":"من صاغ أول دستور حديث للولايات المتحدة؟","a":"المؤسسون الأمريكيون","cat":"تاريخ"}],"hard":[{"q":"الباحث الذي اكتشف طبيعة الحمض النووي DNA عام 1953؟","a":"واطسون وكريك","cat":"تاريخ"},{"q":"الظاهرة الاقتصادية التي تصف انخفاض الأسعار باستمرار؟","a":"انكماش (deflation)","cat":"ثقافي"},{"q":"المُركّب الكيميائي الذي يُعطي الدم خاصية التخثر؟","a":"الفيبرينوجين","cat":"طب"},{"q":"الحضارة التي ابتكرت الأبجدية أول مرة في التاريخ؟","a":"الفينيقيون","cat":"تاريخ"},{"q":"الجزيء المسؤول عن الإشارات العصبية في الدماغ؟","a":"الناقل العصبي (نيوروترانسميتر)","cat":"طب"},{"q":"الخريطة الجينية الكاملة للإنسان أُكمل تسلسلها عام؟","a":"2003","cat":"ثقافي"},{"q":"العلاقة التكافلية بين الكائنات الحية التي تتشارك المعيشة؟","a":"تكافل بيولوجي","cat":"علاقات"},{"q":"النظام السياسي الذي يُحكم فيه الحاكم بشكل مطلق؟","a":"الاستبداد","cat":"ثقافي"},{"q":"أكبر بيئة بيولوجية متنوعة في العالم؟","a":"غابات الأمازون المطيرة","cat":"جغرافي"},{"q":"مفهوم الدمج الوراثي بين الأنواع بالتقنيات الحديثة؟","a":"الهندسة الوراثية","cat":"طب"},{"q":"المعادن الثقيلة التي تُسبب التلوث البيئي؟","a":"رصاص وزئبق وكادميوم","cat":"جماد"},{"q":"المصطلح الاجتماعي لشعور التضامن مع المجموعة الواحدة؟","a":"الهوية الجماعية","cat":"اجتماعي"}]},"ر":{"easy":[{"q":"عاصمة المملكة العربية السعودية؟","a":"الرياض","cat":"بلاد"},{"q":"فاكهة ذُكرت في القرآن الكريم ومليئة بالحبوب الحمراء؟","a":"رمان","cat":"نبات"},{"q":"فصل السنة الذي تتفتح فيه الأزهار؟","a":"ربيع","cat":"جغرافي"},{"q":"عضو أساسي في الصدر مسؤول عن التنفس؟","a":"رئة","cat":"إنسان"},{"q":"الصوت المدوي الذي يُرافق البرق أثناء العاصفة؟","a":"رعد","cat":"جغرافي"},{"q":"الغطاء الناعم الذي يكسو جسم الطيور؟","a":"ريش","cat":"حيوان"},{"q":"شهر الصيام المبارك عند المسلمين؟","a":"رمضان","cat":"ثقافي"},{"q":"قائد الدولة أو المجموعة وأعلى مسؤول فيها؟","a":"رئيس","cat":"إنسان"},{"q":"العملة الرسمية للمملكة العربية السعودية وقطر؟","a":"ريال","cat":"بلاد"},{"q":"مَن يبعثه الله لهداية الناس وتبليغ الرسالة؟","a":"رسول","cat":"ثقافي"},{"q":"بقايا الاحتراق المتخلفة عن الخشب؟","a":"رماد","cat":"جماد"},{"q":"شخص مدرَّب خصيصاً للسفر في الفضاء الخارجي؟","a":"رائد فضاء","cat":"إنسان"}],"medium":[{"q":"آلة ميكانيكية مُبرمجة تُشبه الإنسان وتُؤدي المهام؟","a":"روبوت","cat":"جماد"},{"q":"الشخص الذي يقود السفينة ويتحمل مسؤوليتها؟","a":"ربّان","cat":"إنسان"},{"q":"الجزء الأعلى من الجسم حيث يوجد الدماغ والحواس؟","a":"رأس","cat":"إنسان"},{"q":"الشعور النفسي بالارتياح بعد مرور تعب أو أزمة؟","a":"راحة","cat":"اجتماعي"},{"q":"العلاقة الإنسانية القائمة على الاحترام والمودة؟","a":"رفقة","cat":"علاقات"},{"q":"مدينة إيطالية تاريخية مشهورة بالكوليزيوم؟","a":"روما","cat":"تاريخ"},{"q":"فصيلة الحجارة الكريمة الحمراء الثمينة؟","a":"روبي (ياقوت أحمر)","cat":"جماد"},{"q":"المرض التنفسي الأكثر انتشاراً في فصل الشتاء؟","a":"الزكام","cat":"طب"},{"q":"أكبر مدينة في روسيا وعاصمتها الفيدرالية؟","a":"موسكو","cat":"بلاد"},{"q":"النظام البيئي للتربة الخصبة التي تحتوي على عناصر مغذية؟","a":"ريزوسفير","cat":"نبات"},{"q":"الرحلة الدينية الإسلامية الأولى إلى مكة المكرمة؟","a":"رحلة العمرة","cat":"ثقافي"},{"q":"الرياضة التي تُمارَس على الجليد بمزلاج؟","a":"رياضة التزلج","cat":"ثقافي"}],"hard":[{"q":"الباحث الذي طور نظرية النسبية الخاصة والعامة؟","a":"ألبرت أينشتاين","cat":"تاريخ"},{"q":"الاضطراب النفسي الذي يُسبب تقلبات مزاجية حادة؟","a":"الاضطراب ثنائي القطب","cat":"طب"},{"q":"المصطلح الفلسفي الذي يصف القدرة على التمييز بالعقل؟","a":"الرشد","cat":"ثقافي"},{"q":"أقدم خريطة جغرافية موثقة تاريخياً؟","a":"خريطة بابلية 600 قبل الميلاد","cat":"تاريخ"},{"q":"العنصر الكيميائي المُشع الطبيعي الذي يُستخدم في التصوير الطبي؟","a":"راديوم","cat":"طب"},{"q":"الظاهرة التي تجعل الضوء يتحول عبر المنشور؟","a":"انكسار الضوء","cat":"ثقافي"},{"q":"العلاقة بين المعلم والطالب في التعليم التقليدي؟","a":"علاقة معرفية توجيهية","cat":"علاقات"},{"q":"مبدأ الفيزياء الذي ينص على أن طاقة الكون ثابتة؟","a":"قانون حفظ الطاقة","cat":"ثقافي"},{"q":"الأمراض الناجمة عن تلوث المياه كالكوليرا؟","a":"أمراض منقولة بالمياه","cat":"طب"},{"q":"الجهاز الذي يُقيس الإشعاع النووي في المناطق الخطرة؟","a":"مقياس الإشعاع","cat":"جماد"},{"q":"الظاهرة النفسية لشعور الفقدان المستمر بعد الخسارة؟","a":"الحزن المزمن","cat":"إنسان"},{"q":"أطول نهر في قارة أوروبا؟","a":"نهر الفولغا في روسيا","cat":"جغرافي"}]},"س":{"easy":[{"q":"حيوان بحري يتنفس بالخياشيم ويعيش في الماء؟","a":"سمكة","cat":"حيوان"},{"q":"أطول بناء دفاعي في التاريخ عبر الأراضي الصينية؟","a":"سور الصين العظيم","cat":"تاريخ"},{"q":"الفضاء الواسع الأزرق الذي نراه فوقنا؟","a":"سماء","cat":"جغرافي"},{"q":"آلة دقيقة نعرف بها الوقت في رسغ اليد؟","a":"ساعة","cat":"جماد"},{"q":"دولة عربية أفريقية عاصمتها الخرطوم؟","a":"السودان","cat":"بلاد"},{"q":"أداة حادة تُستخدم لتقطيع الطعام في المطبخ؟","a":"سكين","cat":"جماد"},{"q":"كائن زاحف بطيء يحمل قوقعة صلبة على ظهره؟","a":"سلحفاة","cat":"حيوان"},{"q":"مادة بيضاء بلورية حلوة الطعم تُضاف للطعام؟","a":"سكر","cat":"نبات"},{"q":"دولة عربية عاصمتها دمشق؟","a":"سوريا","cat":"بلاد"},{"q":"مركبة تسير على الطرق لنقل الأشخاص والبضائع؟","a":"سيارة","cat":"جماد"},{"q":"سلاح أبيض طويل حاد كان يُستخدم في الحروب القديمة؟","a":"سيف","cat":"جماد"},{"q":"مركبة ضخمة تسافر على البحار لنقل البضائع؟","a":"سفينة","cat":"جماد"}],"medium":[{"q":"طائر صغير سريع يهاجر في أسراب مع تغير الفصول؟","a":"سنونو","cat":"حيوان"},{"q":"حيوان قارض يعيش في الأشجار ويُخزن الطعام؟","a":"سنجاب","cat":"حيوان"},{"q":"الرقم الذي يأتي بعد الستة في الترتيب؟","a":"سبعة","cat":"ثقافي"},{"q":"العلاقة القانونية التي تجمع الزوجين بعد عقد الزواج؟","a":"الزوجية","cat":"علاقات"},{"q":"الأداة الجراحية المُستخدمة في غرف العمليات للقطع الدقيق؟","a":"مشرط جراحي","cat":"طب"},{"q":"التوابل التي أهّلت طرق التجارة القديمة بين الشرق والغرب؟","a":"طريق الحرير","cat":"تاريخ"},{"q":"أعلى قمة جبلية في شبه الجزيرة العربية؟","a":"جبل النبي شعيب في اليمن","cat":"جغرافي"},{"q":"جهاز طبي يُقيس ضغط الدم بالزئبق؟","a":"مقياس ضغط الدم","cat":"طب"},{"q":"مفهوم اجتماعي يصف الإحساس بالانتماء لمجموعة؟","a":"الانتماء الاجتماعي","cat":"اجتماعي"},{"q":"أشجار ضخمة استوائية تُكسب الغابات المطيرة كثافتها؟","a":"أشجار الماهوغاني والسرو","cat":"نبات"},{"q":"نوع من التمر الذي يُزرع في المدينة المنورة؟","a":"سكري (تمر)","cat":"نبات"},{"q":"أشهر زعيم عسكري فرنسي في التاريخ الحديث؟","a":"نابليون بونابرت","cat":"تاريخ"}],"hard":[{"q":"الظاهرة الكيميائية التي تُفسد المعادن بتفاعلها مع الأكسجين؟","a":"الأكسدة (صدأ)","cat":"جماد"},{"q":"الفيلسوف اليوناني الذي صاغ المنطق الصوري؟","a":"أرسطو","cat":"تاريخ"},{"q":"الغدة الصماء التي تُنظّم التمثيل الغذائي والنمو؟","a":"الغدة الدرقية","cat":"طب"},{"q":"الخبير الاقتصادي الذي وضع نظرية الميزة النسبية؟","a":"ريكاردو","cat":"تاريخ"},{"q":"عملية الاستنساخ الجيني لاسترجاع أنواع منقرضة؟","a":"الاستنساخ (cloning)","cat":"طب"},{"q":"نوع الطاقة الكامنة في البنية النووية للذرات؟","a":"الطاقة النووية الذرية","cat":"جماد"},{"q":"المصطلح القانوني للعقد الملزِم بين دولتين أو طرفين؟","a":"معاهدة دولية","cat":"ثقافي"},{"q":"الجهاز البيولوجي الذي يُنظّم إيقاع الساعة اليومية؟","a":"الساعة البيولوجية الداخلية","cat":"طب"},{"q":"الأزمة المالية العالمية التي أُطلق عليها فقاعة العقارات؟","a":"أزمة 2008 الاقتصادية","cat":"تاريخ"},{"q":"أكبر مدينة في سيبيريا وعاصمة المنطقة الفيدرالية الروسية؟","a":"نوفوسيبيرسك","cat":"بلاد"},{"q":"التكنولوجيا التي تجمع بين الذكاء الاصطناعي ومعالجة اللغة الطبيعية؟","a":"نماذج اللغة الكبيرة LLM","cat":"ثقافي"},{"q":"الطريقة الإحصائية التي تُحدد الارتباط بين متغيرين؟","a":"تحليل الانحدار","cat":"ثقافي"}]},"ع":{"easy":[{"q":"عضو الرؤية والإبصار في جسم الإنسان؟","a":"عين","cat":"إنسان"},{"q":"طائر صغير شائع في الحدائق يُحبّ الغناء والتغريد؟","a":"عصفور","cat":"حيوان"},{"q":"مادة لزجة حلوة يُنتجها النحل في خلاياه؟","a":"عسل","cat":"نبات"},{"q":"المعرفة والدراسة المنهجية للحقائق والظواهر؟","a":"علم","cat":"ثقافي"},{"q":"القدرة الذهنية على التفكير والتمييز وحل المشكلات؟","a":"عقل","cat":"إنسان"},{"q":"المدينة الرئيسية التي يقع فيها مقر حكومة الدولة؟","a":"عاصمة","cat":"بلاد"},{"q":"فاكهة صيفية تنمو في عناقيد على الكروم؟","a":"عنب","cat":"نبات"},{"q":"حشرة لها ثماني أرجل وتنسج شباكاً لصيد فرائسها؟","a":"عنكبوت","cat":"حيوان"},{"q":"مشروب سائل مستخلص من الفواكه بعصرها؟","a":"عصير","cat":"نبات"},{"q":"النسيج الصلب الداخلي الذي يُشكّل الهيكل العظمي للجسم؟","a":"عظم","cat":"إنسان"},{"q":"يوم احتفال ديني عند المسلمين يأتي مرتين في السنة؟","a":"عيد","cat":"ثقافي"},{"q":"الشعور بالحاجة الشديدة لشرب الماء؟","a":"عطش","cat":"إنسان"}],"medium":[{"q":"حيوان زاحف سامّ لدغته مميتة ذو ذيل وملاقط؟","a":"عقرب","cat":"حيوان"},{"q":"الحبل الأسود المجدول الذي يُوضع فوق الشماغ؟","a":"عقال","cat":"ثقافي"},{"q":"أخ الأب أو الأم في العلاقات الأسرية؟","a":"عمّ أو خال","cat":"علاقات"},{"q":"العلاقة الوثيقة القائمة على الثقة والتآزر؟","a":"عهد وصداقة","cat":"علاقات"},{"q":"الحقبة التاريخية التي شهدت ازدهار الحضارة الإسلامية؟","a":"العصر الذهبي الإسلامي","cat":"تاريخ"},{"q":"الآلة الموسيقية الوترية الأصيلة في الموسيقى العربية؟","a":"عود","cat":"ثقافي"},{"q":"سائل يُفرزه الجسم للتنظيم الحراري خلال التمارين؟","a":"عرق","cat":"إنسان"},{"q":"أحد أركان الإسلام الخمسة الذي يتضمن الصلاة والصيام؟","a":"العبادة","cat":"ثقافي"},{"q":"الظاهرة الاجتماعية التي يُسيطر فيها فرد على موارد الجماعة؟","a":"عدم المساواة","cat":"اجتماعي"},{"q":"العضلة التي تُحرّك الجفنين وتُعبّر عن المشاعر؟","a":"عضلات الوجه","cat":"إنسان"},{"q":"الغدة اللمفاوية التي تُساعد في مناعة الجسم؟","a":"عُقد لمفاوية","cat":"طب"},{"q":"مادة مُرطّبة وعلاجية تُفرزها النباتات وتُستخدم في التجميل؟","a":"عطر طبيعي","cat":"نبات"}],"hard":[{"q":"العالِم الذي صاغ مبدأ عدم اليقين في ميكانيكا الكم؟","a":"هايزنبرغ","cat":"تاريخ"},{"q":"التفاعل الكيميائي الذي يتحول فيه الجلوكوز إلى طاقة في الخلايا؟","a":"التنفس الخلوي","cat":"طب"},{"q":"مفهوم التضامن الاجتماعي عند دوركهايم في علم الاجتماع؟","a":"التضامن الآلي والعضوي","cat":"اجتماعي"},{"q":"أكبر إمبراطورية في التاريخ من حيث المساحة؟","a":"الإمبراطورية المغولية","cat":"تاريخ"},{"q":"الجهاز الذي يُقيس قوة الزلازل على مقياس ريختر؟","a":"سيزموغراف","cat":"جماد"},{"q":"المُركّب الكيميائي الذي يُعطي الزعفران لونه الذهبي؟","a":"الكروسين","cat":"نبات"},{"q":"الحرب التي قادها صلاح الدين لتحرير القدس عام 1187؟","a":"معركة حطين","cat":"تاريخ"},{"q":"مرض وراثي يُسبب فقر الدم المنجلي؟","a":"الأنيميا المنجلية","cat":"طب"},{"q":"الجهاز الدقيق الذي يُقيس الجهد الكهربائي في خلايا القلب؟","a":"رسّام القلب ECG","cat":"طب"},{"q":"المفهوم الفلسفي الذي يصف عالم الأفكار المجردة؟","a":"عالم المُثُل (أفلاطون)","cat":"ثقافي"},{"q":"العلاقة التشبيكية التي تربط الكائنات الحية بالتغذية؟","a":"الشبكة الغذائية","cat":"علاقات"},{"q":"الظاهرة النفسية لشعور الفقدان وعدم الانتماء؟","a":"الاغتراب النفسي","cat":"إنسان"}]},"م":{"easy":[{"q":"فاكهة استوائية صفراء هلالية الشكل يُحبّها القرد؟","a":"موز","cat":"نبات"},{"q":"سائل شفاف لا لون له ولا رائحة سرّ الحياة؟","a":"ماء","cat":"جماد"},{"q":"أداة معدنية صغيرة لفتح الأقفال والأبواب؟","a":"مفتاح","cat":"جماد"},{"q":"أداة حادة من نصلين لقصّ الورق والقماش؟","a":"مقص","cat":"جماد"},{"q":"مؤسسة للتعليم تضم فصولاً ومعلمين وطلاباً؟","a":"مدرسة","cat":"إنسان"},{"q":"بيت الله والمكان المخصص للصلاة عند المسلمين؟","a":"مسجد","cat":"ثقافي"},{"q":"الكوكب الرابع في المجموعة الشمسية يُلقّب بالأحمر؟","a":"مريخ","cat":"جغرافي"},{"q":"قطرات الماء التي تتساقط من الغيوم على الأرض؟","a":"مطر","cat":"جغرافي"},{"q":"مادة بيضاء بلورية تُستخدم لتتبيل الطعام وحفظه؟","a":"ملح","cat":"جماد"},{"q":"الشخص الذي يتولى مقاليد الحكم في المملكة؟","a":"ملك","cat":"إنسان"},{"q":"جهاز كهربائي ذو شفرات يُلطّف الهواء في الغرفة؟","a":"مروحة","cat":"جماد"},{"q":"دولة عربية إفريقية عاصمتها القاهرة؟","a":"مصر","cat":"بلاد"}],"medium":[{"q":"فاكهة استوائية صيفية صفراء أو خضراء لذيذة؟","a":"مانجو","cat":"نبات"},{"q":"مدينة سعودية مقدسة يُدفن فيها النبي محمد ﷺ؟","a":"المدينة المنورة","cat":"ثقافي"},{"q":"أداة معدنية تُستخدم لطرق المسامير في النجارة؟","a":"مطرقة","cat":"جماد"},{"q":"الشعور بالحنين والوجع لفراق شخص عزيز؟","a":"مرارة الفراق","cat":"اجتماعي"},{"q":"الإجراء الطبي لفحص الأعضاء الداخلية بالمنظار؟","a":"منظار داخلي","cat":"طب"},{"q":"العلاقة الدموية التي تجمع الأم بأطفالها؟","a":"الأمومة","cat":"علاقات"},{"q":"أعلى جبل في القارة الأفريقية؟","a":"جبل كيليمنجارو","cat":"جغرافي"},{"q":"نظام المناعة الذي يُنتج أجسام مضادة ضد الأمراض؟","a":"مناعة مكتسبة","cat":"طب"},{"q":"أشهر أكلة شعبية خليجية من الأرز واللحم والتوابل؟","a":"مجبوس وكبسة","cat":"ثقافي"},{"q":"العالِم الذي اكتشف مبدأ الطفو الأرخميدي؟","a":"أرخميدس","cat":"تاريخ"},{"q":"أداة لرؤية الكائنات الدقيقة التي لا تُرى بالعين؟","a":"مجهر","cat":"جماد"},{"q":"النبات الذي يُستخدم لإنتاج الكاوتشوك والمطاط؟","a":"شجرة المطاط (هيفيا)","cat":"نبات"}],"hard":[{"q":"النظام الفيزيائي الذي يصف حركة الأجسام الكبيرة كالكواكب؟","a":"ميكانيكا نيوتن الكلاسيكية","cat":"ثقافي"},{"q":"أكبر تجمع بشري في التاريخ يجتمع في مكان واحد؟","a":"موسم الحج","cat":"ثقافي"},{"q":"الخلية العصبية المسؤولة عن حفظ الذاكرة طويلة الأمد؟","a":"خلايا الهيبوكامبوس","cat":"طب"},{"q":"المعادن النادرة المستخدمة في تصنيع البطاريات الحديثة؟","a":"الليثيوم والكوبالت","cat":"جماد"},{"q":"الجسم الفلكي الذي يُولّد طاقته عن طريق الانصهار النووي؟","a":"النجوم","cat":"جغرافي"},{"q":"العملية البيوكيميائية التي تُحوّل السكر إلى كحول وثاني أكسيد الكربون؟","a":"التخمر","cat":"طب"},{"q":"نموذج الـ DNA الذي كشف عن بنيته الحلزونية المزدوجة؟","a":"النموذج الحلزوني المزدوج","cat":"ثقافي"},{"q":"الإمبراطور الروماني الذي اعتنق المسيحية وجعلها دين الدولة؟","a":"قسطنطين الأول","cat":"تاريخ"},{"q":"التقنية الطبية لزراعة خلايا المريض لإنتاج أنسجة بديلة؟","a":"الطب التجديدي بالخلايا الجذعية","cat":"طب"},{"q":"مفهوم علم الاجتماع الذي يصف التحولات في بنية المجتمع؟","a":"الحراك الاجتماعي","cat":"اجتماعي"},{"q":"أقدم نظام قانوني موثق في التاريخ؟","a":"قانون حمورابي","cat":"تاريخ"},{"q":"الفيلسوف الذي أسس مدرسة الرواقية الفلسفية؟","a":"زينو الكيتيوني","cat":"تاريخ"}]},"ن":{"easy":[{"q":"حشرة طائرة مفيدة تصنع العسل وتُلقّح الأزهار؟","a":"نحلة","cat":"حيوان"},{"q":"حشرة صغيرة تعيش في مستعمرات منظمة تحت الأرض؟","a":"نملة","cat":"حيوان"},{"q":"حيوان بري مفترس مخطط بالأسود في الغابات؟","a":"نمر","cat":"حيوان"},{"q":"أطول نهر في العالم يمر عبر إفريقيا؟","a":"النيل","cat":"جغرافي"},{"q":"الطاقة الحرارية والضوئية الناجمة عن الاحتراق؟","a":"نار","cat":"جماد"},{"q":"الجرم السماوي المضيء في السماء ليلاً؟","a":"نجم","cat":"جغرافي"},{"q":"أداة طبية بعدسات لتحسين حدة البصر؟","a":"نظارة","cat":"جماد"},{"q":"الفتحة في الجدار التي تسمح بدخول الضوء والهواء؟","a":"نافذة","cat":"جماد"},{"q":"كائن حي ينمو في التربة وله جذور وأوراق؟","a":"نبات","cat":"نبات"},{"q":"طائر جارح ضخم وقوي يُلقَّب بملك الطيور؟","a":"نسر","cat":"حيوان"},{"q":"الحرفي الذي يصنع الأثاث والأبواب من الأخشاب؟","a":"نجار","cat":"إنسان"},{"q":"الشعور بالحسرة على فعل خاطئ وتمنّي عدم فعله؟","a":"ندم","cat":"اجتماعي"}],"medium":[{"q":"الأموال والعملات التي تُستخدم في البيع والشراء؟","a":"نقود","cat":"اجتماعي"},{"q":"نبات عطري يُضاف للشاي ويُعطيه نكهة منعشة؟","a":"نعناع","cat":"نبات"},{"q":"شجرة مباركة طويلة تُنتج التمر في المناطق الحارة؟","a":"نخلة","cat":"نبات"},{"q":"أداة موسيقية نفخية تُصنع من القصب في الفلكلور؟","a":"ناي","cat":"ثقافي"},{"q":"طريق محفور تحت الجبل أو الأرض للعبور؟","a":"نفق","cat":"جماد"},{"q":"أكبر نهر في أمريكا الجنوبية يمر عبر الأمازون؟","a":"نهر الأمازون","cat":"جغرافي"},{"q":"الشعور بالوحدة والعزلة عن المجتمع؟","a":"النبذ الاجتماعي","cat":"اجتماعي"},{"q":"العلاقة التبادلية بين الدول القائمة على التعاون؟","a":"ندية دبلوماسية","cat":"علاقات"},{"q":"أصغر دول العالم وأشهرها في القارة الأوروبية؟","a":"الفاتيكان وموناكو","cat":"بلاد"},{"q":"المبدأ الديني الذي يدعو إلى مساعدة الضعفاء؟","a":"نصرة المظلوم","cat":"ثقافي"},{"q":"النظام الاجتماعي القائم على التقسيم الوظيفي؟","a":"نظام الطبقات الاجتماعية","cat":"اجتماعي"},{"q":"أشهر بطولة كرة قدم تُقام كل أربع سنوات؟","a":"نهائيات كأس العالم","cat":"ثقافي"}],"hard":[{"q":"جائزة نوبل في الفيزياء لعام 2020 مُنحت لاكتشاف؟","a":"الثقوب السوداء","cat":"ثقافي"},{"q":"الباحث الذي اكتشف دوران الأرض حول الشمس؟","a":"كوبرنيكوس","cat":"تاريخ"},{"q":"العلم الذي يدرس النجوم والمجرات والكون؟","a":"علم الفلك (أسترونوميا)","cat":"ثقافي"},{"q":"الجهاز العصبي الذاتي الذي يتحكم في وظائف الجسم اللاإرادية؟","a":"الجهاز العصبي اللاإرادي","cat":"طب"},{"q":"الخوارزمية الرياضية التي تُشكّل أساس تشفير الاتصالات الحديثة؟","a":"RSA","cat":"ثقافي"},{"q":"الظاهرة البيولوجية التي تُتيح للنباتات الاستجابة للضوء؟","a":"الانعكاس الضوئي (فوتوتروبيزم)","cat":"نبات"},{"q":"الآلية الجيولوجية المسؤولة عن تشكّل السلاسل الجبلية؟","a":"تصادم الصفائح التكتونية","cat":"جغرافي"},{"q":"الجهاز المناعي الذي يتعرف على الخلايا السرطانية ويُدمّرها؟","a":"الخلايا القاتلة الطبيعية NK","cat":"طب"},{"q":"أطول سلسلة جبلية في العالم تمتد في أمريكا الجنوبية؟","a":"جبال الأنديز","cat":"جغرافي"},{"q":"علاقة التبعية الاقتصادية بين الدول المتقدمة والنامية؟","a":"نظرية التبعية الاقتصادية","cat":"علاقات"},{"q":"الفيلسوف الذي صاغ نظرية العقد الاجتماعي؟","a":"روسو ولوك","cat":"تاريخ"},{"q":"الخلية المسؤولة عن إنتاج الأجسام المضادة في الدم؟","a":"خلايا البلازما (Plasma cells)","cat":"طب"}]}};
+
+
+/* ========== دوال هندسية ========== */
+const COLS=5,ROWS=5,N=25;
+function getHW(){return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--HW'))||68;}
+function hexPos(i, scale=1){
+  const HW=getHW()*scale, HH=HW*0.866;
+  const col=i%COLS, row=Math.floor(i/COLS), odd=col%2===1;
+  return{x:col*HW*0.75, y:row*HH+(odd?HH*0.5:0), w:HW, h:HH};
+}
+function boardDims(scale=1){
+  const HW=getHW()*scale, HH=HW*0.866;
+  return{W:(COLS-1)*HW*0.75+HW, H:(ROWS-1)*HH+HH*0.5+HH};
+}
+function hexNbrs(i){const col=i%COLS,row=Math.floor(i/COLS),odd=col%2===1;const dirs=odd?[[0,-1],[0,1],[-1,0],[-1,1],[1,0],[1,1]]:[[0,-1],[0,1],[-1,-1],[-1,0],[1,-1],[1,0]];const res=[];for(const[dc,dr]of dirs){const nc=col+dc,nr=row+dr;if(nc>=0&&nc<COLS&&nr>=0&&nr<ROWS)res.push(nr*COLS+nc);}return res;}
+function bfsWin(owner,team){
+  let starts,endSet;
+  if(team==='a'){starts=[...Array(ROWS)].map((_,r)=>r*COLS).filter(i=>owner[i]===team);endSet=new Set([...Array(ROWS)].map((_,r)=>r*COLS+(COLS-1)).filter(i=>owner[i]===team));}
+  else{starts=[...Array(COLS)].map((_,c)=>c).filter(i=>owner[i]===team);endSet=new Set([...Array(COLS)].map((_,c)=>(ROWS-1)*COLS+c).filter(i=>owner[i]===team));}
+  const vis=new Set(),q=[...starts];while(q.length){const cur=q.shift();if(endSet.has(cur))return true;if(vis.has(cur))continue;vis.add(cur);for(const nb of hexNbrs(cur))if(!vis.has(nb)&&owner[nb]===team)q.push(nb);}return false;
+}
+function randLetters(){return Object.keys(QBANK).sort(()=>Math.random()-.5).slice(0,N);}
+const UQ={};function pickQ(l){const qs=QBANK[l];if(!qs||!qs.length)return null;if(!UQ[l])UQ[l]=new Set();const u=UQ[l];if(u.size>=qs.length)u.clear();let idx;do{idx=Math.floor(Math.random()*qs.length);}while(u.has(idx));u.add(idx);return qs[idx];}
+function renderHexBoard(boardEl,letters,owner,activeCell,clickFn,scale=1){
+  const{W,H}=boardDims(scale);boardEl.style.width=W+'px';boardEl.style.height=H+'px';boardEl.innerHTML='';
+  letters.forEach((l,i)=>{const{x,y,w,h}=hexPos(i,scale);const d=document.createElement('div');d.className='hex';if(owner[i]==='a')d.classList.add('ca');else if(owner[i]==='b')d.classList.add('cb');if(activeCell===i)d.classList.add('aq');d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;font-size:'+(w*.30)+'px;';d.innerText=l;if(clickFn){d.addEventListener('click',()=>clickFn(i));d.addEventListener('touchend',e=>{e.preventDefault();clickFn(i);},{passive:false});}boardEl.appendChild(d);});
+}
+
+/* ========== لعبة محلية ========== */
+let LG={teamA:'الفريق الأحمر',teamB:'الفريق الأخضر',roundsToWin:2,round:1,pts:{a:0,b:0},rndWins:{a:0,b:0},letters:[],owner:Array(N).fill(null),activeCell:null,activeQ:null,timerInt:null};
+function startLocal(){
+  LG.teamA=document.getElementById('lta').value.trim()||'الفريق الأحمر';LG.teamB=document.getElementById('ltb').value.trim()||'الفريق الأخضر';
+  LG.roundsToWin=parseInt(document.getElementById('lrw').value);LG.round=0;LG.pts={a:0,b:0};LG.rndWins={a:0,b:0};
+  document.getElementById('lqb-a').innerText='✅ فوز '+LG.teamA.substr(0,7);document.getElementById('lqb-b').innerText='✅ فوز '+LG.teamB.substr(0,7);
+  go('local-game');resetLocal();
+}
+function resetLocal(){
+  clearInterval(LG.timerInt);lCloseModal();document.getElementById('local-win').classList.remove('on');
+  LG.letters=randLetters();LG.owner=Array(N).fill(null);LG.pts={a:0,b:0};LG.activeCell=null;LG.activeQ=null;
+  Object.keys(UQ).forEach(k=>delete UQ[k]);LG.round++;lUpdateUI();
+  renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick);
+}
+function lHexClick(i){if(LG.owner[i])return;LG.activeCell=i;LG.activeQ=pickQ(LG.letters[i]);if(!LG.activeQ)return;renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,i,lHexClick);document.getElementById('lq-letter').innerText='✨ سؤال حرف ('+LG.letters[i]+')';lShowDiffBadge(LG.activeQ);document.getElementById('lq-text').innerText=LG.activeQ.q;document.getElementById('lq-ans').innerText='✅ الإجابة: '+LG.activeQ.a;document.getElementById('lq-ans').style.display='none';document.getElementById('lq-timer').innerText='20';document.getElementById('lq-timer').classList.remove('urg');document.getElementById('lv-ov').classList.add('on');document.getElementById('lv-qm').classList.add('on');clearInterval(LG.timerInt);let t=20;const el=document.getElementById('lq-timer');LG.timerInt=setInterval(()=>{t--;el.innerText=t;if(t<=5)el.classList.add('urg');if(t<=0){clearInterval(LG.timerInt);lShowAns();}},1000);}
+function lShowAns(){clearInterval(LG.timerInt);document.getElementById('lq-ans').style.display='block';}
+function lNextQ(){if(LG.activeCell===null)return;LG.activeQ=pickQ(LG.letters[LG.activeCell]);if(!LG.activeQ)return;document.getElementById('lq-text').innerText=LG.activeQ.q;document.getElementById('lq-ans').innerText='✅ الإجابة: '+LG.activeQ.a;document.getElementById('lq-ans').style.display='none';clearInterval(LG.timerInt);lHexClick(LG.activeCell);}
+function lMark(team){if(LG.activeCell===null)return;LG.owner[LG.activeCell]=team;LG.pts[team]++;clearInterval(LG.timerInt);lCloseModal();renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick);lUpdateUI();if(bfsWin(LG.owner,team)){lShowWinner(team);return;}if(LG.owner.every(o=>o))lShowWinner(LG.pts.a>=LG.pts.b?'a':'b');}
+function lCloseModal(){clearInterval(LG.timerInt);document.getElementById('lv-ov').classList.remove('on');document.getElementById('lv-qm').classList.remove('on');LG.activeCell=null;renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,null,lHexClick);}
+function lShowWinner(team){LG.rndWins[team]++;lUpdateUI();const nm=team==='a'?LG.teamA:LG.teamB;const col=team==='a'?'var(--A)':'var(--B)';document.getElementById('lw-nm').innerHTML='<span style="color:'+col+'">'+nm+'</span>';document.getElementById('lw-sb').innerText='🏆 فاز بالجولة '+LG.round+' — جولات: '+LG.rndWins[team]+'/'+LG.roundsToWin;document.getElementById('local-win').classList.add('on');confetti(team);if(LG.rndWins[team]>=LG.roundsToWin)document.getElementById('lw-sb').innerText='🏆 فاز باللعبة كاملة!';}
+function lUpdateUI(){
+  document.getElementById('lsa-n').innerText=LG.teamA;document.getElementById('lsb-n').innerText=LG.teamB;
+  document.getElementById('lsa-p').innerText=LG.pts.a;document.getElementById('lsb-p').innerText=LG.pts.b;
+  document.getElementById('lsa-w').innerText='جولات: '+LG.rndWins.a;document.getElementById('lsb-w').innerText='جولات: '+LG.rndWins.b;
+  const t=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة'];document.getElementById('lrlbl').innerText='الجولة '+(t[LG.round]||LG.round);
+}
+
+/* ========== خوادم PeerJS احتياطية ========== */
+const PEER_SERVERS = [
+  { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
+  { host: 'peerjs-server.herokuapp.com', port: 443, secure: true, path: '/' }
+];
+let currentServerIndex = 0;
+
+function getPeerOptions(){
+  const srv = PEER_SERVERS[currentServerIndex];
+  return {
+    host: srv.host, port: srv.port, secure: srv.secure, path: srv.path,
+    debug: 0,
+    config: { iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ] }
+  };
+}
+
+/* ========== لعبة الحكم ========== */
+let JS={teamA:'الفريق الأحمر',teamB:'الفريق الأخضر',roundsToWin:2,round:1,pts:{a:0,b:0},rndWins:{a:0,b:0},letters:[],owner:Array(N).fill(null),activeCell:null,activeQ:null,phase:'idle',bzWinner:null,timerSecs:0,timerInt:null,players:[],code:'',peer:null,conns:[],showQuestion:false,showAnswer:false, retryTimeout:null};
+
+function startJudge(){
+  JS.teamA=document.getElementById('jta').value.trim()||'الفريق الأحمر';JS.teamB=document.getElementById('jtb').value.trim()||'الفريق الأخضر';
+  JS.roundsToWin=parseInt(document.getElementById('jrw').value);JS.code=Math.random().toString(36).substr(2,5).toUpperCase();
+  JS.conns=[];JS.players=[];Object.keys(UQ).forEach(k=>delete UQ[k]);
+  go('judge-game');jUpdateUI();jInitBoard();genQR();
+  currentServerIndex = 0;
+  connectJudge();
+}
+function connectJudge(){
+  if(JS.peer) JS.peer.destroy();
+  clearTimeout(JS.retryTimeout);
+  try {
+    JS.peer = new Peer('hexgame-'+JS.code, getPeerOptions());
+  } catch(e){ handleJudgeError(e); return; }
+  JS.peer.on('open', () => { currentServerIndex = 0; });
+  JS.peer.on('connection', conn => {
+    JS.conns.push(conn);
+    conn.on('open', () => jBcast({type:'state', s:jPub()}));
+    conn.on('data', d => jOnData(d));
+    conn.on('close', () => { JS.conns = JS.conns.filter(c => c!==conn); });
+  });
+  JS.peer.on('error', e => handleJudgeError(e));
+  JS.peer.on('disconnected', () => { JS.peer.reconnect(); });
+}
+function handleJudgeError(e){
+  console.warn('Judge peer error:', e.type);
+  if(currentServerIndex < PEER_SERVERS.length - 1){
+    currentServerIndex++;
+    connectJudge();
+  } else {
+    currentServerIndex = 0;
+    JS.retryTimeout = setTimeout(connectJudge, 3000);
+  }
+  alert('⚠️ مشكلة في الاتصال بالشبكة. جارٍ إعادة المحاولة... يمكنك الضغط على "إعادة الاتصال" يدوياً.');
+}
+window.retryJudgeConnection = function(){ currentServerIndex = 0; connectJudge(); };
+
+function jPub(){return{teamA:JS.teamA,teamB:JS.teamB,board:JS.letters.map((l,i)=>({letter:l,owner:JS.owner[i]})),activeCell:JS.activeCell,phase:JS.phase,bzWinner:JS.bzWinner,timerSecs:JS.timerSecs,pts:JS.pts,showQuestion:JS.showQuestion,showAnswer:JS.showAnswer,activeQ:JS.activeQ};}
+function jBcast(m){JS.conns.forEach(c=>{if(c.open)c.send(m);});}
+function jOnData(d){
+  if(d.type==='join'){if(!JS.players.find(p=>p.id===d.id)){JS.players.push({name:d.name,team:d.team,id:d.id,conn:JS.conns.find(c=>c.peer===d.id)});jRenderPlayers();}jBcast({type:'state',s:jPub()});return;}
+  if(d.type==='buzz'){if(JS.phase!=='open'||JS.bzWinner)return;JS.bzWinner={name:d.name,team:d.team,id:d.id};JS.phase='won';jClearTimer();jStartTimer(5);jBcast({type:'buzzer_won',winner:JS.bzWinner});jBcast({type:'state',s:jPub()});jRenderBz();}
+}
+function jInitBoard(){
+  JS.letters=randLetters();JS.owner=Array(N).fill(null);JS.activeCell=null;JS.activeQ=null;JS.phase='idle';JS.bzWinner=null;JS.pts={a:0,b:0};
+  jClearTimer();renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);
+  jRenderBz();jUpdateScores();document.getElementById('j-qbox').innerText='اختر خلية من اللوحة...';document.getElementById('j-ans').style.display='none';
+}
+function jHexClick(i){if(JS.owner[i])return;JS.activeCell=i;JS.phase='open';JS.bzWinner=null;JS.activeQ=pickQ(JS.letters[i]);if(!JS.activeQ)return;jClearTimer();renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,i,jHexClick);jRenderBz();document.getElementById('j-qbox').innerText=JS.activeQ.q;document.getElementById('j-ans').style.display='none';jBcast({type:'buzzer_ready',letter:JS.letters[i]});jBcast({type:'state',s:jPub()});}
+function jStartTimer(s){jClearTimer();JS.timerSecs=s;jRenderBz();JS.timerInt=setInterval(()=>{JS.timerSecs--;jRenderBz();jBcast({type:'tick',secs:JS.timerSecs});if(JS.timerSecs<=0){jClearTimer();jTimerEnd();}},1000);}
+function jClearTimer(){clearInterval(JS.timerInt);JS.timerInt=null;}
+function jTimerEnd(){
+  if(JS.phase==='won'&&JS.bzWinner){const other=JS.bzWinner.team==='a'?'b':'a';JS.phase='open';JS.bzWinner=null;jStartTimer(10);jBcast({type:'second_chance',team:other});jBcast({type:'state',s:jPub()});jRenderBz();}
+  else{JS.phase='open';JS.bzWinner=null;jBcast({type:'open_q'});jBcast({type:'state',s:jPub()});jRenderBz();}
+  if(!JS.showQuestion){JS.showQuestion=true;jBcast({type:'toggle_question',show:true});}
+}
+function jShowAns(){if(!JS.activeQ)return;const ab=document.getElementById('j-ans');ab.innerText='✅ '+JS.activeQ.a;ab.style.display='block';}
+function jCorrect(team){
+  if(JS.activeCell===null)return;JS.owner[JS.activeCell]=team;JS.pts[team]++;jClearTimer();JS.phase='idle';JS.bzWinner=null;JS.activeCell=null;
+  renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);jUpdateScores();jRenderBz();
+  document.getElementById('j-qbox').innerText='اختر خلية من اللوحة...';document.getElementById('j-ans').style.display='none';
+  jBcast({type:'correct',team});jBcast({type:'state',s:jPub()});
+  if(bfsWin(JS.owner,team)){jShowWinner(team);return;}if(JS.owner.every(o=>o))jShowWinner(JS.pts.a>=JS.pts.b?'a':'b');
+}
+function jNextQ(){if(JS.activeCell===null)return;JS.activeQ=pickQ(JS.letters[JS.activeCell]);if(!JS.activeQ)return;document.getElementById('j-qbox').innerText=JS.activeQ.q;document.getElementById('j-ans').style.display='none';}
+function jReopen(){if(JS.activeCell===null)return;JS.phase='open';JS.bzWinner=null;jClearTimer();jRenderBz();jBcast({type:'buzzer_ready',letter:JS.letters[JS.activeCell]});jBcast({type:'state',s:jPub()});}
+function jSkip(){if(JS.activeCell===null)return;jClearTimer();JS.phase='idle';JS.bzWinner=null;JS.activeCell=null;renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,null,jHexClick);jRenderBz();jBcast({type:'skip'});jBcast({type:'state',s:jPub()});}
+function jNewRound(){JS.round++;jInitBoard();jUpdateUI();jBcast({type:'new_round',round:JS.round});jBcast({type:'state',s:jPub()});document.getElementById('judge-win').classList.remove('on');}
+function jShowWinner(team){JS.rndWins[team]++;jUpdateScores();const nm=team==='a'?JS.teamA:JS.teamB;const col=team==='a'?'var(--A)':'var(--B)';document.getElementById('jw-em').innerText=team==='a'?'🟠':'🟢';document.getElementById('jw-nm').innerHTML='<span style="color:'+col+'">'+nm+'</span>';document.getElementById('jw-sb').innerText='🏆 فاز بالجولة '+JS.round+' — جولات: '+JS.rndWins[team]+'/'+JS.roundsToWin;document.getElementById('judge-win').classList.add('on');confetti(team);jBcast({type:'round_win',team,rndWins:JS.rndWins});if(JS.rndWins[team]>=JS.roundsToWin){document.getElementById('jw-sb').innerText='🏆 فاز باللعبة كاملة!';jBcast({type:'game_win',team});}}
+function jRenderBz(){
+  const bz=document.getElementById('jbz-disp');if(!bz)return;
+  if(JS.phase==='idle'){bz.innerHTML='<div class="bzidle">اختر خلية لبدء السؤال...</div>';return;}
+  if(JS.phase==='open'&&!JS.bzWinner){bz.innerHTML='<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>';return;}
+  if(JS.bzWinner){const cls='bzwin bzw'+JS.bzWinner.team;const tn=JS.bzWinner.team==='a'?JS.teamA:JS.teamB;bz.innerHTML='<div class="'+cls+'"><div class="bzname">⚡ '+JS.bzWinner.name+'</div><div class="bzsub">'+tn+'</div><div class="bzcount">'+JS.timerSecs+'</div></div>';}
+}
+function jRenderPlayers(){
+  const pl=document.getElementById('j-players');if(!pl)return;
+  if(!JS.players.length){pl.innerHTML='<div class="bzidle">لا يوجد لاعبون...</div>';return;}
+  pl.innerHTML = JS.players.map(p => {
+    const teamColor = p.team === 'a' ? 'var(--A)' : 'var(--B)';
+    return `<div class="plitem p${p.team}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${teamColor};margin-left:4px;"></span>
+      <span style="flex:1;">${p.name}</span>
+      <span style="opacity:.6;font-size:.72rem;">${p.team==='a'?JS.teamA:JS.teamB}</span>
+      <button class="plkick" onclick="jKickPlayer('${p.id}')" title="طرد اللاعب">✕</button>
+    </div>`;
+  }).join('');
+}
+function jKickPlayer(playerId){
+  const player = JS.players.find(p => p.id === playerId);
+  if(!player) return;
+  // إرسال إشعار للاعب بأنه تم طرده
+  const conn = JS.conns.find(c => c.peer === playerId);
+  if(conn && conn.open) conn.send({type: 'kicked'});
+  // إغلاق الاتصال
+  if(conn) conn.close();
+  // إزالة اللاعب من القائمة
+  JS.players = JS.players.filter(p => p.id !== playerId);
+  JS.conns = JS.conns.filter(c => c.peer !== playerId);
+  jRenderPlayers();
+  jBcast({type:'state', s:jPub()});
+}
+function jUpdateUI(){
+  document.getElementById('ja-n').innerText=JS.teamA;document.getElementById('jb-n').innerText=JS.teamB;
+  document.getElementById('jb-ca').innerText='✅ صح ('+JS.teamA.substr(0,7)+')';document.getElementById('jb-cb').innerText='✅ صح ('+JS.teamB.substr(0,7)+')';
+  const t=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة'];document.getElementById('j-title').innerText='الجولة '+(t[JS.round]||JS.round)+' 🏆';document.getElementById('j-rnd').innerText='الجولة '+JS.round;
+}
+function jUpdateScores(){document.getElementById('ja-p').innerText=JS.pts.a;document.getElementById('jb-p').innerText=JS.pts.b;document.getElementById('ja-w').innerText='جولات: '+JS.rndWins.a;document.getElementById('jb-w').innerText='جولات: '+JS.rndWins.b;}
+function jToggleQuestion(){
+  JS.showQuestion=!JS.showQuestion;
+  const btn=document.getElementById('j-toggle-q');
+  btn.innerText=JS.showQuestion?'🙈 أخفِ السؤال':'👁 أظهر السؤال';
+  btn.style.background=JS.showQuestion?'#e74c3c':'#2ecc71';
+  jBcast({type:'toggle_question',show:JS.showQuestion});
+}
+function jToggleAnswer(){
+  JS.showAnswer=!JS.showAnswer;
+  const btn=document.getElementById('j-toggle-a');
+  btn.innerText=JS.showAnswer?'🙈 أخفِ الإجابة':'👁 أظهر الإجابة';
+  btn.style.background=JS.showAnswer?'#e74c3c':'#e67e22';
+  jBcast({type:'toggle_answer',show:JS.showAnswer,answer:JS.activeQ?JS.activeQ.a:''});
+}
+
+/* QR */
+function getPlayerURL(){return window.location.href.split('?')[0]+'?mode=player&code='+JS.code;}
+function getDisplayURL(){return window.location.href.split('?')[0]+'?mode=display&code='+JS.code;}
+function genQR(){
+  const url=getPlayerURL();document.getElementById('qr-url').innerText=url;
+  ['qr-sm','qr-lg'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';const sz=id==='qr-sm'?70:230;try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#1a1a2e',colorLight:'#ffffff'});}catch(e){}});
+}
+function showQR(){genQR();document.getElementById('qr-modal').classList.add('show');}
+function copyDisplayLink(){const url=getDisplayURL();prompt('انسخ رابط شاشة البروجكتر:',url);}
+
+/* ========== لاعب ========== */
+let PM={name:'',team:'',id:''},pSelT='',pPeer=null,pConn=null,pBzEnabled=false,pCdI=null,pGS=null, pRetryTimeout=null;
+function pSelTeam(t){pSelT=t;document.getElementById('ptbtn-a').className='ptbtn'+(t==='a'?' psa':'');document.getElementById('ptbtn-b').className='ptbtn'+(t==='b'?' psb':'');}
+function pJoin(){
+  const name=document.getElementById('pname').value.trim();const code=(document.getElementById('pcode').value.trim()||'').toUpperCase();const err=document.getElementById('perr');
+  if(!name){err.innerText='يرجى إدخال اسمك';err.style.display='block';setTimeout(()=>err.style.display='none',2500);return;}
+  if(!pSelT){err.innerText='يرجى اختيار فريقك';err.style.display='block';setTimeout(()=>err.style.display='none',2500);return;}
+  if(!code){err.innerText='يرجى إدخال كود الجلسة';err.style.display='block';setTimeout(()=>err.style.display='none',2500);return;}
+  PM={name,team:pSelT,id:'p_'+Math.random().toString(36).substr(2,8)};
+  currentServerIndex = 0;
+  connectPlayer(code);
+}
+function connectPlayer(code){
+  if(pPeer) pPeer.destroy();
+  clearTimeout(pRetryTimeout);
+  try {
+    pPeer = new Peer(getPeerOptions());
+  } catch(e){ handlePlayerError(e, code); return; }
+  pPeer.on('open', () => {
+    pConn = pPeer.connect('hexgame-'+code, {reliable:true});
+    pConn.on('open', () => { pConn.send({type:'join', name:PM.name, team:PM.team, id:PM.id}); pShowWait(); });
+    pConn.on('data', pOnData);
+    pConn.on('error', e => { document.getElementById('perr').innerText='خطأ: '+e.type; document.getElementById('perr').style.display='block'; });
+  });
+  pPeer.on('error', e => handlePlayerError(e, code));
+  pPeer.on('disconnected', () => { pPeer.reconnect(); });
+}
+function handlePlayerError(e, code){
+  console.warn('Player peer error:', e.type);
+  if(currentServerIndex < PEER_SERVERS.length - 1){
+    currentServerIndex++;
+    connectPlayer(code);
+  } else {
+    currentServerIndex = 0;
+    pRetryTimeout = setTimeout(() => connectPlayer(code), 3000);
+  }
+  document.getElementById('perr').innerText='خطأ في الاتصال - جارٍ إعادة المحاولة...';
+  document.getElementById('perr').style.display='block';
+}
+window.retryPlayerConnection = function(){ if(pPeer) pPeer.destroy(); currentServerIndex=0; connectPlayer(document.getElementById('pcode').value.trim().toUpperCase()); };
+
+function pShowWait(){
+  go('player-wait');const tn=pGS?(PM.team==='a'?pGS.teamA:pGS.teamB):(PM.team==='a'?'الفريق أ':'الفريق ب');
+  document.getElementById('pav').className='pavatar '+(PM.team==='a'?'pava':'pavb');document.getElementById('pav').innerText=PM.team==='a'?'🟠':'🟢';
+  document.getElementById('pwn').className='pwname t'+PM.team;document.getElementById('pwn').innerText=PM.name;
+  document.getElementById('pbdg').innerHTML='<div class="pbadge pb'+PM.team+'">'+tn+'</div>';
+  document.getElementById('pwmsg').innerText='في انتظار اختيار سؤال...';
+}
+function pOnData(d){
+  if(d.type==='kicked'){
+    alert('لقد تم طردك من اللعبة من قبل الحكم.');
+    pPeer.destroy();
+    go('player-join');
+    return;
+  }
+  if(d.type==='state'){pGS=d.s;renderMiniBoard(pGS.board);return;}
+  if(d.type==='buzzer_ready'){pActivateBz();return;}
+  if(d.type==='show_q'){const qc=document.getElementById('pbz-q');qc.innerText='❓ '+d.q;qc.style.display=pGS&&pGS.showQuestion?'block':'none';return;}
+  if(d.type==='buzzer_won'){pOnBwon(d.winner);return;}
+  if(d.type==='second_chance'){pOnSecond(d.team);return;}
+  if(d.type==='open_q'){pOnOpen();return;}
+  if(d.type==='tick'){const rc=document.getElementById('pres-cnt');if(rc)rc.innerText=d.secs;return;}
+  if(d.type==='correct'||d.type==='skip'||d.type==='new_round'){pResetWait();return;}
+  if(d.type==='toggle_question'){
+    const qc=document.getElementById('pbz-q');
+    if(d.show && pGS && pGS.activeQ) qc.innerText='❓ '+pGS.activeQ.q;
+    qc.style.display=d.show?'block':'none';
+  }
+  if(d.type==='toggle_answer'){
+    const ac=document.getElementById('pbz-ans');
+    if(d.show) ac.innerText='✅ الإجابة: '+d.answer;
+    ac.style.display=d.show?'block':'none';
+  }
+}
+function renderMiniBoard(board){
+  if(!board)return;
+  const wrap=document.getElementById('miniBoardWrap');
+  wrap.innerHTML='';
+  const scale=0.55;
+  const container=document.createElement('div');
+  container.style.position='relative';
+  const{W,H}=boardDims(scale);
+  container.style.width=W+'px';
+  container.style.height=H+'px';
+  wrap.appendChild(container);
+  board.forEach((c,i)=>{
+    const{x,y,w,h}=hexPos(i,scale);
+    const d=document.createElement('div');
+    d.className='mini-hex';
+    if(c.owner==='a')d.classList.add('a');
+    else if(c.owner==='b')d.classList.add('b');
+    d.style.cssText='left:'+x+'px;top:'+y+'px;width:'+w+'px;height:'+h+'px;font-size:'+(w*.35)+'px;';
+    d.innerText=c.letter;
+    container.appendChild(d);
+  });
+}
+function pActivateBz(){pBzEnabled=true;go('player-bz');const btn=document.getElementById('main-bz');btn.className='bzbtn bz'+PM.team+' rdy';btn.innerHTML='<span class="bzic">⚡</span><span class="bzlbl">اضغط الآن!</span>';document.getElementById('pres').style.display='none';document.getElementById('pbz-st').innerText='⚡ اضغط البازر بأسرع ما يمكن!';document.getElementById('pbz-st').style.color='var(--GOLD)';document.getElementById('pbz-q').style.display='none';document.getElementById('pbz-ans').style.display='none';}
+function pPressBz(e){if(e)e.preventDefault();if(!pBzEnabled)return;pBzEnabled=false;if(navigator.vibrate)navigator.vibrate([60,30,80]);if(pConn&&pConn.open)pConn.send({type:'buzz',name:PM.name,team:PM.team,id:PM.id});}
+function pOnBwon(w){const isMe=w.id===PM.id;const btn=document.getElementById('main-bz');if(isMe){btn.className='bzbtn bz'+PM.team;btn.innerHTML='<span class="bzic">🎤</span><span class="bzlbl">أجب الآن!</span>';pSetRes(PM.name+' 🎉','⚡ أنت الأول! أجب على الحكم',5,'var(--'+(PM.team==='a'?'A':'B')+')');document.getElementById('pbz-st').innerText='✅ أنت الأول!';}else{btn.className='bzbtn bz'+PM.team+' off';btn.innerHTML='<span class="bzic">⏳</span><span class="bzlbl">'+w.name+'</span>';pSetRes(w.name,'يحاول الإجابة الآن...',5,'var(--'+(w.team==='a'?'A':'B')+')');document.getElementById('pbz-st').innerText='سبقك '+w.name;}}
+function pOnSecond(team){const mine=team===PM.team;const btn=document.getElementById('main-bz');if(mine){pBzEnabled=true;btn.className='bzbtn bz'+PM.team+' rdy';btn.innerHTML='<span class="bzic">🔥</span><span class="bzlbl">فرصتكم!</span>';document.getElementById('pres').style.display='none';document.getElementById('pbz-st').innerText='🔥 الفرصة الثانية! اضغط الآن!';document.getElementById('pbz-st').style.color='var(--GOLD)';}else{btn.className='bzbtn bz'+PM.team+' off';btn.innerHTML='<span class="bzic">⏳</span><span class="bzlbl">انتظر</span>';document.getElementById('pbz-st').innerText='الفريق الآخر يجيب...';}}
+function pOnOpen(){pBzEnabled=true;const btn=document.getElementById('main-bz');btn.className='bzbtn bz'+PM.team+' rdy';btn.innerHTML='<span class="bzic">🔓</span><span class="bzlbl">الكل يجيب!</span>';document.getElementById('pres').style.display='none';document.getElementById('pbz-st').innerText='🔓 مفتوح للجميع!';document.getElementById('pbz-st').style.color='var(--GOLD)';}
+function pSetRes(nm,sub,secs,color){const rc=document.getElementById('pres');rc.style.display='block';document.getElementById('pres-nm').style.color=color;document.getElementById('pres-nm').innerText=nm;document.getElementById('pres-sub').innerText=sub;clearInterval(pCdI);let t=secs;document.getElementById('pres-cnt').innerText=t;pCdI=setInterval(()=>{t--;document.getElementById('pres-cnt').innerText=Math.max(0,t);if(t<=0)clearInterval(pCdI);},1000);}
+function pResetWait(){pBzEnabled=false;clearInterval(pCdI);go('player-wait');document.getElementById('pwmsg').innerText='في انتظار اختيار سؤال جديد...';document.getElementById('pbz-q').style.display='none';document.getElementById('pbz-ans').style.display='none';document.getElementById('pres').style.display='none';}
+
+/* ========== شاشة العرض ========== */
+let dpPeer=null,dpConn=null,dpBrd=[],dpShowQ=true,dpShowA=false, dpRetryTimeout=null, dpPendingQuestion=null;
+function showDisplayScreen(){const code=prompt('أدخل كود الجلسة (من شاشة الحكم):','');if(!code)return;go('display');startDisplay(code.trim().toUpperCase());}
+function startDisplay(code){
+  currentServerIndex = 0;
+  connectDisplay(code);
+}
+function connectDisplay(code){
+  if(dpPeer) dpPeer.destroy();
+  clearTimeout(dpRetryTimeout);
+  try {
+    dpPeer = new Peer(getPeerOptions());
+  } catch(e){ handleDisplayError(e, code); return; }
+  dpPeer.on('open', () => {
+    dpConn = dpPeer.connect('hexgame-'+code, {reliable:true});
+    dpConn.on('open', () => { document.getElementById('dp-bz').innerHTML='<span style="color:var(--GOLD);font-size:.83rem">✅ متصل! في انتظار السؤال...</span>'; });
+    dpConn.on('data', d => {
+      if(d.type==='state'){dpApply(d.s);}
+      if(d.type==='show_q'){dpPendingQuestion = d.q;}
+      if(d.type==='buzzer_won'){dpShowBz(d.winner); if(dpPendingQuestion){const qd=document.getElementById('dp-q');qd.innerText='❓ '+dpPendingQuestion;qd.style.display='flex';dpPendingQuestion=null;}}
+      if(d.type==='second_chance'){dpShowSecond(d.team);}
+      if(d.type==='open_q'){document.getElementById('dp-bz').innerHTML='<div style="color:var(--GOLD);font-weight:900">🔓 مفتوح للجميع!</div>';}
+      if(d.type==='tick'){const el=document.getElementById('dp-cd');if(el)el.innerText=d.secs;}
+      if(d.type==='correct'||d.type==='skip'){document.getElementById('dp-q').style.display='none';document.getElementById('dp-ans').style.display='none';document.getElementById('dp-bz').innerHTML='<span style="color:rgba(240,244,255,.3);font-size:.83rem">في انتظار السؤال...</span>';}
+      if(d.type==='new_round'){document.getElementById('dp-q').style.display='none';document.getElementById('dp-ans').style.display='none';}
+      if(d.type==='toggle_question'){dpShowQ=d.show;document.getElementById('dp-q').style.display=dpShowQ?'flex':'none';}
+      if(d.type==='toggle_answer'){dpShowA=d.show;const ansEl=document.getElementById('dp-ans');if(d.show)ansEl.innerText='✅ الإجابة: '+d.answer;ansEl.style.display=dpShowA?'block':'none';}
+    });
+  });
+  dpPeer.on('error', e => handleDisplayError(e, code));
+  dpPeer.on('disconnected', () => { dpPeer.reconnect(); });
+}
+function handleDisplayError(e, code){
+  console.warn('Display peer error:', e.type);
+  document.getElementById('dp-bz').innerHTML = `<span style="color:#e74c3c">خطأ: ${e.type}</span> <button class="retry-btn" onclick="retryDisplayConnection('${code}')">🔄 إعادة الاتصال</button>`;
+  if(currentServerIndex < PEER_SERVERS.length - 1){
+    currentServerIndex++;
+    connectDisplay(code);
+  } else {
+    currentServerIndex = 0;
+    dpRetryTimeout = setTimeout(() => connectDisplay(code), 3000);
+  }
+}
+window.retryDisplayConnection = function(code){ if(dpPeer) dpPeer.destroy(); currentServerIndex=0; connectDisplay(code); };
+
+function dpApply(s){
+  if(!s)return;document.getElementById('dp-an').innerText=s.teamA||'الفريق أ';document.getElementById('dp-bn').innerText=s.teamB||'الفريق ب';
+  document.getElementById('dp-as').innerText=s.pts?s.pts.a:0;document.getElementById('dp-bs').innerText=s.pts?s.pts.b:0;
+  dpBrd=s.board||[];const letters=dpBrd.map(c=>c.letter);const owner=dpBrd.map(c=>c.owner);
+  renderHexBoard(document.getElementById('display-board'),letters,owner,s.activeCell,null);
+  if(s.showAnswer && s.activeQ){document.getElementById('dp-ans').innerText='✅ الإجابة: '+s.activeQ.a;document.getElementById('dp-ans').style.display='block';}
+  else{document.getElementById('dp-ans').style.display='none';}
+  if(s.activeQ) dpPendingQuestion = s.activeQ.q;
+}
+function dpShowBz(w){const col='var(--'+(w.team==='a'?'A':'B')+')';document.getElementById('dp-bz').innerHTML='<div style="text-align:center"><div style="font-size:1.4rem;font-weight:900;color:'+col+'">⚡ '+w.name+'</div><div style="font-size:2.4rem;font-weight:900;font-family:monospace;color:'+col+'" id="dp-cd">5</div></div>';}
+function dpShowSecond(team){const col='var(--'+(team==='a'?'A':'B')+')';document.getElementById('dp-bz').innerHTML='<div style="text-align:center"><div style="font-size:1.1rem;font-weight:900;color:'+col+'">🔥 الفرصة الثانية</div><div style="font-size:2rem;font-weight:900;font-family:monospace;color:'+col+'" id="dp-cd">10</div></div>';}
+
+/* ══════════════════════════════════════════════════
+   بنك الأسئلة مع الصعوبة — منطق التصفية
+   ══════════════════════════════════════════════════ */
+
+// إعدادات الفلترة الحالية
+let GAME_DIFF = 'all';      // all | easy | medium | hard
+let GAME_CAT  = 'all';      // all | حيوان | نبات | ...
+let LIVE_DIFF = 'all';      // الصعوبة المباشرة في لعبة الحكم
+const UQ2 = {};             // تتبع الأسئلة المستخدمة في QBANK2
+
+function setDiff(btn, mode) {
+  const container = mode === 'j' ? document.getElementById('jdiff-filter') : document.getElementById('ldiff-filter');
+  container.querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
+  const d = btn.dataset.diff;
+  btn.classList.add('active-' + (d === 'all' ? 'all' : d));
+  if (mode === 'j') { GAME_DIFF = d; }
+  else              { GAME_DIFF = d; }
+}
+
+function setCat(btn, mode) {
+  const container = mode === 'j' ? document.getElementById('jcat-filter') : document.getElementById('lcat-filter');
+  container.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  GAME_CAT = btn.dataset.cat;
+}
+
+function setLiveDiff(btn) {
+  const container = document.getElementById('j-live-diff');
+  container.querySelectorAll('.diff-btn').forEach(b => b.className = 'diff-btn');
+  const d = btn.dataset.diff;
+  btn.classList.add('active-' + (d === 'all' ? 'all' : d));
+  LIVE_DIFF = d;
+}
+
+// دالة اختيار سؤال من QBANK2 مع مراعاة الفلتر
+function pickQ2(letter, diffOverride) {
+  if (!QBANK2[letter]) return null;
+  const diff = diffOverride || LIVE_DIFF || GAME_DIFF;
+  
+  // تحديد المستويات المتاحة
+  let levels = ['easy','medium','hard'];
+  if (diff !== 'all') levels = [diff];
+  
+  // جمع كل الأسئلة المطابقة للفلتر
+  let pool = [];
+  for (const lvl of levels) {
+    const qs = QBANK2[letter][lvl] || [];
+    for (let i = 0; i < qs.length; i++) {
+      const q = qs[i];
+      if (GAME_CAT === 'all' || q.cat === GAME_CAT) {
+        pool.push({ ...q, _lvl: lvl, _idx: i, _letter: letter });
+      }
+    }
+  }
+  
+  if (!pool.length) return null; // نرجع null ويستخدم QBANK القديم
+  
+  // تجنب الأسئلة المستخدمة
+  const usedKey = letter + '_' + diff + '_' + GAME_CAT;
+  if (!UQ2[usedKey]) UQ2[usedKey] = new Set();
+  const used = UQ2[usedKey];
+  
+  let available = pool.filter((_, i) => !used.has(i));
+  if (!available.length) { used.clear(); available = pool; }
+  
+  const chosen = available[Math.floor(Math.random() * available.length)];
+  const idx = pool.indexOf(chosen);
+  used.add(idx);
+  
+  return chosen; // { q, a, cat, _lvl, _letter }
+}
+
+// دالة pickQ المحسّنة تدمج QBANK2 + QBANK القديم
+const _origPickQ = pickQ;
+function pickQ(letter) {
+  if (QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) {
+    const q2 = pickQ2(letter);
+    if (q2) return q2;
+  }
+  if (QBANK2[letter] && GAME_DIFF === 'all' && GAME_CAT === 'all') {
+    // 50% من QBANK2 عشوائياً
+    if (Math.random() > 0.5) {
+      const q2 = pickQ2(letter);
+      if (q2) return q2;
+    }
+  }
+  return _origPickQ(letter);
+}
+
+// عرض الصعوبة في مودال السؤال المحلي
+function lShowDiffBadge(q) {
+  const badge = document.getElementById('lq-diff-badge');
+  const catTag = document.getElementById('lq-cat-badge');
+  if (!badge || !catTag) return;
+  if (q && q._lvl) {
+    const map = { easy: ['🟢 سهل', 'diff-easy'], medium: ['🟡 متوسط', 'diff-medium'], hard: ['🔴 صعب', 'diff-hard'] };
+    const [label, cls] = map[q._lvl] || ['',''];
+    badge.className = 'diff-indicator ' + cls;
+    badge.textContent = label;
+    catTag.textContent = q.cat || '';
+  } else {
+    badge.className = 'diff-indicator';
+    badge.textContent = '';
+    catTag.textContent = '';
+  }
+}
+
+/* تهيئة */
+window.addEventListener('load',()=>{
+  const p=new URLSearchParams(location.search);const mode=p.get('mode'),code=p.get('code');
+  if(mode==='player'){go('player-join');if(code)document.getElementById('pcode').value=code;}
+  else if(mode==='display'&&code){go('display');startDisplay(code);}
+  else{go('home');}
+  window.addEventListener('resize',()=>{
+    if(document.getElementById('local-game').classList.contains('on'))renderHexBoard(document.getElementById('local-board'),LG.letters,LG.owner,LG.activeCell,lHexClick);
+    if(document.getElementById('judge-game').classList.contains('on'))renderHexBoard(document.getElementById('judge-board'),JS.letters,JS.owner,JS.activeCell,jHexClick);
+    if(document.getElementById('display').classList.contains('on')&&dpBrd.length)dpApply({board:dpBrd,pts:JS.pts,teamA:JS.teamA,teamB:JS.teamB});
+  });
+});
+</script>
+</body>
+</html>
