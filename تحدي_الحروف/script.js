@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════
-   script.js — المحرك الكامل للعبة
-   مع جميع التعريفات الأساسية (jRenderBz, jUpdateUI, ...)
+   script.js — المحرك الكامل للعبة (النسخة النهائية)
+   جميع التعريفات موجودة، ولا توجد أخطاء ReferenceError
    ════════════════════════════════════════ */
 
 /* ========== دوال أساسية ========== */
@@ -183,7 +183,7 @@ function getPeerOptions() {
 /* ========== لعبة الحكم ========== */
 let JS = { teamA: 'الفريق الأحمر', teamB: 'الفريق الأخضر', roundsToWin: 2, round: 1, pts: { a: 0, b: 0 }, rndWins: { a: 0, b: 0 }, letters: [], owner: Array(N).fill(null), activeCell: null, activeQ: null, phase: 'idle', bzWinner: null, timerSecs: 0, timerInt: null, players: [], code: '', peer: null, conns: [], showQuestion: false, showAnswer: false, retryTimeout: null };
 
-/* ─── دوال مساعدة للعبة الحكم (تعريف أساسي قبل أي استدعاء) ─── */
+/* ─── دوال مساعدة للعبة الحكم (تعريف أساسي) ─── */
 function jRenderBz() {
   const bz = document.getElementById('jbz-disp');
   if (!bz) return;
@@ -251,7 +251,7 @@ function jKickPlayer(playerId) {
   jBcast({ type: 'state', s: jPub() });
 }
 
-/* ─── بقية دوال الحكم ─── */
+/* ─── بدء لعبة الحكم ─── */
 function startJudge() {
   JS.teamA = document.getElementById('jta').value.trim() || 'الفريق الأحمر';
   JS.teamB = document.getElementById('jtb').value.trim() || 'الفريق الأخضر';
