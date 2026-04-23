@@ -1430,16 +1430,20 @@ function pickQ2(letter, diffOverride) {
 }
 
 const _origPickQ = pickQ;
-pickQ = function (letter) {
-  if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) {
+function pickQ(letter) {
+  if (QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) {
     const q2 = pickQ2(letter);
     if (q2) return q2;
   }
-  if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && GAME_DIFF === 'all' && GAME_CAT === 'all') {
-    if (Math.random() > 0.5) { const q2 = pickQ2(letter); if (q2) return q2; }
+  if (QBANK2[letter] && GAME_DIFF === 'all' && GAME_CAT === 'all') {
+    // 50% Ù…Ù† QBANK2 Ø¹Ø´ÙˆØ§Ø¦ÙŠØ§Ù‹
+    if (Math.random() > 0.5) {
+      const q2 = pickQ2(letter);
+      if (q2) return q2;
+    }
   }
   return _origPickQ(letter);
-};
+}
 
 function lShowDiffBadge(q) {
   const badge = document.getElementById('lq-diff-badge'), catTag = document.getElementById('lq-cat-badge');
