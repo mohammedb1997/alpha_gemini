@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════
-   تحدي الحروف — CSS مُصلَح بالكامل
-   حل مشكلة المساحة السوداء عند طي القوائم
+   تحدي الحروف — CSS المُصحَّح النهائي
+   يحل مشكلة المساحة السوداء على الجوال عند طي القوائم
    ════════════════════════════════════════ */
 
 /* ─── المتغيرات ─── */
@@ -930,7 +930,7 @@ button:active {
   backdrop-filter: blur(6px);
   gap: 8px;
   overflow: hidden;
-  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease;
+  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease, height 0.3s ease;
 }
 
 /* الشريط الأيمن */
@@ -947,19 +947,36 @@ button:active {
   border-right: 1px solid var(--BDR2);
   overflow-y: auto;
   backdrop-filter: blur(6px);
-  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease;
+  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease, height 0.3s ease;
 }
 
-/* الحل الجذري: عند الطي، نجبر العرض والمرونة على صفر */
-.jlp.collapsed,
-.jrp.collapsed {
-  flex: 0 0 0 !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  overflow: hidden;
+/* قواعد الطي للشاشات العريضة (صف) */
+@media (min-width: 481px) {
+  .jlp.collapsed,
+  .jrp.collapsed {
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden;
+  }
+}
+
+/* قواعد الطي للشاشات الضيقة (عمود) */
+@media (max-width: 480px) {
+  .jlp.collapsed,
+  .jrp.collapsed {
+    flex: 0 0 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    overflow: hidden;
+    width: 100% !important; /* نضمن بقاء العرض 100% */
+  }
 }
 
 /* المركز — اللوحة */
