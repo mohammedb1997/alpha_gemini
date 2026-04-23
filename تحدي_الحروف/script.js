@@ -1,8 +1,6 @@
 /* ════════════════════════════════════════
    script.js — المحرك الكامل للعبة
-   يشمل: لعبة محلية، لعبة حكم، لاعب، عرض
-   مع تحسينات: قوائم جانبية قابلة للطي،
-   مؤقت دائري، إشعارات Toast، QR دائم
+   مع جميع التعريفات الأساسية (jRenderBz, jUpdateUI, ...)
    ════════════════════════════════════════ */
 
 /* ========== دوال أساسية ========== */
@@ -22,7 +20,7 @@ function confetti(team) {
   }
 }
 
-/* ========== Toast Notifications (تحل محل alert) ========== */
+/* ========== Toast Notifications ========== */
 function showToast(msg, type = '') {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
@@ -69,15 +67,12 @@ function bfsWin(owner, team) {
 }
 function randLetters() { return Object.keys(QBANK).sort(() => Math.random() - .5).slice(0, N); }
 
-// استخدام بنك الأسئلة (QBANK القديم + QBANK2 للمستويات)
 const UQ = {};
 function pickQ(letter) {
-  // محاولة استخدام QBANK2 إذا كانت الإعدادات محددة
   if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) {
     const q2 = pickQ2(letter);
     if (q2) return q2;
   }
-  // الرجوع إلى QBANK القديم
   const qs = QBANK[letter]; if (!qs || !qs.length) return null;
   if (!UQ[letter]) UQ[letter] = new Set();
   const u = UQ[letter]; if (u.size >= qs.length) u.clear();
@@ -130,10 +125,8 @@ function lHexClick(i) {
   document.getElementById('lq-text').innerText = LG.activeQ.q;
   document.getElementById('lq-ans').innerText = '✅ الإجابة: ' + LG.activeQ.a;
   document.getElementById('lq-ans').style.display = 'none';
-  document.getElementById('lq-timer').innerText = '20';
-  document.getElementById('lq-timer').classList.remove('urg');
-  document.getElementById('lv-ov').classList.add('on');
-  document.getElementById('lv-qm').classList.add('on');
+  document.getElementById('lq-timer').innerText = '20'; document.getElementById('lq-timer').classList.remove('urg');
+  document.getElementById('lv-ov').classList.add('on'); document.getElementById('lv-qm').classList.add('on');
   clearInterval(LG.timerInt); let t = 20; const el = document.getElementById('lq-timer');
   LG.timerInt = setInterval(() => { t--; el.innerText = t; if (t <= 5) el.classList.add('urg'); if (t <= 0) { clearInterval(LG.timerInt); lShowAns(); } }, 1000);
 }
@@ -172,7 +165,7 @@ function lUpdateUI() {
   const t = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة']; document.getElementById('lrlbl').innerText = 'الجولة ' + (t[LG.round] || LG.round);
 }
 
-/* ========== خوادم PeerJS احتياطية ========== */
+/* ========== خوادم PeerJS ========== */
 const PEER_SERVERS = [
   { host: '0.peerjs.com', port: 443, secure: true, path: '/' },
   { host: 'peerjs-server.herokuapp.com', port: 443, secure: true, path: '/' }
@@ -190,6 +183,75 @@ function getPeerOptions() {
 /* ========== لعبة الحكم ========== */
 let JS = { teamA: 'الفريق الأحمر', teamB: 'الفريق الأخضر', roundsToWin: 2, round: 1, pts: { a: 0, b: 0 }, rndWins: { a: 0, b: 0 }, letters: [], owner: Array(N).fill(null), activeCell: null, activeQ: null, phase: 'idle', bzWinner: null, timerSecs: 0, timerInt: null, players: [], code: '', peer: null, conns: [], showQuestion: false, showAnswer: false, retryTimeout: null };
 
+/* ─── دوال مساعدة للعبة الحكم (تعريف أساسي قبل أي استدعاء) ─── */
+function jRenderBz() {
+  const bz = document.getElementById('jbz-disp');
+  if (!bz) return;
+  if (JS.phase === 'idle') {
+    bz.innerHTML = '<div class="bzidle">اختر خلية لبدء السؤال...</div>';
+    return;
+  }
+  if (JS.phase === 'open' && !JS.bzWinner) {
+    bz.innerHTML = '<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>';
+    return;
+  }
+  if (JS.bzWinner) {
+    const cls = 'bzwin bzw' + JS.bzWinner.team;
+    const tn = JS.bzWinner.team === 'a' ? JS.teamA : JS.teamB;
+    bz.innerHTML = `
+      <div class="${cls}">
+        <div class="bzname">⚡ ${JS.bzWinner.name}</div>
+        <div class="bzsub">${tn}</div>
+        <div class="bzcount">${JS.timerSecs}</div>
+      </div>`;
+  }
+}
+
+function jUpdateUI() {
+  document.getElementById('ja-n').innerText = JS.teamA;
+  document.getElementById('jb-n').innerText = JS.teamB;
+  document.getElementById('jb-ca').innerText = '✅ صح (' + JS.teamA.substr(0, 7) + ')';
+  document.getElementById('jb-cb').innerText = '✅ صح (' + JS.teamB.substr(0, 7) + ')';
+  const t = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة'];
+  document.getElementById('j-title').innerText = 'الجولة ' + (t[JS.round] || JS.round) + ' 🏆';
+  document.getElementById('j-rnd').innerText = 'الجولة ' + JS.round;
+}
+
+function jUpdateScores() {
+  document.getElementById('ja-p').innerText = JS.pts.a;
+  document.getElementById('jb-p').innerText = JS.pts.b;
+  document.getElementById('ja-w').innerText = 'جولات: ' + JS.rndWins.a;
+  document.getElementById('jb-w').innerText = 'جولات: ' + JS.rndWins.b;
+}
+
+function jRenderPlayers() {
+  const pl = document.getElementById('j-players');
+  if (!pl) return;
+  if (!JS.players.length) { pl.innerHTML = '<div class="bzidle">لا يوجد لاعبون...</div>'; return; }
+  pl.innerHTML = JS.players.map(p => {
+    const teamColor = p.team === 'a' ? 'var(--A)' : 'var(--B)';
+    return `<div class="plitem p${p.team}">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${teamColor};margin-left:4px;"></span>
+      <span style="flex:1;">${p.name}</span>
+      <span style="opacity:.6;font-size:.72rem;">${p.team==='a'?JS.teamA:JS.teamB}</span>
+      <button class="plkick" onclick="jKickPlayer('${p.id}')" title="طرد اللاعب">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function jKickPlayer(playerId) {
+  const player = JS.players.find(p => p.id === playerId);
+  if (!player) return;
+  const conn = JS.conns.find(c => c.peer === playerId);
+  if (conn && conn.open) conn.send({ type: 'kicked' });
+  if (conn) conn.close();
+  JS.players = JS.players.filter(p => p.id !== playerId);
+  JS.conns = JS.conns.filter(c => c.peer !== playerId);
+  jRenderPlayers();
+  jBcast({ type: 'state', s: jPub() });
+}
+
+/* ─── بقية دوال الحكم ─── */
 function startJudge() {
   JS.teamA = document.getElementById('jta').value.trim() || 'الفريق الأحمر';
   JS.teamB = document.getElementById('jtb').value.trim() || 'الفريق الأخضر';
@@ -215,30 +277,6 @@ function connectJudge() {
 
 function jPub() { return { teamA: JS.teamA, teamB: JS.teamB, board: JS.letters.map((l, i) => ({ letter: l, owner: JS.owner[i] })), activeCell: JS.activeCell, phase: JS.phase, bzWinner: JS.bzWinner, timerSecs: JS.timerSecs, pts: JS.pts, showQuestion: JS.showQuestion, showAnswer: JS.showAnswer, activeQ: JS.activeQ }; }
 function jBcast(m) { JS.conns.forEach(c => { if (c.open) c.send(m); }); }
-
-/* ========== دالة jRenderBz الأساسية ========== */
-function jRenderBz() {
-  const bz = document.getElementById('jbz-disp');
-  if (!bz) return;
-  if (JS.phase === 'idle') {
-    bz.innerHTML = '<div class="bzidle">اختر خلية لبدء السؤال...</div>';
-    return;
-  }
-  if (JS.phase === 'open' && !JS.bzWinner) {
-    bz.innerHTML = '<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>';
-    return;
-  }
-  if (JS.bzWinner) {
-    const cls = 'bzwin bzw' + JS.bzWinner.team;
-    const tn = JS.bzWinner.team === 'a' ? JS.teamA : JS.teamB;
-    bz.innerHTML = `
-      <div class="${cls}">
-        <div class="bzname">⚡ ${JS.bzWinner.name}</div>
-        <div class="bzsub">${tn}</div>
-        <div class="bzcount">${JS.timerSecs}</div>
-      </div>`;
-  }
-}
 
 function jOnData(d) {
   if (d.type === 'join') { if (!JS.players.find(p => p.id === d.id)) { JS.players.push({ name: d.name, team: d.team, id: d.id, conn: JS.conns.find(c => c.peer === d.id) }); jRenderPlayers(); } jBcast({ type: 'state', s: jPub() }); return; }
@@ -289,6 +327,22 @@ function jShowWinner(team) {
   if (JS.rndWins[team] >= JS.roundsToWin) { document.getElementById('jw-sb').innerText = '🏆 فاز باللعبة كاملة!'; jBcast({ type: 'game_win', team }); }
 }
 
+function jToggleQuestion() {
+  JS.showQuestion = !JS.showQuestion;
+  const btn = document.getElementById('j-toggle-q');
+  btn.innerText = JS.showQuestion ? '🙈 أخفِ السؤال' : '👁 أظهر السؤال';
+  btn.style.background = JS.showQuestion ? '#e74c3c' : '#2ecc71';
+  jBcast({ type: 'toggle_question', show: JS.showQuestion });
+}
+
+function jToggleAnswer() {
+  JS.showAnswer = !JS.showAnswer;
+  const btn = document.getElementById('j-toggle-a');
+  btn.innerText = JS.showAnswer ? '🙈 أخفِ الإجابة' : '👁 أظهر الإجابة';
+  btn.style.background = JS.showAnswer ? '#e74c3c' : '#e67e22';
+  jBcast({ type: 'toggle_answer', show: JS.showAnswer, answer: JS.activeQ ? JS.activeQ.a : '' });
+}
+
 /* ========== لاعب ========== */
 let PM = { name: '', team: '', id: '' }, pSelT = '', pPeer = null, pConn = null, pBzEnabled = false, pCdI = null, pGS = null, pRetryTimeout = null;
 
@@ -303,7 +357,6 @@ function pJoin() {
   currentServerIndex = 0; connectPlayer(code);
 }
 
-// إظهار كود الجلسة في شاشات اللاعب
 function updatePlayerCodeBadge() {
   const code = PM.code || document.getElementById('pcode').value.trim().toUpperCase();
   const elWait = document.getElementById('player-wait-code');
@@ -356,29 +409,22 @@ function pSetRes(nm, sub, secs, color) { const rc = document.getElementById('pre
 
 function pResetWait() { pBzEnabled = false; clearInterval(pCdI); go('player-wait'); document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال جديد...'; if (document.getElementById('pbz-q')) document.getElementById('pbz-q').style.display = 'none'; if (document.getElementById('pbz-ans')) document.getElementById('pbz-ans').style.display = 'none'; if (document.getElementById('pres')) document.getElementById('pres').style.display = 'none'; updatePlayerCodeBadge(); }
 
-/* ========== التحكم في الألواح الجانبية (طي/فتح) ========== */
+/* ========== تحكم الألواح الجانبية ========== */
 function togglePanel(side) {
   if (side === 'left') {
-    const panel = document.getElementById('judge-left-panel');
-    const btn = document.getElementById('toggle-left-panel');
+    const panel = document.getElementById('judge-left-panel'); const btn = document.getElementById('toggle-left-panel');
     if (panel) { panel.classList.toggle('collapsed'); btn.textContent = panel.classList.contains('collapsed') ? '▶' : '☰'; }
   } else if (side === 'right') {
-    const panel = document.getElementById('judge-right-panel');
-    const btn = document.getElementById('toggle-right-panel');
+    const panel = document.getElementById('judge-right-panel'); const btn = document.getElementById('toggle-right-panel');
     if (panel) { panel.classList.toggle('collapsed'); btn.textContent = panel.classList.contains('collapsed') ? '◀' : '☰'; }
   } else if (side === 'display-left') {
-    const panel = document.getElementById('display-left-panel');
-    const btn = document.getElementById('toggle-display-left');
+    const panel = document.getElementById('display-left-panel'); const btn = document.getElementById('toggle-display-left');
     if (panel) { panel.classList.toggle('collapsed'); btn.textContent = panel.classList.contains('collapsed') ? '▶' : '☰'; }
   } else if (side === 'display-right') {
-    const panel = document.getElementById('display-right-panel');
-    const btn = document.getElementById('toggle-display-right');
+    const panel = document.getElementById('display-right-panel'); const btn = document.getElementById('toggle-display-right');
     if (panel) { panel.classList.toggle('collapsed'); btn.textContent = panel.classList.contains('collapsed') ? '◀' : '☰'; }
   }
 }
-
-/* ========== Toast ========== */
-// (function showToast أعلاه)
 
 /* ========== QR ========== */
 function getPlayerURL() { return window.location.href.split('?')[0] + '?mode=player&code=' + JS.code; }
@@ -387,7 +433,6 @@ function getDisplayURL() { return window.location.href.split('?')[0] + '?mode=di
 function genQR() {
   const url = getPlayerURL(); document.getElementById('qr-url').innerText = url;
   ['qr-sm', 'qr-lg', 'display-qr'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.innerHTML = ''; const sz = id === 'display-qr' ? 160 : (id === 'qr-sm' ? 70 : 230); try { new QRCode(el, { text: url, width: sz, height: sz, colorDark: '#1a1a2e', colorLight: '#ffffff' }); } catch (e) { } });
-  // تحديث كود العرض في شاشة البروجكتر
   const codeEl = document.getElementById('display-code');
   if (codeEl) codeEl.textContent = JS.code;
 }
@@ -411,7 +456,7 @@ function connectDisplay(code) {
     dpConn = dpPeer.connect('hexgame-' + code, { reliable: true });
     dpConn.on('open', () => { document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل! في انتظار السؤال...</span>'; });
     dpConn.on('data', d => {
-      if (d.type === 'state') { dpApply(d.s); if (d.s && d.s.code) { /* لا حاجة لتخزين الكود هنا */ } }
+      if (d.type === 'state') { dpApply(d.s); }
       if (d.type === 'show_q') { dpPendingQuestion = d.q; }
       if (d.type === 'buzzer_won') { dpShowBz(d.winner); if (dpPendingQuestion) { const qd = document.getElementById('dp-q'); qd.innerText = '❓ ' + dpPendingQuestion; qd.style.display = 'flex'; dpPendingQuestion = null; } }
       if (d.type === 'second_chance') { dpShowSecond(d.team); }
@@ -446,13 +491,10 @@ function dpShowBz(w) { const col = 'var(--' + (w.team === 'a' ? 'A' : 'B') + ')'
 
 function dpShowSecond(team) { const col = 'var(--' + (team === 'a' ? 'A' : 'B') + ')'; document.getElementById('dp-bz').innerHTML = '<div style="text-align:center"><div style="font-size:1.1rem;font-weight:900;color:' + col + '">🔥 الفرصة الثانية</div><div style="font-size:2rem;font-weight:900;font-family:monospace;color:' + col + '" id="dp-cd">10</div></div>'; }
 
-/* ══════════════════════════════════════════════════
-   بنك الأسئلة مع الصعوبة — منطق التصفية
-   ══════════════════════════════════════════════════ */
-
-let GAME_DIFF = 'all';
-let GAME_CAT = 'all';
-let LIVE_DIFF = 'all';
+/* ════════════════════════════════════════
+   فلترة الأسئلة من QBANK2
+   ════════════════════════════════════════ */
+let GAME_DIFF = 'all', GAME_CAT = 'all', LIVE_DIFF = 'all';
 const UQ2 = {};
 
 function setDiff(btn, mode) {
@@ -478,7 +520,6 @@ function setLiveDiff(btn) {
   LIVE_DIFF = d;
 }
 
-// دالة اختيار سؤال من QBANK2 مع مراعاة الفلتر
 function pickQ2(letter, diffOverride) {
   if (typeof QBANK2 === 'undefined' || !QBANK2[letter]) return null;
   const diff = diffOverride || LIVE_DIFF || GAME_DIFF;
@@ -506,7 +547,6 @@ function pickQ2(letter, diffOverride) {
   return chosen;
 }
 
-// دالة pickQ المحسّنة تدمج QBANK2 + QBANK القديم
 const _origPickQ = pickQ;
 pickQ = function (letter) {
   if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) {
@@ -536,9 +576,9 @@ function lShowDiffBadge(q) {
   }
 }
 
-/* ══════════════════════════════════════════════════
-   مؤقت SVG دائري
-   ══════════════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   مؤقت SVG دائري (تجاوز jRenderBz)
+   ════════════════════════════════════════ */
 function renderTimerCircle(container, seconds, totalSeconds, color) {
   if (!container) return;
   const r = 28, circumference = 2 * Math.PI * r;
@@ -555,8 +595,8 @@ function renderTimerCircle(container, seconds, totalSeconds, color) {
     </svg>`;
 }
 
-// تعديل jRenderBz لاستخدام المؤقت الدائري
-const _jRenderBz = jRenderBz;
+// تجاوز jRenderBz لإضافة المؤقت الدائري
+const _jRenderBz_original = jRenderBz;
 jRenderBz = function () {
   const bz = document.getElementById('jbz-disp');
   if (!bz) return;
@@ -576,7 +616,7 @@ jRenderBz = function () {
       </div>`;
     if (JS.timerSecs > 0) renderTimerCircle(document.getElementById('judge-timer-circle'), JS.timerSecs, 5, color);
   } else {
-    _jRenderBz();
+    _jRenderBz_original();
   }
 };
 
