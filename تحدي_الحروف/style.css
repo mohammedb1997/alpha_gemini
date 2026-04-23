@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════
-   تحدي الحروف — CSS مُحدَّث بالكامل
-   يدعم: أزرار طي القوائم، طي الأقسام الفردية، تمدد اللوحة
+   تحدي الحروف — CSS مُصلَح بالكامل
+   حل مشكلة المساحة السوداء عند طي القوائم
    ════════════════════════════════════════ */
 
 /* ─── المتغيرات ─── */
@@ -896,10 +896,11 @@ button:active {
 
 /* ════════════════════════════════ ④/⑤ شاشة الحكم ════════════════════════════════ */
 #judge-game {
+  display: flex;
   flex-direction: row;
   background: var(--DARK);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 #judge-game::before {
@@ -917,9 +918,8 @@ button:active {
 .jlp {
   position: relative;
   z-index: 2;
-  width: clamp(130px, 16vw, 185px);
   flex: 0 0 auto;
-  transition: width 0.3s ease, padding 0.3s ease;
+  width: clamp(130px, 16vw, 185px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -929,23 +929,16 @@ button:active {
   border-left: 1px solid var(--BDR2);
   backdrop-filter: blur(6px);
   gap: 8px;
-}
-
-.jlp.collapsed {
-  width: 0 !important;
-  min-width: 0 !important;
-  padding: 0 !important;
   overflow: hidden;
-  border: none;
+  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease;
 }
 
 /* الشريط الأيمن */
 .jrp {
   position: relative;
   z-index: 2;
-  width: clamp(210px, 24vw, 295px);
   flex: 0 0 auto;
-  transition: width 0.3s ease, padding 0.3s ease;
+  width: clamp(210px, 24vw, 295px);
   display: flex;
   flex-direction: column;
   padding: clamp(8px, 1.8vh, 13px) clamp(8px, 1.5vw, 12px);
@@ -954,101 +947,19 @@ button:active {
   border-right: 1px solid var(--BDR2);
   overflow-y: auto;
   backdrop-filter: blur(6px);
+  transition: flex 0.3s ease, width 0.3s ease, padding 0.3s ease;
 }
 
+/* الحل الجذري: عند الطي، نجبر العرض والمرونة على صفر */
+.jlp.collapsed,
 .jrp.collapsed {
+  flex: 0 0 0 !important;
   width: 0 !important;
   min-width: 0 !important;
   padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
   overflow: hidden;
-  border: none;
-}
-
-.jsc {
-  width: 100%;
-  border-radius: var(--r-md);
-  padding: clamp(10px, 2vh, 14px) 8px;
-  text-align: center;
-}
-
-.jsc.jca {
-  background: rgba(255, 87, 34, .1);
-  border: 1.5px solid rgba(255, 87, 34, .3);
-}
-
-.jsc.jcb {
-  background: rgba(76, 175, 80, .1);
-  border: 1.5px solid rgba(76, 175, 80, .3);
-}
-
-.jsc .jn {
-  font-size: clamp(.7rem, 1.4vw, .8rem);
-  font-weight: 700;
-  opacity: .85;
-  margin-bottom: 2px;
-  word-break: break-word;
-}
-
-.jsc .jv {
-  font-size: clamp(2rem, 4vw, 2.8rem);
-  font-weight: 900;
-  line-height: 1;
-}
-
-.jw {
-  font-size: clamp(.6rem, 1.2vw, .7rem);
-  opacity: .65;
-  margin-top: 3px;
-}
-
-.jrnd {
-  background: var(--GOLD3);
-  border: 1px solid rgba(255, 215, 0, .22);
-  border-radius: var(--r-pill);
-  padding: 5px 12px;
-  font-size: clamp(.7rem, 1.5vw, .82rem);
-  font-weight: 700;
-  color: var(--GOLD);
-}
-
-.jleg {
-  margin: 4px 0;
-}
-
-.jlr {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .65rem;
-  opacity: .6;
-  margin: 2px 0;
-}
-
-.jll {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.qrmini {
-  background: white;
-  border-radius: 10px;
-  padding: 5px;
-  cursor: pointer;
-  display: inline-block;
-  transition: transform .18s;
-}
-
-.qrmini:hover {
-  transform: scale(1.05);
-}
-
-.qrlbl {
-  font-size: .62rem;
-  opacity: .5;
-  margin-top: 3px;
-  text-align: center;
 }
 
 /* المركز — اللوحة */
