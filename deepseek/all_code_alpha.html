@@ -1456,14 +1456,15 @@ function lShowDiffBadge(q) {
     catTag.textContent = '';
   }
 }
-
 /* ════════════════════════════════
-   ⭐ تشغيل فوري حسب الرابط ⭐
+   ⭐ تشغيل بعد جاهزية DOM ⭐
    ════════════════════════════════ */
-(function init() {
+function init() {
+  console.log('init started');
   const params = new URLSearchParams(location.search);
   const mode = params.get('mode');
   const code = params.get('code');
+  console.log('mode:', mode, 'code:', code);
 
   if (mode === 'player') {
     go('player-join');
@@ -1477,6 +1478,7 @@ function lShowDiffBadge(q) {
       go('display');
       startDisplay(code);
     } else {
+      console.warn('Display mode but no code provided');
       go('home');
     }
   } else {
@@ -1515,7 +1517,13 @@ function lShowDiffBadge(q) {
         dpApply({ board: dpBrd, pts: JS.pts, teamA: JS.teamA, teamB: JS.teamB });
     } catch(e) {}
   });
-})();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 
 </body>
