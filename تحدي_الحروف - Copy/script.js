@@ -145,8 +145,13 @@ let currentServerIndex = 0;
 function getPeerOptions() {
   const srv = PEER_SERVERS[currentServerIndex];
   return {
-    host: srv.host, port: srv.port, secure: location.protocol === 'https:', path: srv.path, debug: 0,
-    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+    host: srv.host, port: srv.port, secure: srv.secure, path: srv.path, debug: 0,
+    config: { iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+    ] }
   };
 }
 
@@ -265,7 +270,7 @@ function updateJudgeCodeBadge() {
 function connectJudge() {
   if (JS.peer) JS.peer.destroy();
   clearTimeout(JS.retryTimeout);
-  try { JS.peer = new Peer('hexgame-' + JS.code, getPeerOptions()); } catch (e) { return; }
+  try { JS.peer = new Peer('hexgame-' + JS.code, getPeerOptions()); } catch (e) { handleJudgeError(e); return; }
   JS.peer.on('open', () => { currentServerIndex = 0; });
   JS.peer.on('connection', conn => {
     JS.conns.push(conn);
@@ -273,12 +278,17 @@ function connectJudge() {
     conn.on('data', d => jOnData(d));
     conn.on('close', () => { JS.conns = JS.conns.filter(c => c !== conn); });
   });
-  JS.peer.on('error', e => {
-    if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectJudge(); }
-    else { currentServerIndex = 0; JS.retryTimeout = setTimeout(connectJudge, 3000); }
-  });
+  JS.peer.on('error', e => handleJudgeError(e));
   JS.peer.on('disconnected', () => { JS.peer.reconnect(); });
 }
+
+function handleJudgeError(e) {
+  console.warn('Judge peer error:', e && e.type ? e.type : e);
+  if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectJudge(); }
+  else { currentServerIndex = 0; JS.retryTimeout = setTimeout(connectJudge, 3000); }
+}
+
+window.retryJudgeConnection = function () { currentServerIndex = 0; connectJudge(); };
 
 function jPub() {
   return {
@@ -523,7 +533,7 @@ function updatePlayerCodeBadge() {
 
 function connectPlayer(code) {
   if (pPeer) pPeer.destroy(); clearTimeout(pRetryTimeout);
-  try { pPeer = new Peer(getPeerOptions()); } catch (e) { return; }
+  try { pPeer = new Peer(getPeerOptions()); } catch (e) { handlePlayerError(e, code); return; }
   pPeer.on('open', () => {
     pConn = pPeer.connect('hexgame-' + code, { reliable: true });
     pConn.on('open', () => {
@@ -531,15 +541,30 @@ function connectPlayer(code) {
       if (!pUseLocal) { pShowWait(); }
     });
     pConn.on('data', pOnData);
+    pConn.on('error', e => {
+      const errEl = document.getElementById('perr');
+      if (errEl) { errEl.innerText = 'خطأ في الاتصال: ' + (e.type || e); errEl.style.display = 'block'; }
+    });
   });
-  pPeer.on('error', e => {
-    if (!pUseLocal) {
-      if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectPlayer(code); }
-      else { currentServerIndex = 0; pRetryTimeout = setTimeout(() => connectPlayer(code), 3000); }
-    }
-  });
+  pPeer.on('error', e => handlePlayerError(e, code));
   pPeer.on('disconnected', () => { pPeer.reconnect(); });
 }
+
+function handlePlayerError(e, code) {
+  console.warn('Player peer error:', e && e.type ? e.type : e);
+  if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectPlayer(code); }
+  else {
+    currentServerIndex = 0;
+    const errEl = document.getElementById('perr');
+    if (errEl) { errEl.innerText = 'خطأ في الاتصال — جارٍ إعادة المحاولة...'; errEl.style.display = 'block'; }
+    pRetryTimeout = setTimeout(() => connectPlayer(code), 3000);
+  }
+}
+
+window.retryPlayerConnection = function () {
+  if (pPeer) pPeer.destroy(); currentServerIndex = 0;
+  connectPlayer(document.getElementById('pcode').value.trim().toUpperCase());
+};
 
 function pShowWait() {
   go('player-wait'); updatePlayerCodeBadge();
@@ -722,27 +747,30 @@ function showDisplayScreen() {
 }
 
 function startDisplay(code) {
+  document.getElementById('dp-bz').innerHTML = '<span style="color:rgba(240,244,255,.3);font-size:.83rem">جاري الاتصال...</span>';
   dpUseLocal = initLocalChannel(code, (data) => dpOnData(data));
-  if (dpUseLocal) { document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل محلياً!</span>'; }
   currentServerIndex = 0; connectDisplay(code);
 }
 
 function connectDisplay(code) {
   if (dpPeer) dpPeer.destroy(); clearTimeout(dpRetryTimeout);
-  try { dpPeer = new Peer(getPeerOptions()); } catch (e) { return; }
+  try { dpPeer = new Peer(getPeerOptions()); } catch (e) { handleDisplayError(e, code); return; }
   dpPeer.on('open', () => {
     dpConn = dpPeer.connect('hexgame-' + code, { reliable: true });
-    dpConn.on('open', () => { if (!dpUseLocal) document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل! في انتظار السؤال...</span>'; });
+    dpConn.on('open', () => {
+      document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل! في انتظار السؤال...</span>';
+    });
     dpConn.on('data', d => dpOnData(d));
   });
-  dpPeer.on('error', e => {
-    if (!dpUseLocal) {
-      document.getElementById('dp-bz').innerHTML = '<span style="color:#e74c3c">خطأ: ' + e.type + '</span> <button class="retry-btn" onclick="retryDisplayConnection(\'' + code + '\')">🔄 إعادة</button>';
-      if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectDisplay(code); }
-      else { currentServerIndex = 0; dpRetryTimeout = setTimeout(() => connectDisplay(code), 3000); }
-    }
-  });
+  dpPeer.on('error', e => handleDisplayError(e, code));
   dpPeer.on('disconnected', () => { dpPeer.reconnect(); });
+}
+
+function handleDisplayError(e, code) {
+  console.warn('Display peer error:', e && e.type ? e.type : e);
+  document.getElementById('dp-bz').innerHTML = '<span style="color:#e74c3c">خطأ في الاتصال: ' + (e && e.type ? e.type : '') + '</span> <button class="retry-btn" onclick="retryDisplayConnection(\'' + code + '\')">🔄 إعادة الاتصال</button>';
+  if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectDisplay(code); }
+  else { currentServerIndex = 0; dpRetryTimeout = setTimeout(() => connectDisplay(code), 3000); }
 }
 
 window.retryDisplayConnection = function (c) { if (dpPeer) dpPeer.destroy(); currentServerIndex = 0; connectDisplay(c); };
