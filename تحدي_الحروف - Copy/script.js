@@ -1,10 +1,11 @@
 /* ════════════════════════════════════════
-   script.js — دعم الاتصال المحلي + PeerJS
+   script.js — النسخة النهائية المصححة
    ════════════════════════════════════════ */
 
 function go(id) {
   document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
+  const el = document.getElementById(id);
+  if (el) el.classList.add('on');
 }
 function confetti(team) {
   const cs = team === 'a' ? ['#FF5722', '#FF8A65', '#FFD700'] : ['#4CAF50', '#81C784', '#FFD700'];
@@ -16,10 +17,12 @@ function confetti(team) {
 }
 function showToast(msg, type = '') {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   const toast = document.createElement('div'); toast.className = 'toast ' + type; toast.textContent = msg;
   container.appendChild(toast); setTimeout(() => toast.remove(), 3000);
 }
 
+/* ══════ دوال اللوحة ══════ */
 const COLS = 5, ROWS = 5, N = 25;
 function getHW() { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--HW')) || 68; }
 function hexPos(i, scale = 1) {
@@ -62,6 +65,7 @@ function pickQ(letter) {
   u.add(idx); return qs[idx];
 }
 function renderHexBoard(boardEl, letters, owner, activeCell, clickFn, scale = 1) {
+  if (!boardEl) return;
   const { W, H } = boardDims(scale); boardEl.style.width = W + 'px'; boardEl.style.height = H + 'px'; boardEl.innerHTML = '';
   letters.forEach((l, i) => {
     const { x, y, w, h } = hexPos(i, scale); const d = document.createElement('div'); d.className = 'hex';
@@ -74,16 +78,27 @@ function renderHexBoard(boardEl, letters, owner, activeCell, clickFn, scale = 1)
   });
 }
 
-/* ════════════════════════════════ BroadcastChannel للاتصال المحلي ════════════════════════════════ */
+/* ══════ BroadcastChannel للاتصال المحلي ══════ */
 let localChannel = null;
-function initLocalChannel(code, role, onMessage) {
+function initLocalChannel(code, onMessage) {
   try {
+    if (localChannel) localChannel.close();
     localChannel = new BroadcastChannel('hexgame-' + code);
-    localChannel.onmessage = (e) => onMessage(e.data, 'local');
+    localChannel.onmessage = (e) => onMessage(e.data);
     return true;
   } catch (e) { return false; }
 }
 function localSend(msg) { if (localChannel) localChannel.postMessage(msg); }
+function closeLocalChannel() { if (localChannel) { localChannel.close(); localChannel = null; } }
+
+/* ══════ PeerJS ══════ */
+const PEER_SERVERS = [{ host: '0.peerjs.com', port: 443, secure: true, path: '/' }];
+let currentServerIndex = 0;
+function getPeerOptions() {
+  const srv = PEER_SERVERS[currentServerIndex];
+  return { host: srv.host, port: srv.port, secure: location.protocol === 'https:', path: srv.path, debug: 0,
+    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } };
+}
 
 /* ════════════════════════════════ لعبة محلية ════════════════════════════════ */
 let LG = { teamA: 'الفريق الأحمر', teamB: 'الفريق الأخضر', roundsToWin: 2, round: 1, pts: { a: 0, b: 0 }, rndWins: { a: 0, b: 0 }, letters: [], owner: Array(N).fill(null), activeCell: null, activeQ: null, timerInt: null };
@@ -107,16 +122,7 @@ function lCloseModal() { clearInterval(LG.timerInt); document.getElementById('lv
 function lShowWinner(team) { LG.rndWins[team]++; lUpdateUI(); const nm = team === 'a' ? LG.teamA : LG.teamB; const col = team === 'a' ? 'var(--A)' : 'var(--B)'; document.getElementById('lw-nm').innerHTML = '<span style="color:' + col + '">' + nm + '</span>'; document.getElementById('lw-sb').innerText = '🏆 فاز بالجولة ' + LG.round + ' — جولات: ' + LG.rndWins[team] + '/' + LG.roundsToWin; document.getElementById('local-win').classList.add('on'); confetti(team); if (LG.rndWins[team] >= LG.roundsToWin) document.getElementById('lw-sb').innerText = '🏆 فاز باللعبة كاملة!'; }
 function lUpdateUI() { document.getElementById('lsa-n').innerText = LG.teamA; document.getElementById('lsb-n').innerText = LG.teamB; document.getElementById('lsa-p').innerText = LG.pts.a; document.getElementById('lsb-p').innerText = LG.pts.b; document.getElementById('lsa-w').innerText = 'جولات: ' + LG.rndWins.a; document.getElementById('lsb-w').innerText = 'جولات: ' + LG.rndWins.b; const t = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة']; document.getElementById('lrlbl').innerText = 'الجولة ' + (t[LG.round] || LG.round); }
 
-/* ════════════════════════════════ خوادم PeerJS ════════════════════════════════ */
-const PEER_SERVERS = [{ host: '0.peerjs.com', port: 443, secure: true, path: '/' }];
-let currentServerIndex = 0;
-function getPeerOptions() {
-  const srv = PEER_SERVERS[currentServerIndex];
-  return { host: srv.host, port: srv.port, secure: location.protocol === 'https:', path: srv.path, debug: 0,
-    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } };
-}
-
-/* ════════════════════════════════ لعبة الحكم (تدعم المحلي + PeerJS) ════════════════════════════════ */
+/* ════════════════════════════════ لعبة الحكم ════════════════════════════════ */
 let JS = { teamA: 'الفريق الأحمر', teamB: 'الفريق الأخضر', roundsToWin: 2, round: 1, pts: { a: 0, b: 0 }, rndWins: { a: 0, b: 0 }, letters: [], owner: Array(N).fill(null), activeCell: null, activeQ: null, phase: 'idle', bzWinner: null, timerSecs: 0, timerInt: null, players: [], code: '', peer: null, conns: [], showQuestion: false, showAnswer: false, retryTimeout: null, useLocal: true };
 
 function startJudge() {
@@ -126,10 +132,8 @@ function startJudge() {
   JS.code = Math.random().toString(36).substr(2, 5).toUpperCase();
   JS.conns = []; JS.players = []; Object.keys(UQ).forEach(k => delete UQ[k]);
   go('judge-game'); jUpdateUI(); jInitBoard(); genQR();
-  // بدء القناة المحلية
-  JS.useLocal = initLocalChannel(JS.code, 'judge', (data, source) => jOnData(data, source));
-  if (JS.useLocal) showToast('✅ الاتصال المحلي نشط (نفس الجهاز)', 'success');
-  // بدء PeerJS للاتصال عن بعد
+  JS.useLocal = initLocalChannel(JS.code, (data) => jOnData(data));
+  if (JS.useLocal) showToast('✅ الاتصال المحلي نشط', 'success');
   currentServerIndex = 0; connectJudge();
   updateJudgeCodeBadge();
 }
@@ -141,22 +145,15 @@ function connectJudge() {
   JS.peer.on('open', () => { currentServerIndex = 0; });
   JS.peer.on('connection', conn => {
     JS.conns.push(conn); conn.on('open', () => jBcast({ type: 'state', s: jPub() }));
-    conn.on('data', d => jOnData(d, 'peer'));
-    conn.on('close', () => { JS.conns = JS.conns.filter(c => c !== conn); });
+    conn.on('data', d => jOnData(d)); conn.on('close', () => { JS.conns = JS.conns.filter(c => c !== conn); });
   });
   JS.peer.on('error', e => { if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectJudge(); } else { currentServerIndex = 0; JS.retryTimeout = setTimeout(connectJudge, 3000); } });
   JS.peer.on('disconnected', () => { JS.peer.reconnect(); });
 }
 function jPub() { return { teamA: JS.teamA, teamB: JS.teamB, board: JS.letters.map((l, i) => ({ letter: l, owner: JS.owner[i] })), activeCell: JS.activeCell, phase: JS.phase, bzWinner: JS.bzWinner, timerSecs: JS.timerSecs, pts: JS.pts, showQuestion: JS.showQuestion, showAnswer: JS.showAnswer, activeQ: JS.activeQ }; }
-function jBcast(m) {
-  JS.conns.forEach(c => { if (c.open) c.send(m); });
-  if (JS.useLocal) localSend(m); // إرسال عبر القناة المحلية أيضاً
-}
-function jOnData(d, source) {
-  if (d.type === 'join') {
-    if (!JS.players.find(p => p.id === d.id)) { JS.players.push({ name: d.name, team: d.team, id: d.id, source: source || 'unknown' }); jRenderPlayers(); }
-    jBcast({ type: 'state', s: jPub() }); return;
-  }
+function jBcast(m) { JS.conns.forEach(c => { if (c.open) c.send(m); }); if (JS.useLocal) localSend(m); }
+function jOnData(d) {
+  if (d.type === 'join') { if (!JS.players.find(p => p.id === d.id)) { JS.players.push({ name: d.name, team: d.team, id: d.id }); jRenderPlayers(); } jBcast({ type: 'state', s: jPub() }); return; }
   if (d.type === 'buzz') { if (JS.phase !== 'open' || JS.bzWinner) return; JS.bzWinner = { name: d.name, team: d.team, id: d.id }; JS.phase = 'won'; jClearTimer(); jStartTimer(5); jBcast({ type: 'buzzer_won', winner: JS.bzWinner }); jBcast({ type: 'state', s: jPub() }); jRenderBz(); }
 }
 function jInitBoard() { JS.letters = randLetters(); JS.owner = Array(N).fill(null); JS.activeCell = null; JS.activeQ = null; JS.phase = 'idle'; JS.bzWinner = null; JS.pts = { a: 0, b: 0 }; jClearTimer(); renderHexBoard(document.getElementById('judge-board'), JS.letters, JS.owner, null, jHexClick); jRenderBz(); jUpdateScores(); document.getElementById('j-qbox').innerText = 'اختر خلية من اللوحة...'; document.getElementById('j-ans').style.display = 'none'; }
@@ -173,66 +170,68 @@ function jNewRound() { JS.round++; jInitBoard(); jUpdateUI(); jBcast({ type: 'ne
 function jShowWinner(team) { JS.rndWins[team]++; jUpdateScores(); const nm = team === 'a' ? JS.teamA : JS.teamB; const col = team === 'a' ? 'var(--A)' : 'var(--B)'; document.getElementById('jw-em').innerText = team === 'a' ? '🟠' : '🟢'; document.getElementById('jw-nm').innerHTML = '<span style="color:' + col + '">' + nm + '</span>'; document.getElementById('jw-sb').innerText = '🏆 فاز بالجولة ' + JS.round + ' — جولات: ' + JS.rndWins[team] + '/' + JS.roundsToWin; document.getElementById('judge-win').classList.add('on'); confetti(team); jBcast({ type: 'round_win', team, rndWins: JS.rndWins }); if (JS.rndWins[team] >= JS.roundsToWin) { document.getElementById('jw-sb').innerText = '🏆 فاز باللعبة كاملة!'; jBcast({ type: 'game_win', team }); } }
 function jToggleQuestion() { JS.showQuestion = !JS.showQuestion; const btn = document.getElementById('j-toggle-q'); btn.innerText = JS.showQuestion ? '🙈 أخفِ السؤال' : '👁 أظهر السؤال'; btn.style.background = JS.showQuestion ? '#e74c3c' : '#2ecc71'; jBcast({ type: 'toggle_question', show: JS.showQuestion, q: JS.activeQ ? JS.activeQ.q : '' }); }
 function jToggleAnswer() { JS.showAnswer = !JS.showAnswer; const btn = document.getElementById('j-toggle-a'); btn.innerText = JS.showAnswer ? '🙈 أخفِ الإجابة' : '👁 أظهر الإجابة'; btn.style.background = JS.showAnswer ? '#e74c3c' : '#e67e22'; jBcast({ type: 'toggle_answer', show: JS.showAnswer, answer: JS.activeQ ? JS.activeQ.a : '' }); }
-function jRenderBz() { const bz = document.getElementById('jbz-disp'); if (!bz) return; if (JS.phase === 'idle') { bz.innerHTML = '<div class="bzidle">اختر خلية لبدء السؤال...</div>'; return; } if (JS.phase === 'open' && !JS.bzWinner) { bz.innerHTML = '<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>'; return; } if (JS.bzWinner) { const cls = 'bzwin bzw' + JS.bzWinner.team; const tn = JS.bzWinner.team === 'a' ? JS.teamA : JS.teamB; bz.innerHTML = `<div class="${cls}"><div class="bzname">⚡ ${JS.bzWinner.name}</div><div class="bzsub">${tn}</div><div class="bzcount">${JS.timerSecs}</div></div>`; } }
+function jRenderBz() { const bz = document.getElementById('jbz-disp'); if (!bz) return; if (JS.phase === 'idle') { bz.innerHTML = '<div class="bzidle">اختر خلية لبدء السؤال...</div>'; return; } if (JS.phase === 'open' && !JS.bzWinner) { bz.innerHTML = '<div class="bzidle" style="color:var(--GOLD)">⚡ البازر مفتوح للجميع!</div>'; return; } if (JS.bzWinner) { const cls = 'bzwin bzw' + JS.bzWinner.team; const tn = JS.bzWinner.team === 'a' ? JS.teamA : JS.teamB; bz.innerHTML = '<div class="' + cls + '"><div class="bzname">⚡ ' + JS.bzWinner.name + '</div><div class="bzsub">' + tn + '</div><div class="bzcount">' + JS.timerSecs + '</div></div>'; } }
 function jUpdateUI() { document.getElementById('ja-n').innerText = JS.teamA; document.getElementById('jb-n').innerText = JS.teamB; document.getElementById('jb-ca').innerText = '✅ صح (' + JS.teamA.substr(0, 7) + ')'; document.getElementById('jb-cb').innerText = '✅ صح (' + JS.teamB.substr(0, 7) + ')'; const t = ['', 'الأولى', 'الثانية', 'الثالثة', 'الرابعة', 'الخامسة']; document.getElementById('j-title').innerText = 'الجولة ' + (t[JS.round] || JS.round) + ' 🏆'; document.getElementById('j-rnd').innerText = 'الجولة ' + JS.round; }
 function jUpdateScores() { document.getElementById('ja-p').innerText = JS.pts.a; document.getElementById('jb-p').innerText = JS.pts.b; document.getElementById('ja-w').innerText = 'جولات: ' + JS.rndWins.a; document.getElementById('jb-w').innerText = 'جولات: ' + JS.rndWins.b; }
-function jRenderPlayers() { const pl = document.getElementById('j-players'); if (!pl) return; if (!JS.players.length) { pl.innerHTML = '<div class="bzidle">لا يوجد لاعبون...</div>'; return; } pl.innerHTML = JS.players.map(p => { const teamColor = p.team === 'a' ? 'var(--A)' : 'var(--B)'; return `<div class="plitem p${p.team}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${teamColor};margin-left:4px;"></span><span style="flex:1;">${p.name}</span><span style="opacity:.6;font-size:.72rem;">${p.team==='a'?JS.teamA:JS.teamB}</span><button class="plkick" onclick="jKickPlayer('${p.id}')" title="طرد اللاعب">✕</button></div>`; }).join(''); }
+function jRenderPlayers() { const pl = document.getElementById('j-players'); if (!pl) return; if (!JS.players.length) { pl.innerHTML = '<div class="bzidle">لا يوجد لاعبون...</div>'; return; } pl.innerHTML = JS.players.map(p => { const teamColor = p.team === 'a' ? 'var(--A)' : 'var(--B)'; return '<div class="plitem p' + p.team + '"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + teamColor + ';margin-left:4px;"></span><span style="flex:1;">' + p.name + '</span><span style="opacity:.6;font-size:.72rem;">' + (p.team === 'a' ? JS.teamA : JS.teamB) + '</span><button class="plkick" onclick="jKickPlayer(\'' + p.id + '\')" title="طرد اللاعب">✕</button></div>'; }).join(''); }
 function jKickPlayer(playerId) { const player = JS.players.find(p => p.id === playerId); if (!player) return; const conn = JS.conns.find(c => c.peer === playerId); if (conn && conn.open) conn.send({ type: 'kicked' }); if (conn) conn.close(); JS.players = JS.players.filter(p => p.id !== playerId); JS.conns = JS.conns.filter(c => c.peer !== playerId); jRenderPlayers(); jBcast({ type: 'state', s: jPub() }); }
 
-/* ════════════════════════════════ لاعب (باستخدام القناة المحلية أولاً) ════════════════════════════════ */
-let PM = { name: '', team: '', id: '' }, pSelT = '', pPeer = null, pConn = null, pBzEnabled = false, pCdI = null, pGS = null, pRetryTimeout = null, pUseLocal = false;
+/* ════════════════════════════════ لاعب ════════════════════════════════ */
+let PM = { name: '', team: '', id: '' }, pSelT = '', pPeer = null, pConn = null, pBzEnabled = false, pCdI = null, pGS = null, pRetryTimeout = null, pUseLocal = false, pCode = '';
 function pSelTeam(t) { pSelT = t; document.getElementById('ptbtn-a').className = 'ptbtn' + (t === 'a' ? ' psa' : ''); document.getElementById('ptbtn-b').className = 'ptbtn' + (t === 'b' ? ' psb' : ''); }
 function pJoin() {
   const name = document.getElementById('pname').value.trim(); const code = (document.getElementById('pcode').value.trim() || '').toUpperCase(); const err = document.getElementById('perr');
   if (!name) { err.innerText = 'يرجى إدخال اسمك'; err.style.display = 'block'; setTimeout(() => err.style.display = 'none', 2500); return; }
   if (!pSelT) { err.innerText = 'يرجى اختيار فريقك'; err.style.display = 'block'; setTimeout(() => err.style.display = 'none', 2500); return; }
   if (!code) { err.innerText = 'يرجى إدخال كود الجلسة'; err.style.display = 'block'; setTimeout(() => err.style.display = 'none', 2500); return; }
-  PM = { name, team: pSelT, id: 'p_' + Math.random().toString(36).substr(2, 8) };
-  // محاولة الاتصال المحلي أولاً
-  pUseLocal = initLocalChannel(code, 'player', (data, source) => pOnData(data));
-  if (pUseLocal) {
-    // إرسال طلب الانضمام عبر القناة المحلية
-    localSend({ type: 'join', name: PM.name, team: PM.team, id: PM.id });
-    PM.code = code; updatePlayerCodeBadge(); pShowWait();
-    showToast('✅ متصل محلياً (نفس الجهاز)', 'success');
-  }
-  // محاولة PeerJS أيضاً
+  PM = { name, team: pSelT, id: 'p_' + Math.random().toString(36).substr(2, 8) }; pCode = code;
+  pUseLocal = initLocalChannel(code, (data) => pOnData(data));
+  if (pUseLocal) { localSend({ type: 'join', name: PM.name, team: PM.team, id: PM.id }); pShowWait(); showToast('✅ متصل محلياً', 'success'); }
   currentServerIndex = 0; connectPlayer(code);
 }
-function updatePlayerCodeBadge() { const code = PM.code || document.getElementById('pcode').value.trim().toUpperCase(); const elWait = document.getElementById('player-wait-code'); const elBz = document.getElementById('player-bz-code'); if (elWait) elWait.textContent = '🎮 كود: ' + code; if (elBz) elBz.textContent = '🎮 كود: ' + code; }
+function updatePlayerCodeBadge() { const c = pCode || ''; const elWait = document.getElementById('player-wait-code'); const elBz = document.getElementById('player-bz-code'); if (elWait) elWait.textContent = '🎮 كود: ' + c; if (elBz) elBz.textContent = '🎮 كود: ' + c; }
 function connectPlayer(code) {
   if (pPeer) pPeer.destroy(); clearTimeout(pRetryTimeout);
   try { pPeer = new Peer(getPeerOptions()); } catch (e) { return; }
   pPeer.on('open', () => {
     pConn = pPeer.connect('hexgame-' + code, { reliable: true });
-    pConn.on('open', () => { pConn.send({ type: 'join', name: PM.name, team: PM.team, id: PM.id }); if (!pUseLocal) { PM.code = code; updatePlayerCodeBadge(); pShowWait(); } });
+    pConn.on('open', () => { pConn.send({ type: 'join', name: PM.name, team: PM.team, id: PM.id }); if (!pUseLocal) { pShowWait(); } });
     pConn.on('data', pOnData);
   });
   pPeer.on('error', e => { if (!pUseLocal) { if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectPlayer(code); } else { currentServerIndex = 0; pRetryTimeout = setTimeout(() => connectPlayer(code), 3000); } } });
   pPeer.on('disconnected', () => { pPeer.reconnect(); });
 }
-function pShowWait() { go('player-wait'); const tn = pGS ? (PM.team === 'a' ? pGS.teamA : pGS.teamB) : (PM.team === 'a' ? 'الفريق أ' : 'الفريق ب'); document.getElementById('pav').className = 'pavatar ' + (PM.team === 'a' ? 'pava' : 'pavb'); document.getElementById('pav').innerText = PM.team === 'a' ? '🟠' : '🟢'; document.getElementById('pwn').className = 'pwname t' + PM.team; document.getElementById('pwn').innerText = PM.name; document.getElementById('pbdg').innerHTML = '<div class="pbadge pb' + PM.team + '">' + tn + '</div>'; document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال...'; }
+function pShowWait() {
+  go('player-wait'); updatePlayerCodeBadge();
+  const tn = pGS ? (PM.team === 'a' ? pGS.teamA : pGS.teamB) : (PM.team === 'a' ? 'الفريق أ' : 'الفريق ب');
+  document.getElementById('pav').className = 'pavatar ' + (PM.team === 'a' ? 'pava' : 'pavb');
+  document.getElementById('pav').innerText = PM.team === 'a' ? '🟠' : '🟢';
+  document.getElementById('pwn').className = 'pwname t' + PM.team;
+  document.getElementById('pwn').innerText = PM.name;
+  document.getElementById('pbdg').innerHTML = '<div class="pbadge pb' + PM.team + '">' + tn + '</div>';
+  document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال...';
+}
 function pOnData(d) {
-  if (d.type === 'kicked') { showToast('لقد تم طردك من قبل الحكم.', 'error'); if (pPeer) pPeer.destroy(); go('player-join'); return; }
+  if (d.type === 'kicked') { showToast('لقد تم طردك من قبل الحكم.', 'error'); if (pPeer) pPeer.destroy(); closeLocalChannel(); go('player-join'); return; }
   if (d.type === 'state') { pGS = d.s; renderMiniBoard(pGS.board); return; }
   if (d.type === 'buzzer_ready') { pActivateBz(); return; }
-  if (d.type === 'show_q') { const qc = document.getElementById('pbz-q'); qc.innerText = '❓ ' + d.q; qc.style.display = pGS && pGS.showQuestion ? 'block' : 'none'; return; }
+  if (d.type === 'show_q') { const qc = document.getElementById('pbz-q'); if (qc) { qc.innerText = '❓ ' + d.q; qc.style.display = (pGS && pGS.showQuestion) ? 'block' : 'none'; } return; }
   if (d.type === 'buzzer_won') { pOnBwon(d.winner); return; }
   if (d.type === 'second_chance') { pOnSecond(d.team); return; }
   if (d.type === 'open_q') { pOnOpen(); return; }
   if (d.type === 'tick') { const rc = document.getElementById('pres-cnt'); if (rc) rc.innerText = d.secs; return; }
   if (d.type === 'correct' || d.type === 'skip' || d.type === 'new_round') { pResetWait(); return; }
-  if (d.type === 'toggle_question') { const qc = document.getElementById('pbz-q'); if (d.show && pGS && pGS.activeQ) qc.innerText = '❓ ' + pGS.activeQ.q; qc.style.display = d.show ? 'block' : 'none'; }
-  if (d.type === 'toggle_answer') { const ac = document.getElementById('pbz-ans'); if (d.show) ac.innerText = '✅ الإجابة: ' + d.answer; ac.style.display = d.show ? 'block' : 'none'; }
+  if (d.type === 'toggle_question') { const qc = document.getElementById('pbz-q'); if (d.show && pGS && pGS.activeQ) qc.innerText = '❓ ' + pGS.activeQ.q; if (qc) qc.style.display = d.show ? 'block' : 'none'; }
+  if (d.type === 'toggle_answer') { const ac = document.getElementById('pbz-ans'); if (d.show) ac.innerText = '✅ الإجابة: ' + d.answer; if (ac) ac.style.display = d.show ? 'block' : 'none'; }
 }
-function renderMiniBoard(board) { if (!board) return; const wrap = document.getElementById('miniBoardWrap'); wrap.innerHTML = ''; const scale = 0.55; const container = document.createElement('div'); container.style.position = 'relative'; const { W, H } = boardDims(scale); container.style.width = W + 'px'; container.style.height = H + 'px'; wrap.appendChild(container); board.forEach((c, i) => { const { x, y, w, h } = hexPos(i, scale); const d = document.createElement('div'); d.className = 'mini-hex'; if (c.owner === 'a') d.classList.add('a'); else if (c.owner === 'b') d.classList.add('b'); d.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;font-size:${w * .35}px;`; d.innerText = c.letter; container.appendChild(d); }); }
-function pActivateBz() { pBzEnabled = true; go('player-bz'); const btn = document.getElementById('main-bz'); btn.className = 'bzbtn bz' + PM.team + ' rdy'; btn.innerHTML = '<span class="bzic">⚡</span><span class="bzlbl">اضغط الآن!</span>'; document.getElementById('pres').style.display = 'none'; document.getElementById('pbz-st').innerText = '⚡ اضغط البازر بأسرع ما يمكن!'; document.getElementById('pbz-st').style.color = 'var(--GOLD)'; if (document.getElementById('pbz-q')) document.getElementById('pbz-q').style.display = 'none'; if (document.getElementById('pbz-ans')) document.getElementById('pbz-ans').style.display = 'none'; updatePlayerCodeBadge(); }
+function renderMiniBoard(board) { if (!board) return; const wrap = document.getElementById('miniBoardWrap'); if (!wrap) return; wrap.innerHTML = ''; const scale = 0.55; const container = document.createElement('div'); container.style.position = 'relative'; const { W, H } = boardDims(scale); container.style.width = W + 'px'; container.style.height = H + 'px'; wrap.appendChild(container); board.forEach((c, i) => { const { x, y, w, h } = hexPos(i, scale); const d = document.createElement('div'); d.className = 'mini-hex'; if (c.owner === 'a') d.classList.add('a'); else if (c.owner === 'b') d.classList.add('b'); d.style.cssText = 'left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + h + 'px;font-size:' + (w * .35) + 'px;'; d.innerText = c.letter; container.appendChild(d); }); }
+function pActivateBz() { pBzEnabled = true; go('player-bz'); updatePlayerCodeBadge(); const btn = document.getElementById('main-bz'); btn.className = 'bzbtn bz' + PM.team + ' rdy'; btn.innerHTML = '<span class="bzic">⚡</span><span class="bzlbl">اضغط الآن!</span>'; document.getElementById('pres').style.display = 'none'; document.getElementById('pbz-st').innerText = '⚡ اضغط البازر بأسرع ما يمكن!'; document.getElementById('pbz-st').style.color = 'var(--GOLD)'; const qc = document.getElementById('pbz-q'); if (qc) qc.style.display = 'none'; const ac = document.getElementById('pbz-ans'); if (ac) ac.style.display = 'none'; }
 function pPressBz(e) { if (e) e.preventDefault(); if (!pBzEnabled) return; pBzEnabled = false; if (navigator.vibrate) navigator.vibrate([60, 30, 80]); const msg = { type: 'buzz', name: PM.name, team: PM.team, id: PM.id }; if (pConn && pConn.open) pConn.send(msg); if (pUseLocal) localSend(msg); }
 function pOnBwon(w) { const isMe = w.id === PM.id; const btn = document.getElementById('main-bz'); if (isMe) { btn.className = 'bzbtn bz' + PM.team; btn.innerHTML = '<span class="bzic">🎤</span><span class="bzlbl">أجب الآن!</span>'; pSetRes(PM.name + ' 🎉', '⚡ أنت الأول! أجب على الحكم', 5, 'var(--' + (PM.team === 'a' ? 'A' : 'B') + ')'); document.getElementById('pbz-st').innerText = '✅ أنت الأول!'; } else { btn.className = 'bzbtn bz' + PM.team + ' off'; btn.innerHTML = '<span class="bzic">⏳</span><span class="bzlbl">' + w.name + '</span>'; pSetRes(w.name, 'يحاول الإجابة الآن...', 5, 'var(--' + (w.team === 'a' ? 'A' : 'B') + ')'); document.getElementById('pbz-st').innerText = 'سبقك ' + w.name; } }
 function pOnSecond(team) { const mine = team === PM.team; const btn = document.getElementById('main-bz'); if (mine) { pBzEnabled = true; btn.className = 'bzbtn bz' + PM.team + ' rdy'; btn.innerHTML = '<span class="bzic">🔥</span><span class="bzlbl">فرصتكم!</span>'; document.getElementById('pres').style.display = 'none'; document.getElementById('pbz-st').innerText = '🔥 الفرصة الثانية! اضغط الآن!'; document.getElementById('pbz-st').style.color = 'var(--GOLD)'; } else { btn.className = 'bzbtn bz' + PM.team + ' off'; btn.innerHTML = '<span class="bzic">⏳</span><span class="bzlbl">انتظر</span>'; document.getElementById('pbz-st').innerText = 'الفريق الآخر يجيب...'; } }
 function pOnOpen() { pBzEnabled = true; const btn = document.getElementById('main-bz'); btn.className = 'bzbtn bz' + PM.team + ' rdy'; btn.innerHTML = '<span class="bzic">🔓</span><span class="bzlbl">الكل يجيب!</span>'; document.getElementById('pres').style.display = 'none'; document.getElementById('pbz-st').innerText = '🔓 مفتوح للجميع!'; document.getElementById('pbz-st').style.color = 'var(--GOLD)'; }
 function pSetRes(nm, sub, secs, color) { const rc = document.getElementById('pres'); rc.style.display = 'block'; document.getElementById('pres-nm').style.color = color; document.getElementById('pres-nm').innerText = nm; document.getElementById('pres-sub').innerText = sub; clearInterval(pCdI); let t = secs; document.getElementById('pres-cnt').innerText = t; pCdI = setInterval(() => { t--; document.getElementById('pres-cnt').innerText = Math.max(0, t); if (t <= 0) clearInterval(pCdI); }, 1000); }
-function pResetWait() { pBzEnabled = false; clearInterval(pCdI); go('player-wait'); document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال جديد...'; if (document.getElementById('pbz-q')) document.getElementById('pbz-q').style.display = 'none'; if (document.getElementById('pbz-ans')) document.getElementById('pbz-ans').style.display = 'none'; if (document.getElementById('pres')) document.getElementById('pres').style.display = 'none'; updatePlayerCodeBadge(); }
+function pResetWait() { pBzEnabled = false; clearInterval(pCdI); go('player-wait'); updatePlayerCodeBadge(); document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال جديد...'; const qc = document.getElementById('pbz-q'); if (qc) qc.style.display = 'none'; const ac = document.getElementById('pbz-ans'); if (ac) ac.style.display = 'none'; document.getElementById('pres').style.display = 'none'; }
 
 /* ════════════════════════════════ تحكم الألواح ════════════════════════════════ */
 function togglePanel(side) {
@@ -243,11 +242,11 @@ function togglePanel(side) {
 }
 function toggleSection(h) { const s = h.parentElement; if (s) s.classList.toggle('section-collapsed'); }
 
-/* ════════════════════════════════ QR ════════════════════════════════ */
+/* ════════════════════════════════ QR والروابط ════════════════════════════════ */
 function getPlayerURL() { return location.href.split('?')[0] + '?mode=player&code=' + JS.code; }
 function getDisplayURL() { return location.href.split('?')[0] + '?mode=display&code=' + JS.code; }
 function genQR() {
-  const url = getPlayerURL(); document.getElementById('qr-url').innerText = url;
+  const url = getPlayerURL(); const urlEl = document.getElementById('qr-url'); if (urlEl) urlEl.innerText = url;
   ['qr-sm', 'qr-lg', 'display-qr'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.innerHTML = ''; const sz = id === 'display-qr' ? 160 : (id === 'qr-sm' ? 70 : 230); try { new QRCode(el, { text: url, width: sz, height: sz, colorDark: '#1a1a2e', colorLight: '#ffffff' }); } catch (e) {} });
   const codeEl = document.getElementById('display-code'); if (codeEl) codeEl.textContent = JS.code;
 }
@@ -257,11 +256,10 @@ function copyDisplayLinkOnly() { copyDisplayLink(); }
 function openDisplayLink() { window.open(getDisplayURL(), '_blank'); }
 
 /* ════════════════════════════════ شاشة البروجكتر ════════════════════════════════ */
-let dpPeer = null, dpConn = null, dpBrd = [], dpShowQ = true, dpShowA = false, dpRetryTimeout = null, dpPendingQ = null, dpUseLocal = false;
+let dpPeer = null, dpConn = null, dpBrd = [], dpRetryTimeout = null, dpPendingQ = null, dpUseLocal = false;
 function showDisplayScreen() { const code = prompt('أدخل كود الجلسة:', ''); if (!code) return; go('display'); startDisplay(code.trim().toUpperCase()); }
 function startDisplay(code) {
-  // محاولة الاتصال المحلي أولاً
-  dpUseLocal = initLocalChannel(code, 'display', (data) => dpOnData(data));
+  dpUseLocal = initLocalChannel(code, (data) => dpOnData(data));
   if (dpUseLocal) { document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل محلياً!</span>'; }
   currentServerIndex = 0; connectDisplay(code);
 }
@@ -270,7 +268,7 @@ function connectDisplay(code) {
   try { dpPeer = new Peer(getPeerOptions()); } catch (e) { return; }
   dpPeer.on('open', () => {
     dpConn = dpPeer.connect('hexgame-' + code, { reliable: true });
-    dpConn.on('open', () => { if (!dpUseLocal) document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل!</span>'; });
+    dpConn.on('open', () => { if (!dpUseLocal) document.getElementById('dp-bz').innerHTML = '<span style="color:var(--GOLD);font-size:.83rem">✅ متصل! في انتظار السؤال...</span>'; });
     dpConn.on('data', d => dpOnData(d));
   });
   dpPeer.on('error', e => { if (!dpUseLocal) { document.getElementById('dp-bz').innerHTML = '<span style="color:#e74c3c">خطأ: ' + e.type + '</span> <button class="retry-btn" onclick="retryDisplayConnection(\'' + code + '\')">🔄 إعادة</button>'; if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectDisplay(code); } else { currentServerIndex = 0; dpRetryTimeout = setTimeout(() => connectDisplay(code), 3000); } } });
@@ -286,8 +284,8 @@ function dpOnData(d) {
   if (d.type === 'tick') { const el = document.getElementById('dp-cd'); if (el) el.innerText = d.secs; }
   if (d.type === 'correct' || d.type === 'skip') { document.getElementById('dp-q').style.display = 'none'; document.getElementById('dp-ans').style.display = 'none'; document.getElementById('dp-bz').innerHTML = '<span style="color:rgba(240,244,255,.3);font-size:.83rem">في انتظار السؤال...</span>'; }
   if (d.type === 'new_round') { document.getElementById('dp-q').style.display = 'none'; document.getElementById('dp-ans').style.display = 'none'; }
-  if (d.type === 'toggle_question') { dpShowQ = d.show; if (d.show && d.q) { const qd = document.getElementById('dp-q'); qd.innerText = '❓ ' + d.q; qd.style.display = 'flex'; } else { document.getElementById('dp-q').style.display = 'none'; } }
-  if (d.type === 'toggle_answer') { dpShowA = d.show; const ae = document.getElementById('dp-ans'); if (d.show) ae.innerText = '✅ الإجابة: ' + d.answer; ae.style.display = dpShowA ? 'block' : 'none'; }
+  if (d.type === 'toggle_question') { if (d.show && d.q) { const qd = document.getElementById('dp-q'); qd.innerText = '❓ ' + d.q; qd.style.display = 'flex'; } else { document.getElementById('dp-q').style.display = 'none'; } }
+  if (d.type === 'toggle_answer') { const ae = document.getElementById('dp-ans'); if (d.show) ae.innerText = '✅ الإجابة: ' + d.answer; ae.style.display = d.show ? 'block' : 'none'; }
 }
 function dpApply(s) { if (!s) return; document.getElementById('dp-an').innerText = s.teamA || 'الفريق أ'; document.getElementById('dp-bn').innerText = s.teamB || 'الفريق ب'; document.getElementById('dp-as').innerText = s.pts ? s.pts.a : 0; document.getElementById('dp-bs').innerText = s.pts ? s.pts.b : 0; dpBrd = s.board || []; const letters = dpBrd.map(c => c.letter); const owner = dpBrd.map(c => c.owner); renderHexBoard(document.getElementById('display-board'), letters, owner, s.activeCell, null); if (s.showAnswer && s.activeQ) { document.getElementById('dp-ans').innerText = '✅ الإجابة: ' + s.activeQ.a; document.getElementById('dp-ans').style.display = 'block'; } else { document.getElementById('dp-ans').style.display = 'none'; } if (s.activeQ) dpPendingQ = s.activeQ.q; }
 function dpShowBz(w) { const col = 'var(--' + (w.team === 'a' ? 'A' : 'B') + ')'; document.getElementById('dp-bz').innerHTML = '<div style="text-align:center"><div style="font-size:1.4rem;font-weight:900;color:' + col + '">⚡ ' + w.name + '</div><div style="font-size:2.4rem;font-weight:900;font-family:monospace;color:' + col + '" id="dp-cd">5</div></div>'; }
@@ -303,16 +301,60 @@ const _origPickQ = pickQ;
 pickQ = function (letter) { if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && (GAME_DIFF !== 'all' || GAME_CAT !== 'all')) { const q2 = pickQ2(letter); if (q2) return q2; } if (typeof QBANK2 !== 'undefined' && QBANK2[letter] && GAME_DIFF === 'all' && GAME_CAT === 'all') { if (Math.random() > 0.5) { const q2 = pickQ2(letter); if (q2) return q2; } } return _origPickQ(letter); };
 function lShowDiffBadge(q) { const badge = document.getElementById('lq-diff-badge'), catTag = document.getElementById('lq-cat-badge'); if (!badge || !catTag) return; if (q && q._lvl) { const map = { easy: ['🟢 سهل', 'diff-easy'], medium: ['🟡 متوسط', 'diff-medium'], hard: ['🔴 صعب', 'diff-hard'], expert: ['⭐ خبير', 'diff-hard'] }; const [label, cls] = map[q._lvl] || ['', '']; badge.className = 'diff-indicator ' + cls; badge.textContent = label; catTag.textContent = q.cat || ''; } else { badge.className = 'diff-indicator'; badge.textContent = ''; catTag.textContent = ''; } }
 
-/* ════════════════════════════════ تهيئة ════════════════════════════════ */
-window.addEventListener('load', () => {
-  const p = new URLSearchParams(location.search); const mode = p.get('mode'), code = p.get('code');
-  if (mode === 'player') { go('player-join'); if (code) document.getElementById('pcode').value = code; }
-  else if (mode === 'display' && code) { go('display'); startDisplay(code); }
-  else { go('home'); }
-  document.querySelectorAll('#judge-right-panel .ps h3').forEach(h3 => { h3.style.cursor = 'pointer'; h3.addEventListener('click', () => toggleSection(h3)); });
-  window.addEventListener('resize', () => {
-    if (document.getElementById('local-game').classList.contains('on')) renderHexBoard(document.getElementById('local-board'), LG.letters, LG.owner, LG.activeCell, lHexClick);
-    if (document.getElementById('judge-game').classList.contains('on')) renderHexBoard(document.getElementById('judge-board'), JS.letters, JS.owner, JS.activeCell, jHexClick);
-    if (document.getElementById('display').classList.contains('on') && dpBrd.length) dpApply({ board: dpBrd, pts: JS.pts, teamA: JS.teamA, teamB: JS.teamB });
+/* ════════════════════════════════ التهيئة ════════════════════════════════ */
+window.addEventListener('load', function() {
+  const params = new URLSearchParams(location.search);
+  const mode = params.get('mode');
+  const code = params.get('code');
+
+  if (mode === 'player') {
+    go('player-join');
+    if (code) {
+      document.getElementById('pcode').value = code;
+      // انضمام تلقائي إذا كان هناك اسم مُخزَّن
+      const savedName = localStorage.getItem('playerName_' + code);
+      if (savedName) {
+        document.getElementById('pname').value = savedName;
+      }
+    }
+  } else if (mode === 'display') {
+    if (code) {
+      go('display');
+      startDisplay(code);
+    } else {
+      go('home');
+    }
+  } else {
+    go('home');
+  }
+
+  // السماح بطي أقسام لوحة تحكم الحكم
+  document.querySelectorAll('#judge-right-panel .ps h3').forEach(function(h3) {
+    h3.style.cursor = 'pointer';
+    h3.addEventListener('click', function() { toggleSection(h3); });
   });
+
+  // تحديث حجم اللوحة عند تغيير حجم النافذة
+  window.addEventListener('resize', function() {
+    if (document.getElementById('local-game').classList.contains('on')) {
+      renderHexBoard(document.getElementById('local-board'), LG.letters, LG.owner, LG.activeCell, lHexClick);
+    }
+    if (document.getElementById('judge-game').classList.contains('on')) {
+      renderHexBoard(document.getElementById('judge-board'), JS.letters, JS.owner, JS.activeCell, jHexClick);
+    }
+    if (document.getElementById('display').classList.contains('on') && dpBrd.length) {
+      dpApply({ board: dpBrd, pts: JS.pts, teamA: JS.teamA, teamB: JS.teamB });
+    }
+  });
+
+  // حفظ اسم اللاعب للجلسات المستقبلية
+  const pnameInput = document.getElementById('pname');
+  if (pnameInput) {
+    pnameInput.addEventListener('change', function() {
+      const c = document.getElementById('pcode').value.trim().toUpperCase();
+      if (c && pnameInput.value.trim()) {
+        localStorage.setItem('playerName_' + c, pnameInput.value.trim());
+      }
+    });
+  }
 });
