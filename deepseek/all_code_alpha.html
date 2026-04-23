@@ -420,39 +420,79 @@ button:active { transform: scale(.97); }
   </div>
 
 
-<!-- ⑤ JUDGE GAME -->
-<div id="judge-game" class="scr">
-  <div class="jlp">
-    <div class="jsc jca"><div class="jn" id="ja-n">الفريق أ</div><div class="jv" id="ja-p">0</div><div class="jw" id="ja-w">جولات:0</div></div>
-    <div style="text-align:center;width:100%">
-      <div class="jrnd" id="j-rnd">الجولة 1</div>
-      <div class="jleg">...</div>
-      <div class="qrmini" onclick="showQR()"><canvas id="qr-sm" width="70" height="70"></canvas></div>
-      <button class="jb jbop" onclick="copyDisplayLink()">📋 نسخ رابط البروجكتر</button>
-      <button class="jb jbop" onclick="openDisplayLink()">🔗 افتح البروجكتر</button>
+  <!-- ⑤ JUDGE GAME -->
+  <div id="judge-game" class="scr">
+    <!-- الشريط الأيسر (يظهر يمين الشاشة) -->
+    <div class="jlp" id="judge-left-panel">
+      <div class="jsc jca"><div class="jn" id="ja-n">الفريق أ</div><div class="jv" id="ja-p">0</div><div class="jw" id="ja-w">جولات: 0</div></div>
+      <div style="text-align:center;width:100%">
+        <div class="jrnd" id="j-rnd">الجولة 1</div>
+        <div class="jleg">
+          <div class="jlr"><div class="jll" style="background:var(--A)"></div><span>أ — أفقي ◀▶</span></div>
+          <div class="jlr"><div class="jll" style="background:var(--B)"></div><span>ب — عمودي ▲▼</span></div>
+        </div>
+        <div class="qrmini" onclick="showQR()"><canvas id="qr-sm" width="70" height="70"></canvas></div>
+        <div class="qrlbl">📱 امسح للانضمام</div>
+        <button class="jb jbop" style="margin-top:8px;padding:7px;width:100%;font-size:.72rem" onclick="copyDisplayLink()">📋 نسخ رابط البروجكتر</button>
+        <button class="jb jbop" style="margin-top:4px;padding:7px;width:100%;font-size:.72rem;background:#e67e22" onclick="openDisplayLink()">🔗 افتح البروجكتر</button>
+      </div>
+      <div class="jsc jcb"><div class="jn" id="jb-n">الفريق ب</div><div class="jv" id="jb-p">0</div><div class="jw" id="jb-w">جولات: 0</div></div>
     </div>
-    <div class="jsc jcb"><div class="jn" id="jb-n">الفريق ب</div><div class="jv" id="jb-p">0</div><div class="jw" id="jb-w">جولات:0</div></div>
-  </div>
-  <div class="jcenter">
-    <button class="panel-toggle left-toggle" onclick="togglePanel('left')">☰</button>
-    <button class="panel-toggle right-toggle" onclick="togglePanel('right')">☰</button>
-    <div class="jtitle" id="j-title">الجولة الأولى 🏆</div>
-    <div class="bwrap" id="judge-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="judge-board"></div></div>
-  </div>
-  <div class="jrp">
-    <div class="ps"><h3>⚡ البازر</h3><div id="jbz-disp">...</div></div>
-    <div class="ps"><h3>❓ السؤال الحالي</h3><div class="qbx" id="j-qbox">اختر خلية...</div><div class="ansbx" id="j-ans"></div></div>
-    <div class="ps"><h3>🎯 الصعوبة</h3><div class="diff-filter" id="j-live-diff">...</div></div>
-    <div class="ps"><h3>🎮 تحكم الحكم</h3><div class="jg">...</div></div>
-    <div class="ps"><h3>👥 اللاعبون المتصلون</h3><div class="pllist" id="j-players"></div></div>
-  </div>
-  <div class="code-badge" id="judge-code-badge">كود: ----</div>
-</div>
 
-<!-- QR Modal -->
-<div id="qr-modal"><div class="qrcard"><h2>📱 انضم للعبة</h2><p>امسح الكود أو انسخ الرابط</p><div class="qrwrap"><div id="qr-lg"></div></div><div class="qrurl" id="qr-url">—</div><button class="qrclose" onclick="document.getElementById('qr-modal').classList.remove('show')">✕ إغلاق</button></div></div>
+    <!-- المركز -->
+    <div class="jcenter">
+      <button class="panel-toggle left-toggle" id="toggle-left-panel" onclick="togglePanel('left')">☰</button>
+      <button class="panel-toggle right-toggle" id="toggle-right-panel" onclick="togglePanel('right')">☰</button>
+      <div class="jtitle" id="j-title">الجولة الأولى 🏆</div>
+      <div class="bwrap" id="judge-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="judge-board"></div></div>
+    </div>
 
-<div id="judge-win" class="winov">
+    <!-- الشريط الأيمن (يظهر يسار الشاشة) -->
+    <div class="jrp" id="judge-right-panel">
+      <div class="ps"><h3>⚡ البازر</h3><div id="jbz-disp"><div class="bzidle">اختر خلية لبدء السؤال...</div></div></div>
+      <div class="ps"><h3>❓ السؤال الحالي</h3><div class="qbx" id="j-qbox">اختر خلية من اللوحة...</div><div class="ansbx" id="j-ans"></div></div>
+      <div class="ps">
+        <h3>🎯 الصعوبة (مباشر)</h3>
+        <div class="diff-filter" id="j-live-diff">
+          <button class="diff-btn active-all" data-diff="all" onclick="setLiveDiff(this)">🌟 الكل</button>
+          <button class="diff-btn" data-diff="easy" onclick="setLiveDiff(this)">🟢 سهل</button>
+          <button class="diff-btn" data-diff="medium" onclick="setLiveDiff(this)">🟡 متوسط</button>
+          <button class="diff-btn" data-diff="hard" onclick="setLiveDiff(this)">🔴 صعب</button>
+          <button class="diff-btn" data-diff="expert" onclick="setLiveDiff(this)">⭐ خبير</button>
+        </div>
+      </div>
+      <div class="ps">
+        <h3>🎮 تحكم الحكم</h3>
+        <div class="jg">
+          <button class="jb jbans" onclick="jShowAns()">👁 إظهار الإجابة</button>
+          <button class="jb jbca" id="jb-ca" onclick="jCorrect('a')">✅ صح (أ)</button>
+          <button class="jb jbcb" id="jb-cb" onclick="jCorrect('b')">✅ صح (ب)</button>
+          <button class="jb jbnq" onclick="jNextQ()">🔄 سؤال آخر</button>
+          <button class="jb jbop" onclick="jReopen()">🔓 إعادة البازر</button>
+          <button class="jb jbsk" onclick="jSkip()">⏭ تخطي</button>
+          <button class="jb" id="j-toggle-q" style="background:#2ecc71" onclick="jToggleQuestion()">👁 أظهر السؤال</button>
+          <button class="jb" id="j-toggle-a" style="background:#e67e22" onclick="jToggleAnswer()">👁 أظهر الإجابة</button>
+          <button class="jb jbnr" onclick="jNewRound()">🏁 جولة جديدة</button>
+          <button class="jb jbhm" onclick="go('home')">🏠 الرئيسية</button>
+        </div>
+      </div>
+      <div class="ps"><h3>👥 اللاعبون المتصلون</h3><div class="pllist" id="j-players"><div class="bzidle">لا يوجد لاعبون بعد...</div></div></div>
+    </div>
+    <!-- شارة كود الجلسة -->
+    <div class="code-badge" id="judge-code-badge" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:300;">كود: ----</div>
+  </div>
+
+  <!-- QR Modal -->
+  <div id="qr-modal">
+    <div class="qrcard">
+      <h2>📱 انضم للعبة</h2><p>امسح الكود أو انسخ الرابط</p>
+      <div class="qrwrap"><div id="qr-lg"></div></div>
+      <div class="qrurl" id="qr-url">—</div><br>
+      <button class="qrclose" onclick="document.getElementById('qr-modal').classList.remove('show')">✕ إغلاق</button>
+    </div>
+  </div>
+
+  <div id="judge-win" class="winov">
     <div class="winem" id="jw-em">🏆</div>
     <div class="winnm" id="jw-nm">الفائز!</div>
     <div class="winsb" id="jw-sb"></div>
