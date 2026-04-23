@@ -72,6 +72,7 @@ button:active { transform: scale(.97); }
 .sf.fa label, .jf.ja label { color: var(--A); } .sf.fb label, .jf.jb label { color: var(--B); }
 .sf input, .sf select, .jf input, .jf select { width: 100%; background: var(--S2); border: 1.5px solid var(--BDR); border-radius: var(--r-md); padding: clamp(10px, 1.8vh, 14px) 12px; font-family: 'Cairo', sans-serif; font-size: clamp(.88rem, 2.2vw, 1rem); font-weight: 700; text-align: center; outline: none; color: var(--TXT); transition: border-color .2s, box-shadow .2s; min-height: var(--btn-h-sm); }
 .sf input:focus, .sf select:focus, .jf input:focus, .jf select:focus { border-color: var(--GOLD); box-shadow: 0 0 0 3px rgba(255,215,0,.15); }
+.sf select option, .jf select option { background: var(--S2); }
 
 /* أزرار الفلتر */
 .filter-section { width:100%; }
@@ -195,7 +196,7 @@ button:active { transform: scale(.97); }
 .diff-indicator { display: inline-flex; align-items: center; gap: 5px; font-size: .74rem; font-weight: 700; padding: 4px 11px; border-radius: var(--r-pill); } .diff-easy { background: rgba(76,175,80,.16); color: #81c784; } .diff-medium { background: rgba(255,193,7,.16); color: #FFC107; } .diff-hard { background: rgba(255,87,34,.16); color: #ff8a65; } .cat-tag { background: rgba(255,255,255,.09); border: 1px solid var(--BDR); border-radius: var(--r-pill); padding: 3px 9px; font-size: .7rem; color: var(--DIM); }
 .retry-btn { background: linear-gradient(135deg, #e67e22, #ca6f1e); color: white; border: none; border-radius: var(--r-pill); padding: 9px 20px; font-family: 'Cairo', sans-serif; font-size: .82rem; font-weight: 700; cursor: pointer; margin-top: 7px; }
 
-/* ════════════════════════════════ أزرار طي القوائم داخل jcenter (ظاهرة دائماً) ════════════════════════════════ */
+/* ════════════════════════════════ أزرار طي القوائم داخل jcenter (مُصحَّحة لـ RTL) ════════════════════════════════ */
 .jcenter .panel-toggle {
   position: absolute;
   z-index: 200;
@@ -215,40 +216,25 @@ button:active { transform: scale(.97); }
   backdrop-filter: blur(8px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
-.jcenter .panel-toggle:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: var(--GOLD);
-  color: var(--GOLD);
-}
-.jcenter .left-toggle { left: 10px; }
-.jcenter .right-toggle { right: 10px; }
+.jcenter .panel-toggle:hover { background: rgba(255,255,255,0.25); border-color: var(--GOLD); color: var(--GOLD); }
 
-/* عند طي القائمة، يتغير شكل الأيقونة */
-.jlp.collapsed ~ .jcenter .left-toggle,
-.jrp.collapsed ~ .jcenter .right-toggle {
-  background: var(--GOLD);
-  color: #000;
-}
+/* في RTL، left في CSS تعني يمين الشاشة، والعكس.
+   لذلك الزر left-toggle يظهر على اليمين بجانب القائمة اليسرى (jlp)
+   والزر right-toggle يظهر على اليسار بجانب القائمة اليمنى (jrp) */
+.jcenter .left-toggle { right: 10px; left: auto; }
+.jcenter .right-toggle { left: 10px; right: auto; }
 
-/* تحسين مظهر القوائم الجانبية على الجوال */
+.jlp.collapsed ~ .jcenter .left-toggle { background: var(--GOLD); color: #000; }
+.jrp.collapsed ~ .jcenter .right-toggle { background: var(--GOLD); color: #000; }
+
 @media (max-width: 480px) {
-  .jlp {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-around;
-    padding: 10px;
-    width: 100% !important;
-  }
+  .jlp { display: flex; flex-direction: row; align-items: center; justify-content: space-around; padding: 10px; width: 100% !important; }
   .jlp .jsc { flex: 1; margin: 0 4px; }
-  .jrp {
-    flex-wrap: wrap;
-    padding: 10px;
-    width: 100% !important;
-  }
+  .jrp { flex-wrap: wrap; padding: 10px; width: 100% !important; }
   .jrp .ps { flex: 1 1 140px; margin: 4px; }
   .jcenter .panel-toggle { width: 28px; height: 28px; font-size: 0.9rem; top: 5px; }
-  .jcenter .left-toggle { left: 5px; } .jcenter .right-toggle { right: 5px; }
+  .jcenter .left-toggle { right: 5px; left: auto; }
+  .jcenter .right-toggle { left: 5px; right: auto; }
 }
 
 /* Toast */

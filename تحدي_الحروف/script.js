@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════
-   script.js — المحرك الكامل للعبة (النسخة النهائية)
+   script.js — النسخة النهائية المُصحَّحة
    ════════════════════════════════════════ */
 
 function go(id) {
@@ -153,7 +153,22 @@ function jUpdateScores() { document.getElementById('ja-p').innerText = JS.pts.a;
 function jRenderPlayers() { const pl = document.getElementById('j-players'); if (!pl) return; if (!JS.players.length) { pl.innerHTML = '<div class="bzidle">لا يوجد لاعبون...</div>'; return; } pl.innerHTML = JS.players.map(p => { const teamColor = p.team === 'a' ? 'var(--A)' : 'var(--B)'; return `<div class="plitem p${p.team}"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${teamColor};margin-left:4px;"></span><span style="flex:1;">${p.name}</span><span style="opacity:.6;font-size:.72rem;">${p.team==='a'?JS.teamA:JS.teamB}</span><button class="plkick" onclick="jKickPlayer('${p.id}')" title="طرد اللاعب">✕</button></div>`; }).join(''); }
 function jKickPlayer(playerId) { const player = JS.players.find(p => p.id === playerId); if (!player) return; const conn = JS.conns.find(c => c.peer === playerId); if (conn && conn.open) conn.send({ type: 'kicked' }); if (conn) conn.close(); JS.players = JS.players.filter(p => p.id !== playerId); JS.conns = JS.conns.filter(c => c.peer !== playerId); jRenderPlayers(); jBcast({ type: 'state', s: jPub() }); }
 
-function startJudge() { JS.teamA = document.getElementById('jta').value.trim() || 'الفريق الأحمر'; JS.teamB = document.getElementById('jtb').value.trim() || 'الفريق الأخضر'; JS.roundsToWin = parseInt(document.getElementById('jrw').value); JS.code = Math.random().toString(36).substr(2, 5).toUpperCase(); JS.conns = []; JS.players = []; Object.keys(UQ).forEach(k => delete UQ[k]); go('judge-game'); jUpdateUI(); jInitBoard(); genQR(); currentServerIndex = 0; connectJudge(); }
+function startJudge() {
+  JS.teamA = document.getElementById('jta').value.trim() || 'الفريق الأحمر';
+  JS.teamB = document.getElementById('jtb').value.trim() || 'الفريق الأخضر';
+  JS.roundsToWin = parseInt(document.getElementById('jrw').value);
+  JS.code = Math.random().toString(36).substr(2, 5).toUpperCase();
+  JS.conns = []; JS.players = []; Object.keys(UQ).forEach(k => delete UQ[k]);
+  go('judge-game'); jUpdateUI(); jInitBoard(); genQR();
+  currentServerIndex = 0; connectJudge();
+  updateJudgeCodeBadge();
+}
+
+function updateJudgeCodeBadge() {
+  const badge = document.getElementById('judge-code-badge');
+  if (badge) badge.textContent = '🎮 كود: ' + JS.code;
+}
+
 function connectJudge() { if (JS.peer) JS.peer.destroy(); clearTimeout(JS.retryTimeout); try { JS.peer = new Peer('hexgame-' + JS.code, getPeerOptions()); } catch (e) { showToast('خطأ في الاتصال: ' + e.type, 'error'); return; } JS.peer.on('open', () => { currentServerIndex = 0; }); JS.peer.on('connection', conn => { JS.conns.push(conn); conn.on('open', () => jBcast({ type: 'state', s: jPub() })); conn.on('data', d => jOnData(d)); conn.on('close', () => { JS.conns = JS.conns.filter(c => c !== conn); }); }); JS.peer.on('error', e => { showToast('خطأ في الاتصال: ' + e.type, 'error'); if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectJudge(); } else { currentServerIndex = 0; JS.retryTimeout = setTimeout(connectJudge, 3000); } }); JS.peer.on('disconnected', () => { JS.peer.reconnect(); }); }
 function jPub() { return { teamA: JS.teamA, teamB: JS.teamB, board: JS.letters.map((l, i) => ({ letter: l, owner: JS.owner[i] })), activeCell: JS.activeCell, phase: JS.phase, bzWinner: JS.bzWinner, timerSecs: JS.timerSecs, pts: JS.pts, showQuestion: JS.showQuestion, showAnswer: JS.showAnswer, activeQ: JS.activeQ }; }
 function jBcast(m) { JS.conns.forEach(c => { if (c.open) c.send(m); }); }
@@ -223,7 +238,7 @@ function getPlayerURL() { return window.location.href.split('?')[0] + '?mode=pla
 function getDisplayURL() { return window.location.href.split('?')[0] + '?mode=display&code=' + JS.code; }
 function genQR() { const url = getPlayerURL(); document.getElementById('qr-url').innerText = url; ['qr-sm', 'qr-lg', 'display-qr'].forEach(id => { const el = document.getElementById(id); if (!el) return; el.innerHTML = ''; const sz = id === 'display-qr' ? 160 : (id === 'qr-sm' ? 70 : 230); try { new QRCode(el, { text: url, width: sz, height: sz, colorDark: '#1a1a2e', colorLight: '#ffffff' }); } catch (e) { } }); const codeEl = document.getElementById('display-code'); if (codeEl) codeEl.textContent = JS.code; }
 function showQR() { genQR(); document.getElementById('qr-modal').classList.add('show'); }
-function copyDisplayLink() { const url = getDisplayURL(); navigator.clipboard.writeText(url).then(() => showToast('تم نسخ رابط البروجكتر', 'success')).catch(() => prompt('انسخ رابط شاشة البروجكتر:', url)); }
+function copyDisplayLink() { const url = getDisplayURL(); navigator.clipboard.writeText(url).then(() => showToast('تم نسخ رابط البروجكتر!', 'success')).catch(() => prompt('انسخ الرابط:', url)); }
 function copyDisplayLinkOnly() { const url = getDisplayURL(); navigator.clipboard.writeText(url).then(() => showToast('تم نسخ الرابط', 'success')).catch(() => prompt('انسخ الرابط:', url)); }
 function openDisplayLink() { window.open(getDisplayURL(), '_blank'); }
 
