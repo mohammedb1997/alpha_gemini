@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════
-   script.js — كامل مع تصحيح التوجيه الفوري
+   script.js — النسخة النهائية المُصحَّحة
    ════════════════════════════════════════ */
 
 function go(id) {
@@ -118,40 +118,28 @@ function renderHexBoard(boardEl, letters, owner, activeCell, clickFn, scale = 1)
   });
 }
 
-/* ══════ الاتصال المحلي عبر BroadcastChannel ══════ */
-let localChannel = null;
-
-function initLocalChannel(code, onMessage) {
-  try {
-    if (localChannel) localChannel.close();
-    localChannel = new BroadcastChannel('hexgame-' + code);
-    localChannel.onmessage = (e) => onMessage(e.data);
-    return true;
-  } catch (e) { return false; }
-}
-
-function localSend(msg) {
-  if (localChannel) localChannel.postMessage(msg);
-}
-
-function closeLocalChannel() {
-  if (localChannel) { localChannel.close(); localChannel = null; }
-}
-
-/* ══════ PeerJS ══════ */
-const PEER_SERVERS = [{ host: '0.peerjs.com', port: 443, secure: true, path: '/' }];
+/* ══════ PeerJS (خوادم STUN + TURN) ══════ */
+const PEER_SERVERS = [
+  { host: '0.peerjs.com', port: 443, secure: true, path: '/' }
+];
 let currentServerIndex = 0;
 
 function getPeerOptions() {
   const srv = PEER_SERVERS[currentServerIndex];
   return {
-    host: srv.host, port: srv.port, secure: srv.secure, path: srv.path, debug: 0,
-    config: { iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
-    ] }
+    host: srv.host,
+    port: srv.port,
+    secure: srv.secure,               // ← الإصلاح: استخدام قيمة الخادم مباشرةً
+    path: srv.path,
+    debug: 0,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+      ]
+    }
   };
 }
 
@@ -246,7 +234,7 @@ let JS = {
   letters: [], owner: Array(N).fill(null), activeCell: null, activeQ: null,
   phase: 'idle', bzWinner: null, timerSecs: 0, timerInt: null,
   players: [], code: '', peer: null, conns: [], showQuestion: false, showAnswer: false,
-  retryTimeout: null, useLocal: true
+  retryTimeout: null
 };
 
 function startJudge() {
@@ -256,8 +244,6 @@ function startJudge() {
   JS.code = Math.random().toString(36).substr(2, 5).toUpperCase();
   JS.conns = []; JS.players = []; Object.keys(UQ).forEach(k => delete UQ[k]);
   go('judge-game'); jUpdateUI(); jInitBoard(); genQR();
-  JS.useLocal = initLocalChannel(JS.code, (data) => jOnData(data));
-  if (JS.useLocal) showToast('✅ الاتصال المحلي نشط', 'success');
   currentServerIndex = 0; connectJudge();
   updateJudgeCodeBadge();
 }
@@ -284,8 +270,14 @@ function connectJudge() {
 
 function handleJudgeError(e) {
   console.warn('Judge peer error:', e && e.type ? e.type : e);
-  if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectJudge(); }
-  else { currentServerIndex = 0; JS.retryTimeout = setTimeout(connectJudge, 3000); }
+  if (currentServerIndex < PEER_SERVERS.length - 1) {
+    currentServerIndex++;
+    connectJudge();
+  } else {
+    currentServerIndex = 0;
+    JS.retryTimeout = setTimeout(connectJudge, 3000);
+  }
+  showToast('⚠️ مشكلة في الاتصال. جارٍ إعادة المحاولة...', 'error');
 }
 
 window.retryJudgeConnection = function () { currentServerIndex = 0; connectJudge(); };
@@ -302,7 +294,6 @@ function jPub() {
 
 function jBcast(m) {
   JS.conns.forEach(c => { if (c.open) c.send(m); });
-  if (JS.useLocal) localSend(m);
 }
 
 function jOnData(d) {
@@ -497,7 +488,7 @@ function jKickPlayer(playerId) {
 }
 
 /* ══════ شاشة اللاعب ══════ */
-let PM = { name: '', team: '', id: '' }, pSelT = '', pPeer = null, pConn = null, pBzEnabled = false, pCdI = null, pGS = null, pRetryTimeout = null, pUseLocal = false, pCode = '';
+let PM = { name: '', team: '', id: '' }, pSelT = '', pPeer = null, pConn = null, pBzEnabled = false, pCdI = null, pGS = null, pRetryTimeout = null;
 
 function pSelTeam(t) {
   pSelT = t;
@@ -513,22 +504,8 @@ function pJoin() {
   if (!pSelT) { err.innerText = 'يرجى اختيار فريقك'; err.style.display = 'block'; setTimeout(() => err.style.display = 'none', 2500); return; }
   if (!code) { err.innerText = 'يرجى إدخال كود الجلسة'; err.style.display = 'block'; setTimeout(() => err.style.display = 'none', 2500); return; }
   PM = { name, team: pSelT, id: 'p_' + Math.random().toString(36).substr(2, 8) };
-  pCode = code;
-  pUseLocal = initLocalChannel(code, (data) => pOnData(data));
-  if (pUseLocal) {
-    localSend({ type: 'join', name: PM.name, team: PM.team, id: PM.id });
-    pShowWait();
-    showToast('✅ متصل محلياً', 'success');
-  }
-  currentServerIndex = 0; connectPlayer(code);
-}
-
-function updatePlayerCodeBadge() {
-  const c = pCode || '';
-  const elWait = document.getElementById('player-wait-code');
-  const elBz = document.getElementById('player-bz-code');
-  if (elWait) elWait.textContent = '🎮 كود: ' + c;
-  if (elBz) elBz.textContent = '🎮 كود: ' + c;
+  currentServerIndex = 0;
+  connectPlayer(code);
 }
 
 function connectPlayer(code) {
@@ -538,12 +515,12 @@ function connectPlayer(code) {
     pConn = pPeer.connect('hexgame-' + code, { reliable: true });
     pConn.on('open', () => {
       pConn.send({ type: 'join', name: PM.name, team: PM.team, id: PM.id });
-      if (!pUseLocal) { pShowWait(); }
+      pShowWait();
     });
     pConn.on('data', pOnData);
     pConn.on('error', e => {
-      const errEl = document.getElementById('perr');
-      if (errEl) { errEl.innerText = 'خطأ في الاتصال: ' + (e.type || e); errEl.style.display = 'block'; }
+      document.getElementById('perr').innerText = 'خطأ في الاتصال: ' + (e.type || e);
+      document.getElementById('perr').style.display = 'block';
     });
   });
   pPeer.on('error', e => handlePlayerError(e, code));
@@ -555,8 +532,8 @@ function handlePlayerError(e, code) {
   if (currentServerIndex < PEER_SERVERS.length - 1) { currentServerIndex++; connectPlayer(code); }
   else {
     currentServerIndex = 0;
-    const errEl = document.getElementById('perr');
-    if (errEl) { errEl.innerText = 'خطأ في الاتصال — جارٍ إعادة المحاولة...'; errEl.style.display = 'block'; }
+    document.getElementById('perr').innerText = 'خطأ في الاتصال — جارٍ إعادة المحاولة...';
+    document.getElementById('perr').style.display = 'block';
     pRetryTimeout = setTimeout(() => connectPlayer(code), 3000);
   }
 }
@@ -567,7 +544,7 @@ window.retryPlayerConnection = function () {
 };
 
 function pShowWait() {
-  go('player-wait'); updatePlayerCodeBadge();
+  go('player-wait');
   const tn = pGS ? (PM.team === 'a' ? pGS.teamA : pGS.teamB) : (PM.team === 'a' ? 'الفريق أ' : 'الفريق ب');
   document.getElementById('pav').className = 'pavatar ' + (PM.team === 'a' ? 'pava' : 'pavb');
   document.getElementById('pav').innerText = PM.team === 'a' ? '🟠' : '🟢';
@@ -578,7 +555,7 @@ function pShowWait() {
 }
 
 function pOnData(d) {
-  if (d.type === 'kicked') { showToast('لقد تم طردك من قبل الحكم.', 'error'); if (pPeer) pPeer.destroy(); closeLocalChannel(); go('player-join'); return; }
+  if (d.type === 'kicked') { showToast('لقد تم طردك من قبل الحكم.', 'error'); if (pPeer) pPeer.destroy(); go('player-join'); return; }
   if (d.type === 'state') { pGS = d.s; renderMiniBoard(pGS.board); return; }
   if (d.type === 'buzzer_ready') { pActivateBz(); return; }
   if (d.type === 'show_q') { const qc = document.getElementById('pbz-q'); if (qc) { qc.innerText = '❓ ' + d.q; qc.style.display = (pGS && pGS.showQuestion) ? 'block' : 'none'; } return; }
@@ -611,7 +588,7 @@ function renderMiniBoard(board) {
 }
 
 function pActivateBz() {
-  pBzEnabled = true; go('player-bz'); updatePlayerCodeBadge();
+  pBzEnabled = true; go('player-bz');
   const btn = document.getElementById('main-bz');
   btn.className = 'bzbtn bz' + PM.team + ' rdy';
   btn.innerHTML = '<span class="bzic">⚡</span><span class="bzlbl">اضغط الآن!</span>';
@@ -628,7 +605,6 @@ function pPressBz(e) {
   if (navigator.vibrate) navigator.vibrate([60, 30, 80]);
   const msg = { type: 'buzz', name: PM.name, team: PM.team, id: PM.id };
   if (pConn && pConn.open) pConn.send(msg);
-  if (pUseLocal) localSend(msg);
 }
 
 function pOnBwon(w) {
@@ -689,7 +665,7 @@ function pSetRes(nm, sub, secs, color) {
 
 function pResetWait() {
   pBzEnabled = false; clearInterval(pCdI);
-  go('player-wait'); updatePlayerCodeBadge();
+  go('player-wait');
   document.getElementById('pwmsg').innerText = 'في انتظار اختيار سؤال جديد...';
   const qc = document.getElementById('pbz-q'); if (qc) qc.style.display = 'none';
   const ac = document.getElementById('pbz-ans'); if (ac) ac.style.display = 'none';
@@ -739,7 +715,7 @@ function copyDisplayLinkOnly() { copyDisplayLink(); }
 function openDisplayLink() { window.open(getDisplayURL(), '_blank'); }
 
 /* ══════ شاشة البروجكتر ══════ */
-let dpPeer = null, dpConn = null, dpBrd = [], dpRetryTimeout = null, dpPendingQ = null, dpUseLocal = false;
+let dpPeer = null, dpConn = null, dpBrd = [], dpRetryTimeout = null, dpPendingQ = null;
 
 function showDisplayScreen() {
   const code = prompt('أدخل كود الجلسة:', ''); if (!code) return;
@@ -748,8 +724,8 @@ function showDisplayScreen() {
 
 function startDisplay(code) {
   document.getElementById('dp-bz').innerHTML = '<span style="color:rgba(240,244,255,.3);font-size:.83rem">جاري الاتصال...</span>';
-  dpUseLocal = initLocalChannel(code, (data) => dpOnData(data));
-  currentServerIndex = 0; connectDisplay(code);
+  currentServerIndex = 0;
+  connectDisplay(code);
 }
 
 function connectDisplay(code) {
