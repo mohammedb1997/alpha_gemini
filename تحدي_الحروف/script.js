@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════
-   script.js — المحرك الكامل للعبة (النسخة النهائية)
-   جميع التعريفات موجودة، ولا توجد أخطاء ReferenceError
+   script.js — المحرك الكامل للعبة (مُحدَّث)
+   يدعم: طي القوائم الجانبية، طي الأقسام الفردية في شريط الحكم
    ════════════════════════════════════════ */
 
 /* ========== دوال أساسية ========== */
@@ -426,6 +426,13 @@ function togglePanel(side) {
   }
 }
 
+/* ========== طي الأقسام الفردية في شريط الحكم الأيمن ========== */
+function toggleSection(headerElement) {
+  const section = headerElement.parentElement; // div.ps
+  if (!section) return;
+  section.classList.toggle('section-collapsed');
+}
+
 /* ========== QR ========== */
 function getPlayerURL() { return window.location.href.split('?')[0] + '?mode=player&code=' + JS.code; }
 function getDisplayURL() { return window.location.href.split('?')[0] + '?mode=display&code=' + JS.code; }
@@ -627,6 +634,12 @@ window.addEventListener('load', () => {
   if (mode === 'player') { go('player-join'); if (code) document.getElementById('pcode').value = code; }
   else if (mode === 'display' && code) { go('display'); startDisplay(code); }
   else { go('home'); }
+
+  // ربط طي الأقسام في شاشة الحكم
+  document.querySelectorAll('#judge-right-panel .ps h3').forEach(h3 => {
+    h3.style.cursor = 'pointer';
+    h3.addEventListener('click', () => toggleSection(h3));
+  });
 
   window.addEventListener('resize', () => {
     if (document.getElementById('local-game').classList.contains('on')) renderHexBoard(document.getElementById('local-board'), LG.letters, LG.owner, LG.activeCell, lHexClick);
