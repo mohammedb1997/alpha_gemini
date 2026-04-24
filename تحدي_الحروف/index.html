@@ -1,1 +1,151 @@
-<div class="hbtn cg span2" onclick="go('display')"><div class="ic">📺</div><h2>شاشة البروجكتر</h2><p>افتحها على شاشة العرض الكبيرة</p></div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+  <title>🏆 تحدي الحروف</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="home" class="scr on">
+    <div class="home-title">
+      <h1>🏆 تحدي الحروف</h1>
+      <p class="subtitle">لعبة المسابقات الذكية للعائلة والأصدقاء</p>
+    </div>
+    <div class="home-grid">
+      <div class="hbtn ca" onclick="go('local-setup')">
+        <div class="ic">🎮</div>
+        <h2>لعب محلي</h2>
+        <p>فريقان على نفس الجهاز</p>
+      </div>
+      <div class="hbtn cb" onclick="go('judge-setup')">
+        <div class="ic">📡</div>
+        <h2>لعب مشترك</h2>
+        <p>حكم + بروجكتر + بازرات</p>
+      </div>
+      <div class="hbtn cc" onclick="go('player-join')">
+        <div class="ic">📱</div>
+        <h2>انضم كلاعب</h2>
+        <p>استخدم هاتفك كبازر</p>
+      </div>
+      <div class="hbtn cg span2" onclick="showDisplayScreen()">
+        <div class="ic">📺</div>
+        <h2>شاشة البروجكتر</h2>
+        <p>افتحها على شاشة العرض الكبيرة</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="local-setup" class="scr">
+    <div class="box">
+      <h2>⚙️ إعداد اللعب المحلي</h2>
+      <div class="f-group">
+        <label>اسم الفريق الأول (أ):</label>
+        <input type="text" id="l-name-a" value="الفريق أ">
+      </div>
+      <div class="f-group">
+        <label>اسم الفريق الثاني (ب):</label>
+        <input type="text" id="l-name-b" value="الفريق ب">
+      </div>
+      <button class="btn btn-a" onclick="startLocalGame()">🚀 ابدأ اللعب</button>
+      <button class="btn btn-dim" onclick="go('home')">العودة</button>
+    </div>
+  </div>
+
+  <div id="local-game" class="scr">
+    <div class="game-header">
+      <div class="stat team-a">
+        <div class="n" id="la-name">الفريق أ</div>
+        <div class="s" id="la-score">0</div>
+      </div>
+      <div class="timer" id="l-timer">--</div>
+      <div class="stat team-b">
+        <div class="n" id="lb-name">الفريق ب</div>
+        <div class="s" id="lb-score">0</div>
+      </div>
+    </div>
+    <div class="board-container">
+       <div id="local-board"></div>
+    </div>
+    <div class="controls-bar">
+      <button class="btn btn-dim" onclick="confirmExit()">🏠 إنهاء</button>
+      <div id="l-current-info" style="color:var(--GOLD); font-weight:bold;">اختر حرفاً للبدء</div>
+    </div>
+  </div>
+
+  <div id="local-q-modal" class="modal">
+    <div class="modal-content">
+      <div class="q-header">
+        <span id="lq-diff-badge" class="diff-indicator"></span>
+        <span id="lq-cat-badge" class="cat-tag"></span>
+      </div>
+      <div class="q-letter" id="lq-letter">؟</div>
+      <div class="q-text" id="lq-text">جاري تحميل السؤال...</div>
+      <div class="q-ans" id="lq-ans">الإجابة تظهر هنا</div>
+      <div class="q-actions">
+        <button class="btn btn-a" onclick="lAnswer(true)">✅ صح</button>
+        <button class="btn btn-b" onclick="lAnswer(false)">❌ خطأ</button>
+        <button class="btn btn-dim" onclick="document.getElementById('lq-ans').style.display='block'">👁️ كشف</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="judge-setup" class="scr">
+    <div class="box">
+      <h2>📡 إعداد الجلسة (الحكم)</h2>
+      <p>أدخل كوداً خاصاً بجلسة اللعب:</p>
+      <input type="text" id="j-code" placeholder="مثال: GAME123" style="text-transform:uppercase">
+      <button class="btn btn-b" onclick="startJudge()">إنشاء الجلسة</button>
+      <button class="btn btn-dim" onclick="go('home')">العودة</button>
+    </div>
+  </div>
+
+  <div id="judge-game" class="scr">
+     <p style="padding:20px; text-align:center;">جاري تهيئة لوحة التحكم...</p>
+  </div>
+
+  <div id="player-join" class="scr">
+    <div class="box">
+      <h2>📱 الانضمام للعب</h2>
+      <input type="text" id="pcode" placeholder="كود الغرفة" style="text-transform:uppercase">
+      <input type="text" id="pname" placeholder="اسمك">
+      <button class="btn btn-a" onclick="joinAsPlayer()">دخول</button>
+      <button class="btn btn-dim" onclick="go('home')">العودة</button>
+    </div>
+  </div>
+
+  <div id="player-buzzer" class="scr">
+     <div id="buzzer-btn" onclick="pressBuzzer()">بـازر</div>
+     <div id="player-status">متصل كلاعب</div>
+  </div>
+
+  <div id="display" class="scr">
+      <div id="display-content">
+          <div class="dp-header">
+              <div class="stat team-a">
+                  <div id="dp-an">الفريق أ</div>
+                  <div class="s" id="dp-as">0</div>
+              </div>
+              <div id="dp-bz"></div>
+              <div class="stat team-b">
+                  <div id="dp-bn">الفريق ب</div>
+                  <div class="s" id="dp-bs">0</div>
+              </div>
+          </div>
+          <div id="display-board"></div>
+          <div id="dp-st">جاري الاتصال...</div>
+          <div id="dp-code" style="display:none"></div>
+      </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
