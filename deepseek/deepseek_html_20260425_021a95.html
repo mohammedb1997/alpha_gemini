@@ -73,7 +73,7 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(-
 .hbtn::before{
   content:'';position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(135deg,rgba(255,255,255,.05),transparent);
-  pointer-events: none;
+  pointer-events:none;
 }
 .hbtn:hover,.hbtn:active{transform:translateY(-3px) scale(1.02);border-color:rgba(255,255,255,.18);box-shadow:0 16px 40px rgba(0,0,0,.5);}
 .hbtn .ic{font-size:clamp(1.8rem,4vw,2.6rem);display:block;margin-bottom:6px;}
@@ -691,7 +691,20 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(-
         <button class="diff-btn" data-diff="hard" onclick="setDiff(this,'l')">🔴 صعب</button>
       </div>
       <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px;margin-top:8px">📂 نوع الأسئلة</div>
-      <div class="cat-filter" id="lcat-filter"> ... </div>
+      <div class="cat-filter" id="lcat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="setCat(this,'l')">الكل</button>
+        <button class="cat-btn" data-cat="حيوان" onclick="setCat(this,'l')">حيوان 🐾</button>
+        <button class="cat-btn" data-cat="نبات" onclick="setCat(this,'l')">نبات 🌿</button>
+        <button class="cat-btn" data-cat="جماد" onclick="setCat(this,'l')">جماد 💎</button>
+        <button class="cat-btn" data-cat="إنسان" onclick="setCat(this,'l')">إنسان 🧬</button>
+        <button class="cat-btn" data-cat="بلاد" onclick="setCat(this,'l')">بلاد 🗺️</button>
+        <button class="cat-btn" data-cat="جغرافي" onclick="setCat(this,'l')">جغرافي 🌍</button>
+        <button class="cat-btn" data-cat="تاريخ" onclick="setCat(this,'l')">تاريخ 📜</button>
+        <button class="cat-btn" data-cat="ثقافي" onclick="setCat(this,'l')">ثقافي 🎓</button>
+        <button class="cat-btn" data-cat="اجتماعي" onclick="setCat(this,'l')">اجتماعي 👥</button>
+        <button class="cat-btn" data-cat="طب" onclick="setCat(this,'l')">طب 🏥</button>
+        <button class="cat-btn" data-cat="علاقات" onclick="setCat(this,'l')">علاقات ❤️</button>
+      </div>
     </div>
     <button class="btn-go" onclick="startLocal()">▶ ابدأ اللعب</button>
   </div>
@@ -700,22 +713,102 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(-
 
 <!-- ========== ③ اللعبة المحلية ========== -->
 <div id="local-game" class="scr">
-  <div class="local-side"> ... </div>
-  <div class="barea"> ... </div>
-  <div class="local-side"> ... </div>
+  <div class="local-side"><div class="sblock"><div class="slbl" id="lsa-n">الفريق أ</div><div class="sval" id="lsa-p">0</div><div class="swn" id="lsa-w">جولات: 0</div></div><div class="warrow"><div class="wi">◀▶</div><div class="wl">يمين←يسار</div></div><div class="rlbl" id="lrlbl">الجولة 1</div></div>
+  <div class="barea"><div class="topbar"><button class="tbtn" onclick="resetLocal()">🔄 جولة جديدة</button><button class="tbtn" onclick="go('home')">🏠</button></div><div class="bwrap" id="local-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="local-board"></div></div></div>
+  <div class="local-side"><div class="sblock"><div class="slbl" id="lsb-n">الفريق ب</div><div class="sval" id="lsb-p">0</div><div class="swn" id="lsb-w">جولات: 0</div></div><div class="warrow"><div class="wi">▲▼</div><div class="wl">أعلى←أسفل</div></div><div class="rlbl" style="opacity:0">-</div></div>
 </div>
 <!-- مودال السؤال المحلي -->
 <div id="lv-ov" class="ov"></div>
-<div id="lv-qm" class="qm"> ... </div>
-<div id="local-win" class="winov"> ... </div>
+<div id="lv-qm" class="qm">
+  <div class="qlt" id="lq-letter">✨ سؤال</div><div class="lq-diff-row"><span id="lq-diff-badge"></span><span id="lq-cat-badge" class="cat-tag"></span></div><div class="qtxt" id="lq-text"></div><div class="qtmr" id="lq-timer">20</div><div class="qans" id="lq-ans"></div>
+  <div class="qbtns"><button class="qb qb-sh" onclick="lShowAns()">👁 إظهار الإجابة</button><button class="qb qb-a" id="lqb-a" onclick="lMark('a')">✅ فوز أ</button><button class="qb qb-b" id="lqb-b" onclick="lMark('b')">✅ فوز ب</button><button class="qb qb-ch" onclick="lNextQ()">🔄 سؤال آخر</button><button class="qb qb-cl" onclick="lCloseModal()">✕ إغلاق</button></div>
+</div>
+<div id="local-win" class="winov"><div class="winem">🏆</div><div class="winnm" id="lw-nm">الفائز!</div><div class="winsb" id="lw-sb"></div><div style="display:flex;gap:12px;margin-top:8px;"><button class="winbtn nw" onclick="resetLocal()">🔄 جولة جديدة</button><button class="winbtn cl" onclick="document.getElementById('local-win').classList.remove('on')">✕</button></div></div>
 
 <!-- ========== ④ إعداد الحكم ========== -->
-<div id="judge-setup" class="scr"> ... </div>
+<div id="judge-setup" class="scr" style="flex-direction:column;align-items:center;justify-content:center;">
+  <div class="jcard"><h2>🎯 شاشة الحكم — إعداد الجلسة</h2>
+    <div class="jrow"><div class="jf ja"><label>🟠 الفريق أ</label><input id="jta" value="الفريق الأحمر" maxlength="16"></div><div class="jf jb"><label>🟢 الفريق ب</label><input id="jtb" value="الفريق الأخضر" maxlength="16"></div></div>
+    <div class="jrow"><div class="jf" style="grid-column:span 2"><label>🏁 الجولات للفوز</label><select id="jrw"><option value="1">جولة واحدة</option><option value="2" selected>جولتان</option><option value="3">3 جولات</option></select></div></div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px">🎯 مستوى الصعوبة</div>
+      <div class="diff-filter" id="jdiff-filter">
+        <button class="diff-btn active-all" data-diff="all" onclick="setDiff(this,'j')">🌟 الكل</button>
+        <button class="diff-btn" data-diff="easy" onclick="setDiff(this,'j')">🟢 سهل</button>
+        <button class="diff-btn" data-diff="medium" onclick="setDiff(this,'j')">🟡 متوسط</button>
+        <button class="diff-btn" data-diff="hard" onclick="setDiff(this,'j')">🔴 صعب</button>
+      </div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--GOLD);margin-bottom:8px;margin-top:10px">📂 نوع الأسئلة</div>
+      <div class="cat-filter" id="jcat-filter">
+        <button class="cat-btn active" data-cat="all" onclick="setCat(this,'j')">الكل</button>
+        <button class="cat-btn" data-cat="حيوان" onclick="setCat(this,'j')">حيوان 🐾</button>
+        <button class="cat-btn" data-cat="نبات" onclick="setCat(this,'j')">نبات 🌿</button>
+        <button class="cat-btn" data-cat="جماد" onclick="setCat(this,'j')">جماد 💎</button>
+        <button class="cat-btn" data-cat="إنسان" onclick="setCat(this,'j')">إنسان 🧬</button>
+        <button class="cat-btn" data-cat="بلاد" onclick="setCat(this,'j')">بلاد 🗺️</button>
+        <button class="cat-btn" data-cat="جغرافي" onclick="setCat(this,'j')">جغرافي 🌍</button>
+        <button class="cat-btn" data-cat="تاريخ" onclick="setCat(this,'j')">تاريخ 📜</button>
+        <button class="cat-btn" data-cat="ثقافي" onclick="setCat(this,'j')">ثقافي 🎓</button>
+        <button class="cat-btn" data-cat="اجتماعي" onclick="setCat(this,'j')">اجتماعي 👥</button>
+        <button class="cat-btn" data-cat="طب" onclick="setCat(this,'j')">طب 🏥</button>
+        <button class="cat-btn" data-cat="علاقات" onclick="setCat(this,'j')">علاقات ❤️</button>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="startJudge()">🚀 إنشاء الغرفة وبدء اللعب</button>
+  </div>
+  <button class="btn-bkd" onclick="go('home')">🔙 العودة</button>
+</div>
 
 <!-- ========== ⑤ لعبة الحكم ========== -->
-<div id="judge-game" class="scr"> ... </div>
-<div id="qr-modal"> ... </div>
-<div id="judge-win" class="winov"> ... </div>
+<div id="judge-game" class="scr">
+  <div class="jlp" id="judge-left-panel">
+    <div class="jsc jca"><div class="jn" id="ja-n">الفريق أ</div><div class="jv" id="ja-p">0</div><div class="jw" id="ja-w">جولات: 0</div></div>
+    <div style="text-align:center"><div class="jrnd" id="j-rnd">الجولة 1</div><div class="jleg"><div class="jlr"><div class="jll" style="background:var(--A)"></div><span>أ — أفقي ◀▶</span></div><div class="jlr"><div class="jll" style="background:var(--B)"></div><span>ب — عمودي ▲▼</span></div></div>
+    <div class="qrmini" onclick="showQR()"><canvas id="qr-sm" width="70" height="70"></canvas></div><div class="qrlbl">📱 امسح للانضمام</div>
+    <button class="jb jbop" style="margin-top:8px;padding:6px" onclick="copyDisplayLink()">📺 رابط البروجكتر</button></div>
+    <div class="jsc jcb"><div class="jn" id="jb-n">الفريق ب</div><div class="jv" id="jb-p">0</div><div class="jw" id="jb-w">جولات: 0</div></div>
+  </div>
+  <div class="jcenter">
+    <!-- [جديد] أزرار طي القوائم -->
+    <button class="panel-toggle left-toggle" id="toggle-left-panel" onclick="togglePanel('left')">☰</button>
+    <button class="panel-toggle right-toggle" id="toggle-right-panel" onclick="togglePanel('right')">☰</button>
+    <div class="jtitle" id="j-title">الجولة الأولى 🏆</div>
+    <div class="bwrap" id="judge-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="judge-board"></div></div>
+  </div>
+  <div class="jrp" id="judge-right-panel">
+    <div class="ps"><h3>⚡ البازر</h3><div id="jbz-disp"><div class="bzidle">اختر خلية لبدء السؤال...</div></div></div>
+    <div class="ps"><h3>❓ السؤال</h3><div class="qbx" id="j-qbox">اختر خلية من اللوحة...</div><div class="ansbx" id="j-ans"></div></div>
+    <div class="ps"><h3>🎯 مستوى الصعوبة (مباشر)</h3>
+      <div class="diff-filter" id="j-live-diff">
+        <button class="diff-btn active-all" data-diff="all" onclick="setLiveDiff(this)">🌟 الكل</button>
+        <button class="diff-btn" data-diff="easy" onclick="setLiveDiff(this)">🟢 سهل</button>
+        <button class="diff-btn" data-diff="medium" onclick="setLiveDiff(this)">🟡 متوسط</button>
+        <button class="diff-btn" data-diff="hard" onclick="setLiveDiff(this)">🔴 صعب</button>
+      </div>
+    </div>
+    <div class="ps"><h3>🎮 تحكم الحكم</h3>
+      <div class="jg">
+        <button class="jb jbans" onclick="jShowAns()">👁 إظهار الإجابة</button>
+        <button class="jb jbca" id="jb-ca" onclick="jCorrect('a')">✅ صح (أ)</button>
+        <button class="jb jbcb" id="jb-cb" onclick="jCorrect('b')">✅ صح (ب)</button>
+        <button class="jb jbnq" onclick="jNextQ()">🔄 سؤال آخر</button>
+        <button class="jb jbop" onclick="jReopen()">🔓 إعادة فتح البازر</button>
+        <button class="jb jbsk" onclick="jSkip()">⏭ تخطي</button>
+        <button class="jb jbnr" onclick="jNewRound()">🏁 جولة جديدة</button>
+        <button class="jb jbhm" onclick="go('home')">🏠 الرئيسية</button>
+        <button class="jb" id="j-toggle-q" style="background:#2ecc71;grid-column:span 1" onclick="jToggleQuestion()">👁 أظهر السؤال</button>
+        <button class="jb" id="j-toggle-a" style="background:#e67e22;grid-column:span 1" onclick="jToggleAnswer()">👁 أظهر الإجابة</button>
+      </div>
+    </div>
+    <div class="ps"><h3>👥 اللاعبون</h3><div class="pllist" id="j-players"><div class="bzidle">لا يوجد لاعبون...</div></div></div>
+  </div>
+  <!-- [جديد] شارة كود الجلسة -->
+  <div class="code-badge" id="judge-code-badge" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:300;">كود: ----</div>
+</div>
+<div id="qr-modal"><div class="qrcard"><h2>📱 انضم للعبة</h2><p>امسح الكود أو انسخ الرابط</p><div class="qrwrap"><div id="qr-lg"></div></div><div class="qrurl" id="qr-url">—</div><br><button class="qrclose" onclick="document.getElementById('qr-modal').classList.remove('show')">✕ إغلاق</button></div></div>
+<div id="judge-win" class="winov"><div class="winem" id="jw-em">🏆</div><div class="winnm" id="jw-nm">الفائز!</div><div class="winsb" id="jw-sb"></div><div style="display:flex;gap:12px;margin-top:8px;"><button class="winbtn nw" onclick="jNewRound()">🔄 جولة جديدة</button><button class="winbtn cl" onclick="document.getElementById('judge-win').classList.remove('on')">✕</button></div></div>
+
 
 <!-- ========== ⑥ شاشات اللاعب (محسّنة) ========== -->
 <div id="player-join" class="scr">
@@ -753,7 +846,22 @@ html,body{height:100%;overflow:hidden;font-family:'Cairo',sans-serif;color:var(-
 </div>
 
 <!-- ========== ⑦ شاشة العرض ========== -->
-<div id="display" class="scr"> ... </div>
+<div id="display" class="scr">
+  <div class="dpleft" id="display-left-panel"><div class="dpsc dpa"><div class="dn" id="dp-an">الفريق أ</div><div class="dv" id="dp-as">0</div></div><div style="text-align:center"><div class="dprnd" id="dp-rnd">الجولة 1</div><div class="dpbzbox" id="dp-bz"><span style="color:rgba(240,244,255,.3);font-size:.83rem">جاري الاتصال...</span></div><div class="dpleg"><div class="dplr"><div class="dpll" style="background:var(--A)"></div><span>أ — أفقي ◀▶</span></div><div class="dplr"><div class="dpll" style="background:var(--B)"></div><span>ب — عمودي ▲▼</span></div></div></div><div class="dpsc dpb"><div class="dn" id="dp-bn">الفريق ب</div><div class="dv" id="dp-bs">0</div></div></div>
+  <div class="dpcenter"><div class="dpq" id="dp-q" style="display:none"></div><div class="dpans" id="dp-ans"></div><div class="bwrap" id="display-bwrap"><div class="bdr-r"></div><div class="bdr-l"></div><div id="display-board"></div></div></div>
+  <!-- [جديد] اللوحة اليمنى للبروجكتر -->
+  <div class="dpright" id="display-right-panel">
+    <div class="qr-permanent">
+      <div id="display-qr"></div>
+      <div class="code-display" id="display-code">----</div>
+      <div style="display:flex; gap:8px; margin-top:8px; justify-content:center;">
+        <button class="qr-action-btn" onclick="copyDisplayLinkOnly()">📋 نسخ الرابط</button>
+        <button class="qr-action-btn" onclick="openDisplayLink()">🔗 فتح</button>
+      </div>
+      <p style="font-size:.7rem; color:var(--DIM); margin-top:8px;">امسح للانضمام كلاعب</p>
+    </div>
+  </div>
+</div>
 
 <!-- ========== عناصر عامة ========== -->
 <div id="toast-container" class="toast-container"></div>
@@ -890,6 +998,22 @@ function lUpdateUI(){
 }
 
 // ======================[ نهاية قسم: لعبة محلية ]======================
+
+// ======================[ قسم: دوال QR والمساعدة ]======================
+/* QR */
+function getPlayerURL(){return window.location.href.split('?')[0]+'?mode=player&code='+JS.code;}
+function getDisplayURL(){return window.location.href.split('?')[0]+'?mode=display&code='+JS.code;}
+function genQR(){
+  const url=getPlayerURL();document.getElementById('qr-url').innerText=url;
+  ['qr-sm','qr-lg','display-qr'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';const sz=id==='display-qr'?160:(id==='qr-sm'?70:230);try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#1a1a2e',colorLight:'#ffffff'});}catch(e){}});
+  const codeEl=document.getElementById('display-code');if(codeEl)codeEl.textContent=JS.code;
+}
+function showQR(){genQR();document.getElementById('qr-modal').classList.add('show');}
+function copyDisplayLink(){const url=getDisplayURL();prompt('انسخ رابط شاشة البروجكتر:',url);}
+// [جديد] دوال الروابط المحسنة
+function copyDisplayLinkOnly(){const u=getDisplayURL();navigator.clipboard.writeText(u).then(()=>showToast('تم نسخ الرابط','success')).catch(()=>prompt('انسخ:',u));}
+function openDisplayLink(){window.open(getDisplayURL(),'_blank');}
+// ======================[ نهاية قسم: دوال QR ]======================
 
 // ======================[ قسم: شبكة PeerJS ]======================
 const PEER_SERVERS = [ { host: '0.peerjs.com', port: 443, secure: true, path: '/' } ];
@@ -1221,21 +1345,6 @@ function setLiveDiff(btn) {
 
 // ======================[ نهاية قسم: فلاتر الأسئلة ]======================
 
-// ======================[ قسم: دوال QR والمساعدة ]======================
-/* QR */
-function getPlayerURL(){return window.location.href.split('?')[0]+'?mode=player&code='+JS.code;}
-function getDisplayURL(){return window.location.href.split('?')[0]+'?mode=display&code='+JS.code;}
-function genQR(){
-  const url=getPlayerURL();document.getElementById('qr-url').innerText=url;
-  ['qr-sm','qr-lg','display-qr'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';const sz=id==='display-qr'?160:(id==='qr-sm'?70:230);try{new QRCode(el,{text:url,width:sz,height:sz,colorDark:'#1a1a2e',colorLight:'#ffffff'});}catch(e){}});
-  const codeEl=document.getElementById('display-code');if(codeEl)codeEl.textContent=JS.code;
-}
-function showQR(){genQR();document.getElementById('qr-modal').classList.add('show');}
-function copyDisplayLink(){const url=getDisplayURL();prompt('انسخ رابط شاشة البروجكتر:',url);}
-// [جديد] دوال الروابط المحسنة
-function copyDisplayLinkOnly(){const u=getDisplayURL();navigator.clipboard.writeText(u).then(()=>showToast('تم نسخ الرابط','success')).catch(()=>prompt('انسخ:',u));}
-function openDisplayLink(){window.open(getDisplayURL(),'_blank');}
-// ======================[ نهاية قسم: دوال QR ]======================
 
 // ======================[ قسم: التهيئة ]======================
 (function(){
