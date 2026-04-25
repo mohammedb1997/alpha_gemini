@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الأحرف</title>
+    <style>
+        /* إعادة تعيين بسيطة */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            padding: 30px 20px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #2a5298;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        /* منطقة عرض الحرف المختار */
+        .selected-letter {
+            background: #f0f4ff;
+            border: 2px dashed #2a5298;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e3c72;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        /* شبكة الأزرار */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            justify-items: center;
+        }
+
+        /* أزرار الأحرف */
+        .letter-btn {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* يجعل الزر مربعاً */
+            max-width: 90px;
+            font-size: clamp(20px, 5vw, 28px);
+            font-weight: bold;
+            background: #ffffff;
+            border: 2px solid #2a5298;
+            border-radius: 15px;
+            color: #2a5298;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* تحسين اللمس على الموبايل */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* تأثير التمرير بالفأرة */
+        .letter-btn:hover {
+            background: #2a5298;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(42,82,152,0.3);
+        }
+
+        /* تأثير الضغط */
+        .letter-btn:active {
+            transform: scale(0.95);
+            background: #1e3c72;
+            border-color: #1e3c72;
+            color: white;
+        }
+
+        /* لمسة خاصة للحرف الذي تم اختياره سابقاً (اختياري) */
+        .letter-btn.active {
+            background: #ffd700;
+            border-color: #b8860b;
+            color: #1e3c72;
+            box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+
+        /* تحسينات للأجهزة الصغيرة */
+        @media (max-width: 400px) {
+            .container {
+                padding: 20px 15px;
+            }
+            .letter-grid {
+                gap: 8px;
+            }
+            .letter-btn {
+                max-width: 70px;
+                border-radius: 12px;
+            }
+        }
+
+        /* دعم الشاشات الكبيرة */
+        @media (min-width: 768px) {
+            .letter-btn {
+                max-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>اختر حرفاً</h2>
+        <!-- مربع عرض الحرف المختار -->
+        <div class="selected-letter" id="displayLetter">?</div>
+        
+        <!-- لوحة الأحرف -->
+        <div class="letter-grid">
+            <!-- سيتم إنشاء الأزرار ديناميكياً باستخدام JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // مصفوفة الأحرف العربية (4 صفوف × 4 أعمدة)
+        const letters = [
+            ['ن', 'ت', 'ث', 'ج'],
+            ['ف', 'ب', 'س', 'د'],
+            ['ه', 'م', 'ل', 'ر'],
+            ['ي', 'ح', 'ز', 'ق']
+        ];
+
+        const gridContainer = document.querySelector('.letter-grid');
+        const displayDiv = document.getElementById('displayLetter');
+        let lastActiveBtn = null;
+
+        // دالة لإنشاء الأزرار
+        function createGrid() {
+            letters.forEach(row => {
+                row.forEach(letter => {
+                    const button = document.createElement('button');
+                    button.className = 'letter-btn';
+                    button.textContent = letter;
+                    button.setAttribute('aria-label', `اختر الحرف ${letter}`);
+                    
+                    // حدث الضغط (يعمل باللمس والفأرة)
+                    button.addEventListener('click', () => {
+                        // عرض الحرف في المربع العلوي
+                        displayDiv.textContent = letter;
+                        
+                        // إزالة التحديد السابق (اختياري لإظهار آخر حرف نشط)
+                        if (lastActiveBtn) {
+                            lastActiveBtn.classList.remove('active');
+                        }
+                        // إضافة تأثير التحديد للحالي
+                        button.classList.add('active');
+                        lastActiveBtn = button;
+                    });
+
+                    gridContainer.appendChild(button);
+                });
+            });
+        }
+
+        // بناء الشبكة عند تحميل الصفحة
+        createGrid();
+    </script>
+</body>
+</html>
